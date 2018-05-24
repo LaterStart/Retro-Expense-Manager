@@ -1,5 +1,5 @@
 #pragma once
-#include "PosManager.h"
+
 //	CURSOR CLASS DECLARATION
 /*---------------------------------------------------------------------------------------------------------------------*/
 class Cursor {
@@ -16,14 +16,6 @@ public:
 		
 	void _GetCursorPosition();
 	void _SetCursorPosition();	
-	
-	/*
-	void _SetCharacterNumber(const char*, int additional = 0);
-	void _SetCharacterNumber(unsigned short value);
-	
-	int _GetN();
-	*/
-
 	bool operator==(const Cursor &second) const;	
 	void _ChangeY(short);
 	void _ChangeX(short);
@@ -64,21 +56,3 @@ inline void Cursor::_SetXY(short x, short y) {
 	this->x = x;
 	this->y = y;
 }
-
-/*
-
-class TextPositionManager {
-private:
-	int n;
-	Cursor* activePositions;
-
-	void _ExtendRegister();
-
-public:
-	TextPositionManager();
-	~TextPositionManager();
-
-	void _AddActivePosition(Cursor);
-	void _WipeText();
-	int _GetNum() const;
-};*/

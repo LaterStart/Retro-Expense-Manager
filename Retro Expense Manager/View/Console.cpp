@@ -2,8 +2,8 @@
 #include <Windows.h>
 #include "Console.h"
 #include "Cursor.h"
-#include "utility.h"
-#include "config.h"
+#include "../utility.h"
+#include "../config.h"
 using namespace std;
 
 Console::Console(){}

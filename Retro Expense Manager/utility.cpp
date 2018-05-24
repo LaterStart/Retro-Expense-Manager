@@ -1,4 +1,3 @@
-#include <stdarg.h> 
 #include <time.h>
 #include "utility.h"
 
@@ -123,4 +122,9 @@ namespace utility {
 
 		return currentDate_char;
 	}	
+
+	bool _IsPointer(const char* ptr) { return true; }
+	bool _IsPointer(char* ptr) { return true; }
+	bool _IsPointer(int* ptr) { return true; }
+	bool _IsPointer(float* ptr) { return true; }
 }

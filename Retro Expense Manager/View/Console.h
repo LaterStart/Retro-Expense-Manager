@@ -4,7 +4,6 @@ class Console {
 private:
 	char* _SystemMode();
 
-protected:
 	Console();
 	~Console();
 

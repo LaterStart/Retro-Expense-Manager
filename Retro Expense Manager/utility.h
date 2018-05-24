@@ -1,4 +1,6 @@
 #pragma once
+#include <initializer_list>
+#include <stdarg.h> 
 
 namespace utility {
 
@@ -21,5 +23,55 @@ namespace utility {
 		}
 		delete[]ptr;
 		ptr = newArr;
-	}
+	}	
+
+	template<typename T>
+	void _CreateArray(T*& ptr, std::initializer_list<T> a_args) {
+		unsigned int n = (unsigned int)a_args.size();
+		ptr = new T[n];
+		
+		for (auto i : a_args)
+			ptr[n] = i;	
+	}	
+
+
+	template <class elementType>
+	class ElementsList	{
+	private:
+		class Link {
+		public:
+			elementType node;
+			Link* nextNode;
+
+			Link() : node(nullptr), nextNode(nullptr) {}
+		};
+
+		Link* first;
+		Link* last;	
+		Link* currentNode;
+		unsigned int size;
+
+	public:
+		elementType node;
+		ElementsList(elementType element ...) :first(nullptr), last(nullptr), node(nullptr), currentNode(0), size(0){
+			va_list list;
+			Link* link = new Link;
+			first = link;
+			for (va_start(list, element); element != 0; element = va_arg(list, elementType)) {
+				size++;				
+				link->node = element;
+				link->nextNode = new Link;
+				last = link;
+				link = link->nextNode;				
+			}
+			node = first->node;
+			currentNode = first;
+		}
+
+		unsigned int _GetSize() const { return size; }
+		void _NextNode() {
+			currentNode = currentNode->nextNode;
+			node = currentNode->node;
+		}
+	};
 }

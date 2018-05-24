@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Windows.h>
 #include "Cursor.h"
-#include "config.h"
+#include "../config.h"
 using namespace std;
 
 Cursor::Cursor() : x(0), y(0), n(0) {

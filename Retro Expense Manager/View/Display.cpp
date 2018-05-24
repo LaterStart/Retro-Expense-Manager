@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Display.h"
 #include "Cursor.h"
-#include "utility.h"
+#include "../utility.h"
 using namespace std;
 
 Display::Display() : activePositions(nullptr), activePosNum(0){}
