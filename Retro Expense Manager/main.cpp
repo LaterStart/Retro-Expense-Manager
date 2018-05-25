@@ -3,8 +3,6 @@
 #include "utility.h"
 #include "Controllers/ProfileController.h"
 #include "Modules/ModuleManagement.h"
-#include "Modules/Module.h"
-#include "Modules/CreateUserProfile.h"
 #include "View/Console.h"
 #include "View/Cursor.h"
 #include "View/Display.h"
@@ -32,14 +30,11 @@ int main() {
 	ProfileController profCtrl;
 	profCtrl._GetLastUsedProfile(dataPath);
 	
-	ModuleManagement moduler;	
+	ModuleManagement moduler;
 	if (profCtrl._GetStatus() == true) {
 
+
 	}
-	
-
-	
-
 
 
 	return 0;

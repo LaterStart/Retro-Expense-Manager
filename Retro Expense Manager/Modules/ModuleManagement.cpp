@@ -1,16 +1,12 @@
 #include "ModuleManagement.h"
 
-ModuleList::ModuleList() : name(nullptr) /*link(nullptr)*/{}
+ModuleList::ModuleList() {}
 
-ModuleManagement::ModuleManagement() : base(this) {}
+ModuleList::~ModuleList() {}
+
+ModuleManagement::ModuleManagement(){}
 
 ModuleManagement::~ModuleManagement(){}
-
-void ModuleManagement::_AddModule(modulePtr link, const char* name) {
-
-
-
-}
 
 void ModuleManagement::_OpenModule(const char* name) {
 
@@ -19,7 +15,7 @@ void ModuleManagement::_OpenModule(const char* name) {
 
 }
 
-void ModuleManagement::_OpenModule(modulePtr link) {
+void ModuleManagement::_OpenModule() {
 
 
 	

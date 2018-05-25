@@ -118,7 +118,6 @@
     <ClInclude Include="Retro Expense Manager\Controllers\ProfileController.h" />
     <ClInclude Include="Retro Expense Manager\Models\Profile.h" />
     <ClInclude Include="Retro Expense Manager\Modules\CreateUserProfile.h" />
-    <ClInclude Include="Retro Expense Manager\Modules\Module.h" />
     <ClInclude Include="Retro Expense Manager\Modules\ModuleManagement.h" />
     <ClInclude Include="retro expense manager\utility.h" />
     <ClInclude Include="Retro Expense Manager\View\Console.h" />

@@ -110,8 +110,5 @@
     <ClInclude Include="Retro Expense Manager\Modules\CreateUserProfile.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="Retro Expense Manager\Modules\Module.h">
-      <Filter>Header Files\Modules</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

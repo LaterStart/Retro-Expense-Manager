@@ -9,7 +9,7 @@ Menu::~Menu() {
 void Menu::_CreateMenu(utility::ElementsList<const char*> list) {
 	size = list._GetSize();
 	elements = new const char*[size];
-	int z = 0;
+	unsigned int z = 0;
 	while (z < size) {
 		elements[z++] = list.node;
 		list._NextNode();		
