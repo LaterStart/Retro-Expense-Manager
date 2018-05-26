@@ -9,13 +9,13 @@ class Module {
 	friend class ModuleManagement;
 
 protected:
-	virtual void _Module() = 0;
-	virtual void _Initialize() = 0;
+	virtual void _StartModule() = 0;
+	virtual Module& _GetInstance() = 0;
 };
 
 class ModuleList {
 public:
-	const char* name;
+	std::string name;
 	Module* module;
 
 	ModuleList();
@@ -25,6 +25,8 @@ public:
 class ModuleManagement {
 private:
 	ModuleList* moduleList;
+	int moduleNum;
+
 	void _InitializeModules();
 	bool initialized;
 
@@ -36,11 +38,11 @@ public:
 	~ModuleManagement();
 
 	template <typename module>
-	void _AddModule(module newModule, const char* name) {
-		moduleList = new ModuleList[1];
-		moduleList[0].module = newModule;
-
-		int test = 0;
+	void _AddModule(module& newModule, std::string name) {
+		ModuleList* newSlot = new ModuleList;
+		utility::_AddElement(moduleList, *newSlot, moduleNum);
+		moduleList[moduleNum - 1].module = &newModule;
+		moduleList[moduleNum - 1].name = name;
 	}
 
 	ModuleList* _GetModuleList() const;

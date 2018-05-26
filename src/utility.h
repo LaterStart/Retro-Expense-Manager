@@ -16,6 +16,17 @@ namespace utility {
 	int _CharLength(const char* arr);
 	int _CharSize(char* arr);
 	int _Find(char* word, char* arr);
+
+	template <typename T>
+	void _AddElement(T* &ptr, T &element, int &arrSize) {
+		T* newArr = new T[arrSize + 1];
+		for (int i = 0; i < arrSize; i++)
+			newArr[i] = ptr[i];
+		newArr[arrSize] = element;
+		delete[]ptr;
+		ptr = newArr;
+		arrSize++;
+	}
 	
 	template <typename T>
 	void _RemoveElement(T* &ptr, int pos, int arrSize) {
@@ -36,7 +47,6 @@ namespace utility {
 		for (auto i : a_args)
 			ptr[n] = i;	
 	}	
-
 
 	template <class elementType>
 	class ElementsList	{
@@ -107,7 +117,5 @@ namespace utility {
 				nextNode->previousNode = previousNode;
 			}
 		}
-	};
-
-	
+	};	
 }

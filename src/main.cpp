@@ -26,7 +26,7 @@ int main() {
 	mainWindow._DisplayContent(version, versionPos);
 	mainWindow._LockContent(versionPos); // -> makes label text on given position permanent
 	
-	//	Check for last used user profile in preconfigured dataPath binary file
+	//	Check for last used user profile in preconfigured "dataPath" binary file
 	ProfileController profCtrl;
 	profCtrl._GetLastUsedProfile(dataPath);
 	
@@ -34,6 +34,8 @@ int main() {
 	if (profCtrl._GetStatus() == true) {
 
 	}
+
+	moduler._OpenModule("CreateUserProfile");
 
 	
 

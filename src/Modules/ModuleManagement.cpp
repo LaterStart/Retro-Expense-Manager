@@ -8,7 +8,7 @@ ModuleList::ModuleList() {}
 
 ModuleList::~ModuleList() {}
 
-ModuleManagement::ModuleManagement() : initialized(false){
+ModuleManagement::ModuleManagement() : moduleList(nullptr), moduleNum(0), initialized(false){
 	_InitializeModules();
 }
 
@@ -48,16 +48,19 @@ void ModuleManagement::_InitializeModules() {
 	utility::LinkedList<string>* classList = modCtrl._ReadModules();
 
 	while (classList != nullptr) {
-		initializer._CreateInstance(classList->element);
+		auto module = initializer._CreateInstance(classList->element);	
+		if (module != nullptr) {
+			Module& ref = module->_GetInstance();
+			_AddModule(ref, classList->element);
+		}			
 		classList = classList->nextNode;
 	}	
 }
 
 void ModuleManagement::_OpenModule(const char* name) {
-
-
-
-
+	for (int i = 0; i < moduleNum; i++)
+		if (moduleList[i].name == name)
+			moduleList[i].module->_StartModule();
 }
 
 void ModuleManagement::_OpenModule() {

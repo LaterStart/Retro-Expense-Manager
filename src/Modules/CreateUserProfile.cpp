@@ -4,19 +4,16 @@ CreateUserProfile::CreateUserProfile() : initialized(false) {}
 
 CreateUserProfile::~CreateUserProfile() {}
 
-void CreateUserProfile::_Initialize() {	
-	//moduler._AddModule(this, "CreateUserProfile");
-	initialized = true;
+Module& CreateUserProfile::_GetInstance() {
+	return _LoadModule();
 }
 
-CreateUserProfile& CreateUserProfile::_GetInstance() {
-	static CreateUserProfile myRef;
-	if (myRef.initialized == false) 
-		myRef._Initialize();
-	return myRef;
+CreateUserProfile& CreateUserProfile::_LoadModule() {
+	static CreateUserProfile module;	
+	return module;
 }
 
-void CreateUserProfile::_Module() {
+void CreateUserProfile::_StartModule() {
 
-
+	int test = 0;
 }
