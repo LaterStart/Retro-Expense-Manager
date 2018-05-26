@@ -1,8 +1,6 @@
 #include <iostream>
 #include <Windows.h>
 #include "Console.h"
-#include "Cursor.h"
-#include "../utility.h"
 #include "../config.h"
 using namespace std;
 
@@ -58,33 +56,22 @@ char* Console::_SystemMode() {
 
 //	Draw console frame
 void Console::_DrawFrame() {
-	Cursor posA(0,0), posB(25,0), posC(width-1,0);
-
+	Cursor posA(0,0), posB(width-1,0);
 	//draw vertical lines
 	for (int i = 0; i < height - 2; i++) {
 		posA._MoveY(1);
 		cout << verticalLine;
-		if (i < height - 3) {
-			posB._MoveY(1);
-			cout << verticalLine;
-		}
-		posC._MoveY(1);
+		posB._MoveY(1);
 		cout << verticalLine;
 	}
-
 	posA._SetXY(0, 0);
-	posB._SetXY(1, 2);
-	posC._SetXY(0, height - 1);
+	posB._SetXY(0, height - 1);
 
 	//draw horizontal lines
 	for (int i = 0; i < width - 2; i++) {
 		posA._MoveX(1);
-		cout << horizontalLine;
-		if (i < width - 4) {
-			posB._MoveX(1);
-			cout << horizontalLine;
-		}
-		posC._MoveX(1);
+		cout << horizontalLine;		
+		posB._MoveX(1);
 		cout << horizontalLine;
 	}
 }

@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 
+//	abstract class - main definition for each new module
 class Module {
 	template<class T>
 	friend class ModuleRegistrar;
@@ -11,8 +12,10 @@ class Module {
 protected:
 	virtual void _StartModule() = 0;
 	virtual Module& _GetInstance() = 0;
+	ModuleManagement* moduler;
 };
 
+//	container class - enables storage of active modules singleton references
 class ModuleList {
 public:
 	std::string name;
@@ -22,6 +25,7 @@ public:
 	~ModuleList();
 };
 
+//	class provides module management, instance initialization
 class ModuleManagement {
 private:
 	ModuleList* moduleList;
@@ -32,11 +36,11 @@ private:
 
 public:
 	void _OpenModule(const char* name);
-	void _OpenModule();
 
 	ModuleManagement();
 	~ModuleManagement();
 
+	//	Add reference for each pre-registered module from Modules folder to active modules list at run time
 	template <typename module>
 	void _AddModule(module& newModule, std::string name) {
 		ModuleList* newSlot = new ModuleList;
@@ -44,14 +48,9 @@ public:
 		moduleList[moduleNum - 1].module = &newModule;
 		moduleList[moduleNum - 1].name = name;
 	}
-
-	ModuleList* _GetModuleList() const;
 };
 
-inline ModuleList* ModuleManagement::_GetModuleList() const {
-	return moduleList;
-}
-
+//	compile time class used to add each module into register
 class ModuleInitializer {
 	template<class T>
 	friend class ModuleRegistrar;
@@ -70,6 +69,7 @@ class ModuleInitializer {
 	std::shared_ptr<Module>ModuleInitializer::_CreateInstance(std::string name);	
 };
 
+//	storage class - compile time register
 template<class T>
 class ModuleRegistrar {
 public:

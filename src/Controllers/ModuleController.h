@@ -1,6 +1,6 @@
 #pragma once
 #include "Controller.h"
-#include "../utility.h"
+#include "../config.h"
 
 class ModuleController : public Controller {
 public:	

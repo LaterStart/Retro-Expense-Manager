@@ -9,7 +9,9 @@ Cursor::Cursor() : x(0), y(0), n(0) {
 }
 Cursor::Cursor(const Cursor &copy) : x(copy.x), y(copy.y), n(copy.n) {}
 
-Cursor::Cursor(short x, short y) : x(x), y(y){}
+Cursor::Cursor(short x, short y) : x(x), y(y){
+	_SetCursorPosition();
+}
 
 Cursor::~Cursor() {}
 
@@ -47,5 +49,11 @@ void Cursor::_ClearText() {
 	for (int i = 0; i < n; i++) {
 		cout << spaceKey;
 	}
+	_SetCursorPosition();
+}
+
+void Cursor::_MoveToXY(short x_in, short y_in) {
+	x = x_in;
+	y = y_in;
 	_SetCursorPosition();
 }

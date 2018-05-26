@@ -49,6 +49,37 @@ namespace utility {
 		return choppedTwice;
 	}
 
+	char* _InsertChar(char* arr, char* insert) {
+		int oldSize = _CharSize(arr);
+		int insertLength = _CharLength(insert);
+		int newSize = oldSize + insertLength;
+		char* newChar = new char[newSize];
+
+		int j = 0;
+		for (j = 0; j < insertLength; j++) {
+			newChar[j] = insert[j];
+		}
+		for (int i = 0; i < oldSize; i++)
+			newChar[j++] = arr[i];
+
+		return newChar;
+	}
+
+	bool _CompareChar(char* first, char* second) {
+		int size1, size2;
+		size1 = _CharSize(first);
+		size2 = _CharSize(second);
+		if (size1 != size2) return 0;
+
+		while (--size1 >= 0)
+			if (first[size1] != second[size1]) return false;
+		return true;
+	}
+
+	bool _CompareChar(const char* first, const char* second) {
+		return _CompareChar((char*)first, (char*)second);
+	}
+
 	char*_ConcatenateChar(const char* myChar ...) {
 		va_list list;
 		int size = 0;

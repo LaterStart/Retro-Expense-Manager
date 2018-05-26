@@ -25,11 +25,14 @@
     <ClInclude Include="src\Controllers\ProfileController.h" />
     <ClInclude Include="src\Models\Profile.h" />
     <ClInclude Include="src\Modules\CreateUserProfile.h" />
+    <ClInclude Include="src\Modules\LoadUserProfile.h" />
+    <ClInclude Include="src\Modules\Login.h" />
     <ClInclude Include="src\Modules\ModuleManagement.h" />
     <ClInclude Include="src\utility.h" />
     <ClInclude Include="src\View\Console.h" />
     <ClInclude Include="src\View\Cursor.h" />
     <ClInclude Include="src\View\Display.h" />
+    <ClInclude Include="src\View\IOComponent.h" />
     <ClInclude Include="src\View\Menu.h" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +43,8 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Models\Profile.cpp" />
     <ClCompile Include="src\Modules\CreateUserProfile.cpp" />
+    <ClCompile Include="src\Modules\LoadUserProfile.cpp" />
+    <ClCompile Include="src\Modules\Login.cpp" />
     <ClCompile Include="src\Modules\ModuleManagement.cpp" />
     <ClCompile Include="src\utility.cpp" />
     <ClCompile Include="src\View\Console.cpp" />

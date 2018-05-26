@@ -10,4 +10,5 @@ unsigned short height = 30;
 const unsigned char horizontalLine = 196;
 const unsigned char verticalLine = 179;
 const unsigned char spaceKey = 32;
+const unsigned char	headerSymbol = 170;
 

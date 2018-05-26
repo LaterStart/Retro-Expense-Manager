@@ -2,7 +2,6 @@
 #include <experimental/filesystem>
 #include <filesystem> 
 #include "ModuleController.h"
-#include "../config.h"
 using namespace std;
 namespace fs = experimental::filesystem::v1;
 

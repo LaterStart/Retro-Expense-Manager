@@ -69,11 +69,20 @@
     <ClInclude Include="src\View\Menu.h">
       <Filter>Header Files\View</Filter>
     </ClInclude>
-    <ClInclude Include="src\config.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\utility.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\LoadUserProfile.h">
+      <Filter>Header Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\View\IOComponent.h">
+      <Filter>Header Files\View</Filter>
+    </ClInclude>
+    <ClInclude Include="src\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Login.h">
+      <Filter>Header Files\Modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +124,12 @@
     </ClCompile>
     <ClCompile Include="src\utility.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\LoadUserProfile.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Login.cpp">
+      <Filter>Source Files\Modules</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

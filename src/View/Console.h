@@ -1,6 +1,7 @@
 #pragma once
+#include "IOComponent.h"
 
-class Console {
+class Console : public OComponent {
 private:
 	char* _SystemMode();
 

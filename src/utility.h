@@ -5,7 +5,8 @@
 namespace utility {
 
 	char* _ChopChar(char* arr, char* remove);
-	char* _ChopChar(char* arr, char* removeOne, char* removeTwo);
+	char* _ChopChar(char* arr, char* removeOne, char* removeTwo);	
+	char* _InsertChar(char* arr, char* insert);
 	char* _ConvertToChar(unsigned int number);
 	char* _ConcatenateChar(const char* myChar ...);
 	char* _CopyChar(char* char_in);
@@ -16,6 +17,9 @@ namespace utility {
 	int _CharLength(const char* arr);
 	int _CharSize(char* arr);
 	int _Find(char* word, char* arr);
+
+	bool _CompareChar(char* first, char* second);
+	bool _CompareChar(const char* first, const char* second);
 
 	template <typename T>
 	void _AddElement(T* &ptr, T &element, int &arrSize) {

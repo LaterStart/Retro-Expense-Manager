@@ -1,8 +1,7 @@
 #pragma once
+#include "IOComponent.h"
 
-//	CURSOR CLASS DECLARATION
-/*---------------------------------------------------------------------------------------------------------------------*/
-class Cursor {
+class Cursor : public OComponent{
 private:
 	short x : 8;
 	short y : 8;
@@ -26,10 +25,13 @@ public:
 	void _MoveX(short);
 	void _MoveY(short);
 	void _ClearText();
-	void _SetCharacterNumber(unsigned short);
-	void _SetXY(short,short);
+	void _SetCharacterNumber(short);
+	void _SetXY(short, short);
+	void _MoveToXY(short x, short y);
+
+	typedef void(Cursor::*Cptr)(short);
+	Cptr ptr;
 };
-/*---------------------------------------------------------------------------------------------------------------------*/
 
 inline void Cursor::_ChangeY(short y_diff) {
 	y += y_diff;
@@ -49,7 +51,7 @@ inline short Cursor::_GetY() {
 inline short Cursor::_GetX() {
 	return x;
 }
-inline void Cursor::_SetCharacterNumber(unsigned short num) {
+inline void Cursor::_SetCharacterNumber(short num) {
 	n = num;
 }
 inline void Cursor::_SetXY(short x, short y) {

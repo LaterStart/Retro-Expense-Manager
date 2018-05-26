@@ -1,4 +1,5 @@
 #pragma once
+#include "utility.h"
 
 extern const char* const title;
 extern const char* const version;
@@ -10,3 +11,4 @@ extern unsigned short height;
 extern const unsigned char horizontalLine;
 extern const unsigned char verticalLine;
 extern const unsigned char spaceKey;
+extern const unsigned char headerSymbol;

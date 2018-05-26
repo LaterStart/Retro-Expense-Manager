@@ -1,5 +1,3 @@
-#include <iostream> //debug
-#include <string> //debug
 #include "ModuleManagement.h"
 #include "../Controllers/ModuleController.h"
 using namespace std;
@@ -59,14 +57,8 @@ void ModuleManagement::_InitializeModules() {
 
 void ModuleManagement::_OpenModule(const char* name) {
 	for (int i = 0; i < moduleNum; i++)
-		if (moduleList[i].name == name)
+		if (moduleList[i].name == name) {
+			moduleList[i].module->moduler = this;
 			moduleList[i].module->_StartModule();
+		}
 }
-
-void ModuleManagement::_OpenModule() {
-
-
-	
-
-
-} 
