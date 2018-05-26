@@ -39,76 +39,82 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="retro expense manager\config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="retro expense manager\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="retro expense manager\utility.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\Controllers\Controller.cpp">
-      <Filter>Source Files\Controllers</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\Controllers\ProfileController.cpp">
-      <Filter>Source Files\Controllers</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\Models\Profile.cpp">
-      <Filter>Source Files\Models</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\View\Display.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\View\Cursor.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\View\Menu.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\View\Console.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\Modules\ModuleManagement.cpp">
-      <Filter>Source Files\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="Retro Expense Manager\Modules\CreateUserProfile.cpp">
-      <Filter>Source Files\Modules</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="retro expense manager\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="retro expense manager\utility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Retro Expense Manager\Controllers\Controller.h">
+    <ClInclude Include="src\Controllers\Controller.h">
       <Filter>Header Files\Controllers</Filter>
     </ClInclude>
-    <ClInclude Include="Retro Expense Manager\Controllers\ProfileController.h">
+    <ClInclude Include="src\Controllers\ModuleController.h">
       <Filter>Header Files\Controllers</Filter>
     </ClInclude>
-    <ClInclude Include="Retro Expense Manager\Models\Profile.h">
+    <ClInclude Include="src\Controllers\ProfileController.h">
+      <Filter>Header Files\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\Profile.h">
       <Filter>Header Files\Models</Filter>
     </ClInclude>
-    <ClInclude Include="Retro Expense Manager\View\Display.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="Retro Expense Manager\View\Cursor.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="Retro Expense Manager\View\Menu.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="Retro Expense Manager\View\Console.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="Retro Expense Manager\Modules\ModuleManagement.h">
+    <ClInclude Include="src\Modules\CreateUserProfile.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="Retro Expense Manager\Modules\CreateUserProfile.h">
+    <ClInclude Include="src\Modules\ModuleManagement.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="src\View\Console.h">
+      <Filter>Header Files\View</Filter>
+    </ClInclude>
+    <ClInclude Include="src\View\Cursor.h">
+      <Filter>Header Files\View</Filter>
+    </ClInclude>
+    <ClInclude Include="src\View\Display.h">
+      <Filter>Header Files\View</Filter>
+    </ClInclude>
+    <ClInclude Include="src\View\Menu.h">
+      <Filter>Header Files\View</Filter>
+    </ClInclude>
+    <ClInclude Include="src\config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utility.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Controllers\Controller.cpp">
+      <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Controllers\ModuleController.cpp">
+      <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Controllers\ProfileController.cpp">
+      <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Models\Profile.cpp">
+      <Filter>Source Files\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\CreateUserProfile.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\ModuleManagement.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View\Console.cpp">
+      <Filter>Source Files\View</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View\Cursor.cpp">
+      <Filter>Source Files\View</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View\Display.cpp">
+      <Filter>Source Files\View</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View\Menu.cpp">
+      <Filter>Source Files\View</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

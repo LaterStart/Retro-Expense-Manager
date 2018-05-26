@@ -2,6 +2,8 @@
 #include "Controller.h"
 using namespace std;
 
+Controller::Controller() : status(false), filePath(nullptr){}
+
 void Controller::_SetFilePath(const char* filePath) {
 	this->filePath = filePath;
 }

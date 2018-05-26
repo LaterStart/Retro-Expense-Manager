@@ -2,7 +2,7 @@
 #include "ProfileController.h"
 using namespace std;
 
-ProfileController::ProfileController() : profile(nullptr), status(false){}
+ProfileController::ProfileController() : profile(nullptr){}
 
 ProfileController::~ProfileController(){
 	delete profile;

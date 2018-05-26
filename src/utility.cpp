@@ -1,4 +1,5 @@
 #include <time.h>
+#include <iomanip>
 #include "utility.h"
 
 namespace utility {
@@ -21,6 +22,31 @@ namespace utility {
 		int size = 0;
 		while (arr[size] != '\0')size++;
 		return size + 1 * sizeof(char);
+	}
+
+	char* _ChopChar(char* arr, char* remove) {
+		int originalSize = _CharSize(arr);
+		int removeLength = _CharLength(remove);
+		int pos = _Find(remove, arr);
+		if (pos == -1)
+			return nullptr;
+
+		char* choppedChar = new char[originalSize - removeLength];
+		int z = 0, x = 0, y = pos + removeLength;
+		while (z < originalSize) {
+			if(z < pos || z >= y)
+				choppedChar[x++] = arr[z++];
+			else z++;
+		}
+
+		return choppedChar;
+	}
+
+	char* _ChopChar(char* arr, char* removeOne, char* removeTwo) {
+		char* choppedOnce = _ChopChar(arr, removeOne);
+		char* choppedTwice = _ChopChar(choppedOnce, removeTwo);
+		delete[]choppedOnce;
+		return choppedTwice;
 	}
 
 	char*_ConcatenateChar(const char* myChar ...) {
@@ -123,8 +149,23 @@ namespace utility {
 		return currentDate_char;
 	}	
 
-	bool _IsPointer(const char* ptr) { return true; }
-	bool _IsPointer(char* ptr) { return true; }
-	bool _IsPointer(int* ptr) { return true; }
-	bool _IsPointer(float* ptr) { return true; }
+	int _Find(char* word, char* arr) {
+		int pos = 0;
+		char ch = word[0];
+		int size = _CharSize(word);
+		char* checker = new char[size];
+		checker[size - 1] = '\0';
+		do {
+			if (arr[pos] == ch) {
+				for (int i = 0; i < size - 1; i++)
+					checker[i] = arr[pos + i];
+				if (strcmp(checker, word) == 0) {
+					delete[]checker;
+					return pos;
+				}
+			}
+		} while (arr[pos++] != '\0');
+		delete[]checker;
+		return -1;
+	}
 }

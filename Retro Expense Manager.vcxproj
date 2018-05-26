@@ -18,6 +18,35 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\Controllers\Controller.h" />
+    <ClInclude Include="src\Controllers\ModuleController.h" />
+    <ClInclude Include="src\Controllers\ProfileController.h" />
+    <ClInclude Include="src\Models\Profile.h" />
+    <ClInclude Include="src\Modules\CreateUserProfile.h" />
+    <ClInclude Include="src\Modules\ModuleManagement.h" />
+    <ClInclude Include="src\utility.h" />
+    <ClInclude Include="src\View\Console.h" />
+    <ClInclude Include="src\View\Cursor.h" />
+    <ClInclude Include="src\View\Display.h" />
+    <ClInclude Include="src\View\Menu.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\Controllers\Controller.cpp" />
+    <ClCompile Include="src\Controllers\ModuleController.cpp" />
+    <ClCompile Include="src\Controllers\ProfileController.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Models\Profile.cpp" />
+    <ClCompile Include="src\Modules\CreateUserProfile.cpp" />
+    <ClCompile Include="src\Modules\ModuleManagement.cpp" />
+    <ClCompile Include="src\utility.cpp" />
+    <ClCompile Include="src\View\Console.cpp" />
+    <ClCompile Include="src\View\Cursor.cpp" />
+    <ClCompile Include="src\View\Display.cpp" />
+    <ClCompile Include="src\View\Menu.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{A29093EC-F9CC-4A87-B0DE-43E751C9EA62}</ProjectGuid>
@@ -98,33 +127,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="retro expense manager\config.cpp" />
-    <ClCompile Include="Retro Expense Manager\Controllers\Controller.cpp" />
-    <ClCompile Include="Retro Expense Manager\Controllers\ProfileController.cpp" />
-    <ClCompile Include="retro expense manager\main.cpp" />
-    <ClCompile Include="Retro Expense Manager\Models\Profile.cpp" />
-    <ClCompile Include="Retro Expense Manager\Modules\ModuleManagement.cpp" />
-    <ClCompile Include="Retro Expense Manager\Modules\CreateUserProfile.cpp" />
-    <ClCompile Include="retro expense manager\utility.cpp" />
-    <ClCompile Include="Retro Expense Manager\View\Console.cpp" />
-    <ClCompile Include="Retro Expense Manager\View\Cursor.cpp" />
-    <ClCompile Include="Retro Expense Manager\View\Display.cpp" />
-    <ClCompile Include="Retro Expense Manager\View\Menu.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="retro expense manager\config.h" />
-    <ClInclude Include="Retro Expense Manager\Controllers\Controller.h" />
-    <ClInclude Include="Retro Expense Manager\Controllers\ProfileController.h" />
-    <ClInclude Include="Retro Expense Manager\Models\Profile.h" />
-    <ClInclude Include="Retro Expense Manager\Modules\CreateUserProfile.h" />
-    <ClInclude Include="Retro Expense Manager\Modules\ModuleManagement.h" />
-    <ClInclude Include="retro expense manager\utility.h" />
-    <ClInclude Include="Retro Expense Manager\View\Console.h" />
-    <ClInclude Include="Retro Expense Manager\View\Cursor.h" />
-    <ClInclude Include="Retro Expense Manager\View\Display.h" />
-    <ClInclude Include="Retro Expense Manager\View\Menu.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -4,6 +4,8 @@
 
 namespace utility {
 
+	char* _ChopChar(char* arr, char* remove);
+	char* _ChopChar(char* arr, char* removeOne, char* removeTwo);
 	char* _ConvertToChar(unsigned int number);
 	char* _ConcatenateChar(const char* myChar ...);
 	char* _CopyChar(char* char_in);
@@ -13,6 +15,7 @@ namespace utility {
 	int _CharLength(char* arr);
 	int _CharLength(const char* arr);
 	int _CharSize(char* arr);
+	int _Find(char* word, char* arr);
 	
 	template <typename T>
 	void _RemoveElement(T* &ptr, int pos, int arrSize) {
@@ -74,4 +77,37 @@ namespace utility {
 			node = currentNode->node;
 		}
 	};
+
+
+	template <class elementType>
+	class LinkedList {
+	public:
+		elementType element;
+		LinkedList* nextNode;
+		LinkedList* previousNode;
+
+		LinkedList(elementType element) { this->element = element; nextNode = nullptr; previousNode = nullptr; };
+		LinkedList() { element = nullptr; nextNode = nullptr; previousNode = nullptr; };
+		~LinkedList() {};
+
+		void _AddNextLink(elementType element) {
+			nextNode = new LinkedList(element);
+			nextNode->previousNode = this;
+		}
+
+		void _RemoveLink() {
+			if (nextNode == nullptr && previousNode == nullptr)
+				return;
+			else if (nextNode == nullptr)
+				previousNode->nextNode = nullptr;
+			else if (previousNode == nullptr)
+				nextNode->previousNode = nullptr;
+			else {
+				previousNode->nextNode = nextNode;
+				nextNode->previousNode = previousNode;
+			}
+		}
+	};
+
+	
 }

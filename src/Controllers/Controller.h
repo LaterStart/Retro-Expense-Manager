@@ -1,13 +1,18 @@
 #pragma once
 #include <fstream>
 class Controller {
-private: 
-	const char* filePath;
-
 protected:	
+	Controller();
+	const char* filePath;
+	bool status;
 	std::ifstream* _OpenFile();
 
 public:
 	void _SetFilePath(const char* filePath);
+	bool _GetStatus() const;
 };
+
+inline bool Controller::_GetStatus() const {
+	return status;
+}
 
