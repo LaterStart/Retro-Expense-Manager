@@ -1,6 +1,7 @@
 #include "Login.h"
 #include "../Controllers/ProfileController.h"
 #include "../View/IOComponent.h"
+#include "../View/OComponent.h"
 #include "../config.h"
 
 Login::Login() : initialized_(false) {}
@@ -27,15 +28,18 @@ void Login::_StartModule() {
 	}
 	else {
 		//	if no recent user profile is found, display available options
-		Display moduleDsp;		
-	
+		Display moduleDsp;
+		moduleDsp._SetParentFrame(console->_GetMainFrame());
 		moduleDsp._DrawLayout_default();
 
-		Menu menu;
+
+
+
+		/*Menu menu(moduleDsp.)
 		menu._AddElements({ "Create Profileasdasdasdasdasdasdasd", "Load Profile", 0 });
 		menu._AddLinks({ "CreateUserProfile", "LoadUserProfile", 0 });
 		menu._SetPosition("right");
 		menu._ModifyBorder(moduleDsp._GetFrameSeparators(), moduleDsp._GetFrameSeparatorsNum());
-		menu._ShowMenu();
+		menu._ShowMenu();*/
 	}
 }

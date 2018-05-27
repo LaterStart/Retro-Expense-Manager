@@ -29,11 +29,8 @@
     <ClInclude Include="src\Modules\Login.h" />
     <ClInclude Include="src\Modules\ModuleManagement.h" />
     <ClInclude Include="src\utility.h" />
-    <ClInclude Include="src\View\Console.h" />
-    <ClInclude Include="src\View\Cursor.h" />
-    <ClInclude Include="src\View\Display.h" />
     <ClInclude Include="src\View\IOComponent.h" />
-    <ClInclude Include="src\View\Menu.h" />
+    <ClInclude Include="src\View\OComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp" />
@@ -47,10 +44,8 @@
     <ClCompile Include="src\Modules\Login.cpp" />
     <ClCompile Include="src\Modules\ModuleManagement.cpp" />
     <ClCompile Include="src\utility.cpp" />
-    <ClCompile Include="src\View\Console.cpp" />
-    <ClCompile Include="src\View\Cursor.cpp" />
-    <ClCompile Include="src\View\Display.cpp" />
-    <ClCompile Include="src\View\Menu.cpp" />
+    <ClCompile Include="src\View\IOComponent.cpp" />
+    <ClCompile Include="src\View\OComponent.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

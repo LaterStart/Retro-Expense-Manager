@@ -49,8 +49,6 @@ void ModuleManagement::_InitializeModules() {
 		auto module = initializer._CreateInstance(classList->element);	
 		if (module != nullptr) {
 			Module& ref = module->_GetInstance();
-			module->moduler = this;
-			module->console = this->console;
 			_AddModule(ref, classList->element);
 		}			
 		classList = classList->nextNode;
@@ -59,6 +57,9 @@ void ModuleManagement::_InitializeModules() {
 
 void ModuleManagement::_OpenModule(const char* name) {
 	for (int i = 0; i < moduleNum; i++)
-		if (moduleList[i].name == name) 			
-			moduleList[i].module->_StartModule();		
+		if (moduleList[i].name == name) {
+			moduleList[i].module->moduler = this;
+			moduleList[i].module->console = this->console;
+			moduleList[i].module->_StartModule();
+		}
 }

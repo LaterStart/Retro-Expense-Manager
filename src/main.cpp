@@ -16,8 +16,6 @@ int main() {
 	ModuleManagement moduler(myConsole);  // -> main module management instance
 	moduler._OpenModule("Login");	
 
-	do {
-
-	} while (true);
+	while (true) {};
 	return 0;
 }

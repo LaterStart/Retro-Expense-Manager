@@ -57,18 +57,6 @@
     <ClInclude Include="src\Modules\ModuleManagement.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="src\View\Console.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="src\View\Cursor.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="src\View\Display.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
-    <ClInclude Include="src\View\Menu.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
     <ClInclude Include="src\utility.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -83,6 +71,9 @@
     </ClInclude>
     <ClInclude Include="src\Modules\Login.h">
       <Filter>Header Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\View\OComponent.h">
+      <Filter>Header Files\View</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -104,18 +95,6 @@
     <ClCompile Include="src\Modules\ModuleManagement.cpp">
       <Filter>Source Files\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\View\Console.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="src\View\Cursor.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="src\View\Display.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
-    <ClCompile Include="src\View\Menu.cpp">
-      <Filter>Source Files\View</Filter>
-    </ClCompile>
     <ClCompile Include="src\config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -130,6 +109,12 @@
     </ClCompile>
     <ClCompile Include="src\Modules\Login.cpp">
       <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View\IOComponent.cpp">
+      <Filter>Source Files\View</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View\OComponent.cpp">
+      <Filter>Source Files\View</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

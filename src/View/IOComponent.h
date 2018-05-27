@@ -1,88 +1,147 @@
 #pragma once
 
-class IOComponent {
+class Console;
+class Initialize {
+private:
+	Initialize() = delete;
+	~Initialize() = delete;
 
-
-};
-
-class OComponent : public IOComponent {
-	
-
-};
-
-
-class IComponent : public IOComponent {
-
-	
-}; 
-
-struct Coordinates {
-	unsigned short x1, x2;
-	unsigned short y1, y2;
-};
-
-class FrameElement :  OComponent {
-protected:
-	unsigned short x1, x2;
-	unsigned short y1, y2;
-	Coordinates* coord;
+	static bool initialized;
 
 public:
-	void _SetX1(unsigned short);
-	void _SetX2(unsigned short);
-	void _SetY1(unsigned short);
-	void _SetY2(unsigned short);
-	void _SetX(unsigned short, unsigned short);
-	void _SetY(unsigned short, unsigned short);
-	Coordinates* _GetCoordinates() const;
-
-	FrameElement() {
-		coord = new Coordinates;
-	}
-	~FrameElement() {
-		delete coord;
-	}
+	static Console* _Console();
 };
 
-inline void FrameElement::_SetX1(unsigned short x1){
-	this->x1 = x1;
-	coord->x1 = x1;
+class IOComponent {};
+
+class Frame;
+class Console : public IOComponent {
+private:
+	char* _SystemMode();
+
+	Console();
+	~Console();
+
+	Frame* mainFrame;
+
+	void _Initialize();
+	void _DrawFrame();
+	static Console& _GetInstance();
+
+	friend Console* Initialize::_Console();
+
+public:
+	Console(Console const&) = delete;
+	void operator=(Console const&) = delete;
+
+	Frame* _GetMainFrame() const;
+};
+
+inline Frame* Console::_GetMainFrame() const {
+	return mainFrame;
 }
 
-inline void FrameElement::_SetX2(unsigned short x2){
-	this->x2 = x2;
-	coord->x2 = x2;
+class Cursor : public IOComponent {
+private:
+	short x : 8;
+	short y : 8;
+	short n : 8;
+
+public:
+	Cursor();
+	Cursor(const Cursor&);
+	Cursor(short x, short y);
+	~Cursor();
+
+	void _GetCursorPosition();
+	void _SetCursorPosition();
+	bool operator==(const Cursor &second) const;
+	void _ChangeY(short);
+	void _ChangeX(short);
+	void _SetX(short);
+	void _SetY(short);
+	short _GetY();
+	short _GetX();
+	void _MoveX(short);
+	void _MoveY(short);
+	void _ClearText();
+	void _SetCharacterNumber(short);
+	void _SetXY(short, short);
+	void _MoveToXY(short x, short y);
+
+	typedef void(Cursor::*Cptr)(short);
+	Cptr ptr;
+};
+
+inline void Cursor::_ChangeY(short y_diff) {
+	y += y_diff;
+}
+inline void Cursor::_ChangeX(short x_diff) {
+	x += x_diff;
+}
+inline void Cursor::_SetX(short newValue) {
+	x = newValue;
+}
+inline void Cursor::_SetY(short newValue) {
+	y = newValue;
+}
+inline short Cursor::_GetY() {
+	return y;
+}
+inline short Cursor::_GetX() {
+	return x;
+}
+inline void Cursor::_SetCharacterNumber(short num) {
+	n = num;
+}
+inline void Cursor::_SetXY(short x, short y) {
+	this->x = x;
+	this->y = y;
 }
 
-inline void FrameElement::_SetY1(unsigned short y1){
-	this->y1 = y1;
-	coord->y1 = y1;
+class Separator;
+class Frame;
+class Display : public IOComponent {
+private:
+	unsigned short activePosNum;
+	Cursor* activePositions;
+
+	void _AddActivePosition(Cursor pos);
+	void _ExtendRegister();
+
+	Frame* parentFrame;
+	Frame* frames;
+	int frameNum;
+
+public:
+	Display();
+	~Display();
+
+	void _ClearContent();
+	void _DisplayCharacter(unsigned char ch);
+	void _DisplayContent(const char* content, Cursor &pos);
+	void _DisplayContent(const char* content);
+	void _DisplayContent(const char* test, unsigned int cut);
+	void _DisplaySeparator(Separator& separator);
+	void _DrawLayout_default();
+	void _LockContent(Cursor &pos);
+	void _SetParentFrame(Frame* parentFrame);
+
+	Separator* _GetFrameSeparators() const;
+	int _GetFrameSeparatorsNum() const;
+
+	Frame* _GetFrames() const;
+	int _GetFrameNum() const;
+};
+
+inline Frame* Display::_GetFrames() const {
+	return frames;
 }
 
-inline void FrameElement::_SetY2(unsigned short y2){
-	this->y2 = y2;
-	coord->y2 = y2;
+inline int Display::_GetFrameNum() const {
+	return frameNum;
 }
 
-inline void FrameElement::_SetX(unsigned short x1, unsigned short x2){
-	this->x1 = x1;
-	this->x2 = x2;
-	coord->x1 = x1;
-	coord->x2 = x2;
+inline void Display::_SetParentFrame(Frame* parentFrame) {
+	this->parentFrame = parentFrame;
 }
-
-inline void FrameElement::_SetY(unsigned short y1, unsigned short y2){
-	this->y1 = y1;
-	this->y2 = y2;
-	coord->y1 = y1;
-	coord->y2 = y2;
-}
-
-inline Coordinates* FrameElement::_GetCoordinates() const {
-	return coord;
-}
-
-#include "Cursor.h"
-#include "Console.h"
-#include "Display.h"
-#include "Menu.h"

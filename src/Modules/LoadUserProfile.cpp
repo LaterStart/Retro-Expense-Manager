@@ -26,20 +26,7 @@ void LoadUserProfile::_StartModule() {
 
 	}
 	else {
-		//	if no recent user profile is found
-		Display moduleDsp;
-		//moduleDsp._DisplayFrame_Default();
-
-		Menu menu;
-		menu._AddElements({ "Create new profile", "Load existing profile", 0 });
-		menu._AddLinks({ "CreateUserProfile",  0 });
-
-		menu._ShowMenu();
-
-
-		int test = 0;
-
-
+	
 
 
 
