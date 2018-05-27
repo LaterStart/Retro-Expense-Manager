@@ -4,9 +4,25 @@
 #include "../config.h"
 using namespace std;
 
-Console::Console(){}
+bool Initialize::initialized = false;
+Console* Initialize::_Console() {
+	if (!initialized) {
+		Console& ref = Console::_GetInstance();
+		Console* myConsole = &ref;
+		myConsole->_Initialize();
+		myConsole->_DrawFrame();
 
-Console::~Console(){}
+		initialized = true;
+		return myConsole;
+	}
+	return nullptr;	
+}
+
+Console::Console() : mainFrame(nullptr){}
+
+Console::~Console(){
+	delete mainFrame;
+}
 
 //	singleton implementation
 Console& Console::_GetInstance() {
@@ -74,4 +90,7 @@ void Console::_DrawFrame() {
 		posB._MoveX(1);
 		cout << horizontalLine;
 	}
+	mainFrame = new Frame;
+	mainFrame->_SetX(1, ::width - 1);
+	mainFrame->_SetY(1, ::height - 1);
 }

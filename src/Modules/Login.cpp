@@ -3,9 +3,9 @@
 #include "../View/IOComponent.h"
 #include "../config.h"
 
-Login::Login() : initialized(false) {}
+Login::Login() : initialized_(false) {}
 
-Login::~Login() {}
+Login::~Login() = default;
 
 Module& Login::_GetInstance() {
 	return _LoadModule();
@@ -22,19 +22,20 @@ void Login::_StartModule() {
 	profCtrl._GetLastUsedProfile(::dataPath);
 
 	//	if profile contoller has found last used user
-	if (profCtrl._GetStatus() == true) {
+	if (profCtrl._GetStatus()) {
 
 	}
 	else {
 		//	if no recent user profile is found, display available options
-		Display moduleDsp;
-		moduleDsp._DisplayFrame_Default();
+		Display moduleDsp;		
+	
+		moduleDsp._DrawLayout_default();
 
 		Menu menu;
 		menu._AddElements({ "Create Profileasdasdasdasdasdasdasd", "Load Profile", 0 });
 		menu._AddLinks({ "CreateUserProfile", "LoadUserProfile", 0 });
+		menu._SetPosition("right");
 		menu._ModifyBorder(moduleDsp._GetFrameSeparators(), moduleDsp._GetFrameSeparatorsNum());
 		menu._ShowMenu();
 	}
-
 }

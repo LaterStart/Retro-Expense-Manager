@@ -42,7 +42,7 @@ void Display::_DisplayContent(const char* content, unsigned int cut) {
 }
 
 void Display::_DisplaySeparator(Separator& separator) {
-	Cursor pos(separator.startX, separator.startY);
+	Cursor pos(separator.x1, separator.y1);
 	unsigned char line;
 	if (separator.direction == 0) {
 		pos.ptr = &Cursor::_MoveX;
@@ -61,7 +61,7 @@ void Display::_DisplaySeparator(Separator& separator) {
 		(pos.*(pos.ptr))(1);
 	}
 	if (separator.direction == 0) {
-		Cursor pos(separator.startX, separator.startY);
+		Cursor pos(separator.x1, separator.y1);
 		pos._SetCharacterNumber(separator.length);
 		_AddActivePosition(pos);
 	}
@@ -109,17 +109,31 @@ void Display::_LockContent(Cursor &pos) {
 		}	
 }
 
-void Display::_DisplayFrame_Default() {
-	Separator menuLine(22, 1, 25, 1);
-	Separator headerLine(2, 2, ::width - 4, 0);	
-	Cursor mainMenuPos(6, 1);
-	const char* mainMenu = "Main Menu ";
+void Display::_DrawLayout_default() {
+	Separator menuLine(20, 1, 20, 1);
+	Separator headerLine(::width - 4, 0, 2, 2);
+
+	Frame mainWindow;
+
+	/*Cursor mainMenuPos(6, 1);
+	const char* mainMenu = "Main Menu ";*/
 
 	_DisplaySeparator(menuLine);
 	_DisplaySeparator(headerLine);
-	_DisplayContent(mainMenu, mainMenuPos);
-	_DisplayCharacter(::headerSymbol);		
+	//_DisplayContent(mainMenu, mainMenuPos);
+	//_DisplayCharacter(::headerSymbol);		
+
+	
+	//topHeader._SetX(1, ::width-1);
+	//topHeader._SetY(1, headerLine.y1);
+
+	//short area = topHeader._GetArea();
 
 	utility::_AddElement(frameSeparators, menuLine, sepNum);
 	utility::_AddElement(frameSeparators, headerLine, sepNum);
+
+	//Display mainWindow;
+	char* currentDate = utility::_GetCurrentDate();
+	Cursor datePos(width - utility::_CharLength(currentDate) - 2, 1);
+	//mainWindow._DisplayContent(currentDate, datePos);
 }

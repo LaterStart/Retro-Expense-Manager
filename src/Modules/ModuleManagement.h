@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 
+class Console;
 //	abstract class - main definition for each new module
 class Module {
 	template<class T>
@@ -13,6 +14,7 @@ protected:
 	virtual void _StartModule() = 0;
 	virtual Module& _GetInstance() = 0;
 	ModuleManagement* moduler;
+	Console* console;
 };
 
 //	container class - enables storage of active modules singleton references
@@ -34,10 +36,12 @@ private:
 	void _InitializeModules();
 	bool initialized;
 
+	Console* console;
+
 public:
 	void _OpenModule(const char* name);
 
-	ModuleManagement();
+	ModuleManagement(Console* myConsole);
 	~ModuleManagement();
 
 	//	Add reference for each pre-registered module from Modules folder to active modules list at run time

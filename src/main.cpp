@@ -4,22 +4,20 @@
 
 int main() {
 	//	Initialize program
-	Console& myConsole = myConsole._GetInstance();
-	myConsole._Initialize();
-	myConsole._DrawFrame();
+	Console* myConsole = Initialize::_Console();
 
-	//	Display current date and version label
-	Display mainWindow; 
-	char* currentDate = utility::_GetCurrentDate();
-	Cursor datePos(width - utility::_CharLength(currentDate) - 2, 1);
-	mainWindow._DisplayContent(currentDate, datePos);
+	//	Display version label
+	Display version;
+	Cursor versionPos(width - utility::_CharLength(::version) - 2, height - 2);
+	version._DisplayContent(::version, versionPos);
+	version._LockContent(versionPos); // -> makes label text on given position permanent
 
-	Cursor versionPos(width - utility::_CharLength(version) - 2, height - 2);
-	mainWindow._DisplayContent(version, versionPos);
-	mainWindow._LockContent(versionPos); // -> makes label text on given position permanent
-
-	ModuleManagement moduler;  // -> main module management instance
+	//	Initialize modules
+	ModuleManagement moduler(myConsole);  // -> main module management instance
 	moduler._OpenModule("Login");	
 
+	do {
+
+	} while (true);
 	return 0;
 }

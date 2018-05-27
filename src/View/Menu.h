@@ -5,12 +5,12 @@
 class Separator;
 class Menu : public OComponent{
 private:
-	short x1, x2;
-	short y1, y2;
-	short x_min;
-	short x_max;
-	short y_min;
-	short y_max;
+	unsigned short x1, x2;
+	unsigned short y1, y2;
+	unsigned short x_min;
+	unsigned short x_max;
+	unsigned short y_min;
+	unsigned short y_max;
 
 public:
 	unsigned int size;

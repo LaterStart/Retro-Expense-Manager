@@ -8,7 +8,7 @@ class CreateUserProfile : public Module {
 	friend class ModuleManagement;
 
 private:
-	bool initialized;
+	bool initialized_;
 
 	CreateUserProfile();
 	~CreateUserProfile();	

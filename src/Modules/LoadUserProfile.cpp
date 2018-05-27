@@ -5,7 +5,7 @@
 
 LoadUserProfile::LoadUserProfile() : initialized(false) {}
 
-LoadUserProfile::~LoadUserProfile() {}
+LoadUserProfile::~LoadUserProfile() = default;
 
 Module& LoadUserProfile::_GetInstance() {
 	return _LoadModule();
@@ -22,13 +22,13 @@ void LoadUserProfile::_StartModule() {
 	profCtrl._GetLastUsedProfile(::dataPath);
 
 	//	if profile contoller has found last used user
-	if (profCtrl._GetStatus() == true) {
+	if (profCtrl._GetStatus()) {
 
 	}
 	else {
 		//	if no recent user profile is found
 		Display moduleDsp;
-		moduleDsp._DisplayFrame_Default();
+		//moduleDsp._DisplayFrame_Default();
 
 		Menu menu;
 		menu._AddElements({ "Create new profile", "Load existing profile", 0 });

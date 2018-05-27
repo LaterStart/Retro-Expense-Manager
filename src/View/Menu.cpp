@@ -48,12 +48,14 @@ void Menu::_AddLinks(utility::ElementsList<const char*> list) {
 //	sets desired position of menu - can be left, top, right or bottom
 void Menu::_SetPosition(const char* position) {
 	if (utility::_CompareChar("left", position) ){
-		x1 = 0; x2 = 0;
-		y1 = 0; y2 = 0;
+		x1 = 2; x2 = 2;
+		y1 = 1; y2 = 1;
 	}
 	else if (utility::_CompareChar("right", position)) {
-		x1 = ::width - width; x2 = ::width;
-		y1 = 3; y2 = 0;
+		x1 = (width > 0 ) ? ::width-width : ::width-20;
+		x2 = ::width;
+		y1 = 3;
+		y2 = y1;
 	}
 }
 
@@ -79,15 +81,16 @@ void Menu::_ShowMenu() {
 
 //	adjust menu border and position with display frame separators
 void Menu::_ModifyBorder(Separator* separators, unsigned int separatorNum) {
-	for (int i = 0; i < separatorNum; i++)
+	for (unsigned int i = 0; i < separatorNum; i++)
 		_ModifyBorder(separators[i]);
 }
 
 void Menu::_ModifyBorder(Separator separator) {
-	short sep_x1 = separator.startX;
-	short sep_y1 = separator.startY;
-	short sep_x2 = 0;
-	short sep_y2 = 0;
+	Coordinates* menuBorder = separator._GetCoordinates();
+	short sep_x1 = menuBorder->x1;
+	short sep_y1 = menuBorder->y1;
+	short sep_x2 = menuBorder->x2;
+	short sep_y2 = menuBorder->y2;
 
 	if (separator.direction == 0) {
 		sep_x2 = sep_x1 + separator.length;

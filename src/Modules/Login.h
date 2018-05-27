@@ -8,14 +8,14 @@ class Login : public Module {
 	friend class ModuleManagement;
 
 private:
-	bool initialized;
+	bool initialized_;
 
 	Login();
 	~Login();
 
 	static Login& _LoadModule();
-	Module & _GetInstance();
-	void _StartModule();
+	Module& _GetInstance() override;
+	void _StartModule() override;
 
 public:	
 	Login(Login const&) = delete;
@@ -23,4 +23,4 @@ public:
 };
 
 // register module name into modules list registar
-ModuleRegistrar<Login> _name("Login");
+ModuleRegistrar<Login> name("Login");

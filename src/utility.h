@@ -1,6 +1,6 @@
 #pragma once
 #include <initializer_list>
-#include <stdarg.h> 
+#include <cstdarg> 
 
 namespace utility {
 
@@ -45,7 +45,7 @@ namespace utility {
 
 	template<typename T>
 	void _CreateArray(T*& ptr, std::initializer_list<T> a_args) {
-		unsigned int n = (unsigned int)a_args.size();
+		unsigned int n = unsigned int(a_args.size());
 		ptr = new T[n];
 		
 		for (auto i : a_args)
