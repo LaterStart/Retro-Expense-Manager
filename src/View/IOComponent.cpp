@@ -91,7 +91,7 @@ void Console::_DrawFrame() {
 		posB._MoveX(1);
 		cout << horizontalLine;
 	}
-	this->mainFrame = new Frame(1, ::width - 1, 1, ::height - 1);
+	this->mainFrame = new Frame(::width, 0, ::height, 0);
 }
 
 Cursor::Cursor() : x(0), y(0), n(0) {
@@ -255,16 +255,37 @@ void Display::_LockContent(Cursor &pos) {
 }
 
 void Display::_DrawLayout_default() {
-	Frame moduleMainFrame(*parentFrame);
-	Separator menuLine(moduleMainFrame, 20, 1, 20, 1);
-	Separator headerLine(moduleMainFrame, ::width - 4, 0, 2, 2);
+	Frame moduleFrame = parentFrame->_CreateChildFrame();
+	Separator menuLine(moduleFrame, 20, 1, 20, 0);
+	Separator headerLine(moduleFrame, ::width-4, 0, 2, 2);
 
-	//mainWindow._SplitFrame(menuLine);
+	Frame header = moduleFrame._Split(headerLine)._FirstFrame();
+	Frame body = moduleFrame._Split(headerLine)._SecondFrame();
+
+	Frame menuHeader = header._Split(menuLine)._FirstFrame();
+	Frame selectionTitleHeader = header._Split(menuLine)._SecondFrame();
+
+	Frame bodyRight = body._Split(menuLine)._SecondFrame();
+	Frame menuBody = body._Split(menuLine)._FirstFrame();
+
+	Frame::Coordinates coord = selectionTitleHeader._GetCoordinates();
+
 
 
 
 	/*Cursor mainMenuPos(6, 1);
 	const char* mainMenu = "Main Menu ";*/
+
+	//Frame::Coordinates coord = header._GetCoordinates();
+
+	Cursor test1;
+	for (int i = coord.x1; i < coord.x2; i++)
+		for (int j = coord.y1; j < coord.y2; j++) {
+			test1._MoveToXY(i, j);
+			cout << 'c';
+		}
+		
+	int test = 0;
 
 	_DisplaySeparator(menuLine);
 	_DisplaySeparator(headerLine);

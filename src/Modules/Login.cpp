@@ -29,6 +29,7 @@ void Login::_StartModule() {
 	else {
 		//	if no recent user profile is found, display available options
 		Display moduleDsp;
+		Console* test = console;
 		moduleDsp._SetParentFrame(console->_GetMainFrame());
 		moduleDsp._DrawLayout_default();
 

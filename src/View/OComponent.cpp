@@ -1,44 +1,72 @@
 #include "OComponent.h"
 #include "../config.h"
 
-OComponent::OComponent(const unsigned short min_x, const unsigned short max_x, const unsigned short min_y, const unsigned short max_y) :
-	max_x(max_x - 1), min_x(min_x + 1), max_y(max_y - 1), min_y(min_y + 1) {
-	coord = new Coordinates;
-}
+//	General OComponent base constructor
+OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
+	max_x(max_x), min_x(min_x), max_y(max_y), min_y(min_y) {}
 
+//	OComponent copy constructor
 OComponent::OComponent(OComponent& parentFrame) :
-	max_x(parentFrame.max_x - 1), min_x(parentFrame.min_x + 1), max_y(parentFrame.max_y - 1), min_y(parentFrame.min_y + 1) {
-	coord = new Coordinates;
+	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {}
+
+OComponent::~OComponent() {}
+
+Frame::Container::Container(Container& copy) {
+	firstFrame = copy.firstFrame;
+	copy.firstFrame = nullptr;   //FIX IT
+	secondFrame = copy.secondFrame;
+	copy.secondFrame = nullptr;
 }
 
-OComponent::~OComponent() {
-	delete coord;
+Frame::Container::Container() : firstFrame(nullptr), secondFrame(nullptr) {}
+
+Frame::Container::~Container() {
+	delete firstFrame;
+	delete secondFrame;
 }
 
-Frame::Frame(Frame& parentFrame) : OComponent(parentFrame),	parentFrame(&parentFrame){
-	x1 = min_x;
-	x2 = max_x;
-	y1 = min_y;
-	y2 = max_y;
-	coord = new Coordinates;
+Frame Frame::Container::_FirstFrame() {
+	Frame tmp = *firstFrame;
+	return tmp;
 }
 
-Frame::Frame(const unsigned short min_x, const unsigned short max_x, const unsigned short min_y, const unsigned short max_y) :
-	OComponent(min_x, max_x, min_y, max_y), parentFrame(nullptr) {
-	x1 = min_x;
-	x2 = max_x;
-	y1 = min_y;
-	y2 = max_y;
-	coord = new Coordinates;
-}
-
-void Frame::_ShapeFrame(Separator& separator) {
-
-
-
+Frame Frame::Container::_SecondFrame() {
+	return *secondFrame;
 }
 
 FrameElement::FrameElement(Frame& parentFrame) : OComponent(parentFrame), parentFrame(&parentFrame) {}
+
+//	Main frame constructor
+Frame::Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
+	OComponent(max_x, min_x, max_y, min_y), parentFrame(nullptr){}
+
+//	Frame copy constructor
+Frame::Frame(Frame& parentFrame) :
+	OComponent(parentFrame), parentFrame(&parentFrame) {}
+
+//	Frame constructor Used within split method setting new values using splitters
+Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
+	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame){}
+
+//	Create new Frame within parent frame
+Frame Frame::_CreateChildFrame() {
+	Frame childFrame(*this, this->max_x - 1, this->min_x + 1, this->max_y - 1, this->min_y + 1);
+	return childFrame;
+}
+
+Frame::Container Frame::_Split(Separator& separator) {
+	Coordinates coord = separator._GetCoordinates();
+	Container newFrames;
+	if (separator.direction == 0) {
+		newFrames.firstFrame = new Frame(*this, max_x, min_x, coord.y1, min_y);
+		newFrames.secondFrame = new Frame(*this, max_x, min_x, max_y , coord.y1+1);
+	}
+	else if (separator.direction == 1) {
+		newFrames.firstFrame = new Frame(*this, coord.x1, min_x, max_y, min_y);
+		newFrames.secondFrame = new Frame(*this, max_x, coord.x1+1, max_y, min_y);
+	}
+	return newFrames;
+}
 
 // draw line - 0 = x spawn direction, 1 = y spawn direction
 Separator::Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y) : 
@@ -150,11 +178,11 @@ void Menu::_ModifyBorder(Separator* separators, unsigned int separatorNum) {
 }
 
 void Menu::_ModifyBorder(Separator separator) {
-	Coordinates* menuBorder = separator._GetCoordinates();
-	short sep_x1 = menuBorder->x1;
-	short sep_y1 = menuBorder->y1;
-	short sep_x2 = menuBorder->x2;
-	short sep_y2 = menuBorder->y2;
+	Coordinates menuBorder = separator._GetCoordinates();
+	short sep_x1 = menuBorder.x1;
+	short sep_y1 = menuBorder.y1;
+	short sep_x2 = menuBorder.x2;
+	short sep_y2 = menuBorder.y2;
 
 	if (separator.direction == 0) {
 		sep_x2 = sep_x1 + separator.length;
