@@ -9,82 +9,138 @@ OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, c
 OComponent::OComponent(OComponent& parentFrame) :
 	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {}
 
-OComponent::~OComponent() {}
+// Frame Container default constructor
+Frame::Container::Container() : frames(nullptr), frameNum(0){}
 
-Frame::Container::Container(Container& copy) {
-	firstFrame = copy.firstFrame;
-	copy.firstFrame = nullptr;   //FIX IT
-	secondFrame = copy.secondFrame;
-	copy.secondFrame = nullptr;
+// Frame Container copy constructor
+Frame::Container::Container(const Container& copy) {
+	frames = new Frame*[copy.frameNum];
+	for (int i = 0; i < copy.frameNum; i++)
+		frames[i] = _MoveFrame(*copy.frames[i]);
+	frameNum = copy.frameNum;
 }
 
-Frame::Container::Container() : firstFrame(nullptr), secondFrame(nullptr) {}
+//	Give ownership of frame to another container
+Frame* Frame::Container::_MoveFrame(Frame& source) {
+	Frame* move = new Frame(source);
+	return move;
+}
 
+// Frame Container destructor
 Frame::Container::~Container() {
-	delete firstFrame;
-	delete secondFrame;
+	for (int i = 0; i < frameNum; i++)
+		delete frames[i];
+	delete[]frames;
 }
-
-Frame Frame::Container::_FirstFrame() {
-	Frame tmp = *firstFrame;
-	return tmp;
-}
-
-Frame Frame::Container::_SecondFrame() {
-	return *secondFrame;
-}
-
-FrameElement::FrameElement(Frame& parentFrame) : OComponent(parentFrame), parentFrame(&parentFrame) {}
 
 //	Main frame constructor
 Frame::Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
 	OComponent(max_x, min_x, max_y, min_y), parentFrame(nullptr){}
 
 //	Frame copy constructor
-Frame::Frame(Frame& parentFrame) :
-	OComponent(parentFrame), parentFrame(&parentFrame) {}
+Frame::Frame(Frame& copy) :
+	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname){}
 
 //	Frame constructor Used within split method setting new values using splitters
 Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
 	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame){}
 
 //	Create new Frame within parent frame
-Frame Frame::_CreateChildFrame() {
-	Frame childFrame(*this, this->max_x - 1, this->min_x + 1, this->max_y - 1, this->min_y + 1);
-	return childFrame;
+Frame Frame::_CreateSubFrame(const char* IDname) {
+	Frame* newFrame = new Frame(*this, this->max_x - 1, this->min_x + 1, this->max_y - 1, this->min_y + 1);
+	newFrame->IDname = IDname;
+	_UpdateContainer(newFrame);
+	return *container.frames[container.frameNum - 1];
 }
 
-Frame::Container Frame::_Split(Separator& separator) {
+//	Update frames container recursive for all parent frames
+void Frame::_UpdateContainer(Frame* newFrame) {
+	Frame** ptr = new Frame*(nullptr);
+	utility::_AddElement(container.frames, *ptr, container.frameNum);
+	container.frames[container.frameNum - 1] = newFrame;
+	delete ptr;
+	if (parentFrame != nullptr)
+		parentFrame->_UpdateContainer(newFrame);
+}
+
+//	Method used to create new frames within a frame using spliters
+void Frame::_Split(Separator& separator, const char* firstID, const char* secondID) {
 	Coordinates coord = separator._GetCoordinates();
-	Container newFrames;
-	if (separator.direction == 0) {
-		newFrames.firstFrame = new Frame(*this, max_x, min_x, coord.y1, min_y);
-		newFrames.secondFrame = new Frame(*this, max_x, min_x, max_y , coord.y1+1);
+
+	if (separator.direction == 0) {		
+		Frame* newFrame = new Frame(*this, max_x, min_x, coord.y1, min_y);
+		newFrame->IDname = firstID;
+		_UpdateContainer(newFrame);		
+		newFrame = new Frame(*this, max_x, min_x, max_y , coord.y1+1);
+		newFrame->IDname = secondID;
+		_UpdateContainer(newFrame);
 	}
 	else if (separator.direction == 1) {
-		newFrames.firstFrame = new Frame(*this, coord.x1, min_x, max_y, min_y);
-		newFrames.secondFrame = new Frame(*this, max_x, coord.x1+1, max_y, min_y);
+		Frame* newFrame = new Frame(*this, coord.x1, min_x, max_y, min_y);
+		newFrame->IDname = firstID;
+		_UpdateContainer(newFrame);
+		newFrame = new Frame(*this, max_x, coord.x1 + 1, max_y, min_y);
+		newFrame->IDname = secondID;
+		_UpdateContainer(newFrame);
 	}
-	return newFrames;
 }
+
+// Select frame from subframes container 
+Frame* Frame::_Select(const char* IDname) {
+	for (int i = 0; i < container.frameNum; i++) 
+		if (utility::_CompareChar(container.frames[i]->IDname, IDname))
+			return container.frames[i];
+	return nullptr;	
+}
+
+void Frame::_AddElement(FrameElement newElement) {
+	FrameElement** element = new FrameElement*(nullptr);	
+	utility::_AddElement(elements, *element, elNum);
+	elements[elNum - 1] = new FrameElement(newElement, this);	
+}
+
+// FrameElement default constructor
+FrameElement::FrameElement(Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
+
+// FrameElement copy constructor
+FrameElement::FrameElement(const FrameElement& copy, Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
 
 // draw line - 0 = x spawn direction, 1 = y spawn direction
 Separator::Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y) : 
-	FrameElement(parentFrame) , length(length), direction(direction)  {
+	FrameElement(&parentFrame) , length(length), direction(direction)  {
+	Coordinates frameCoord = parentFrame._GetCoordinates();
+
+	if (start_X < frameCoord.x1)
+		start_X = frameCoord.x1;
+	else if (start_X > frameCoord.x2)
+		start_X = frameCoord.x2;
+	if (start_Y < frameCoord.y1)
+		start_Y = frameCoord.y1;
+	else if (start_Y > frameCoord.y2)
+		start_Y = frameCoord.y2;
+
 	x1 = start_X;
 	y1 = start_Y;
 	x2 = x1;
 	y2 = y1;
 	if (this->direction == 0) {
-		x2 = x1 + length;
+		x2 = x1 + this->length;
+		if (x2 > frameCoord.x2) {
+			this->length -= x2 - frameCoord.x2;
+			x2 = frameCoord.x2;
+		}
 	}
 	else if (this->direction == 1) {
-		y2 = x1 + length;
+		y2 = y1 + this->length;
+		if (y2 > frameCoord.y2) {
+			this->length -= y2 - frameCoord.y2;
+			y2 = frameCoord.y2;
+		}			
 	}
 	this->parentFrame = &parentFrame;
 }
 
-Separator::Separator(const Separator& copy) : FrameElement(*copy.parentFrame) ,length(copy.length), direction (copy.direction) {
+Separator::Separator(const Separator& copy) : FrameElement(copy.parentFrame) ,length(copy.length), direction (copy.direction) {
 	x1 = copy.x1;
 	x2 = copy.x2;
 	y1 = copy.y1;
@@ -165,7 +221,7 @@ void Menu::_ShowMenu() {
 			int cutter = (width > 0) ? width : x_max;
 			cut = length - (cutter - x1);
 		}
-		menuDisp._DisplayContent(elements[i], cut);
+		menuDisp._Display(elements[i], cut);
 		pos._MoveToXY(x1, ++y2);
 	}
 	height = y2 - y1;

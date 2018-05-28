@@ -9,7 +9,7 @@ int main() {
 	//	Display version label
 	Display version;
 	Cursor versionPos(width - utility::_CharLength(::version) - 2, height - 2);
-	version._DisplayContent(::version, versionPos);
+	version._Display(::version, versionPos);
 	version._LockContent(versionPos); // -> makes label text on given position permanent
 
 	//	Initialize modules

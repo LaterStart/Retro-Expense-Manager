@@ -92,6 +92,7 @@ void Console::_DrawFrame() {
 		cout << horizontalLine;
 	}
 	this->mainFrame = new Frame(::width, 0, ::height, 0);
+	this->mainFrame->IDname = "MainFrame";
 }
 
 Cursor::Cursor() : x(0), y(0), n(0) {
@@ -155,28 +156,28 @@ Display::~Display() {
 	delete[]frames;
 }
 
-void Display::_DisplayCharacter(unsigned char ch) {
+void Display::_Display(unsigned char ch) {
 	Cursor pos;
 	cout << ch;
 	pos._SetCharacterNumber(1);
 	_AddActivePosition(pos);
 }
 
-void Display::_DisplayContent(const char* content, Cursor &pos) {
+void Display::_Display(const char* content, Cursor &pos) {
 	pos._SetCursorPosition();
 	cout << content;
 	pos._SetCharacterNumber(utility::_CharLength(content));
 	_AddActivePosition(pos);
 }
 
-void Display::_DisplayContent(const char* content) {
+void Display::_Display(const char* content) {
 	Cursor pos;
 	cout << content;
 	pos._SetCharacterNumber((short)utility::_CharLength(content));
 	_AddActivePosition(pos);
 }
 
-void Display::_DisplayContent(const char* content, unsigned int cut) {
+void Display::_Display(const char* content, unsigned int cut) {
 	Cursor pos;
 	int length = utility::_CharLength(content) - cut;
 	for (int i = 0; i < length; i++)
@@ -186,7 +187,23 @@ void Display::_DisplayContent(const char* content, unsigned int cut) {
 	_AddActivePosition(pos);
 }
 
-void Display::_DisplaySeparator(Separator& separator) {
+void Display::_Display(Label& label, Cursor& pos) {
+	pos._SetCursorPosition();
+	cout << label.text;
+
+	pos._SetCharacterNumber(label.length);
+	_AddActivePosition(pos);
+}
+
+void Display::_Display(Label& label) {
+	Cursor pos;
+	cout << label.text;
+
+	pos._SetCharacterNumber(label.length);
+	_AddActivePosition(pos);
+}
+
+void Display::_Display(Separator& separator) {
 	Cursor pos(separator.x1, separator.y1);
 	unsigned char line;
 	if (separator.direction == 0) {
@@ -255,40 +272,33 @@ void Display::_LockContent(Cursor &pos) {
 }
 
 void Display::_DrawLayout_default() {
-	Frame moduleFrame = parentFrame->_CreateChildFrame();
-	Separator menuLine(moduleFrame, 20, 1, 20, 0);
-	Separator headerLine(moduleFrame, ::width-4, 0, 2, 2);
-
-	Frame header = moduleFrame._Split(headerLine)._FirstFrame();
-	Frame body = moduleFrame._Split(headerLine)._SecondFrame();
-
-	Frame menuHeader = header._Split(menuLine)._FirstFrame();
-	Frame selectionTitleHeader = header._Split(menuLine)._SecondFrame();
-
-	Frame bodyRight = body._Split(menuLine)._SecondFrame();
-	Frame menuBody = body._Split(menuLine)._FirstFrame();
-
-	Frame::Coordinates coord = selectionTitleHeader._GetCoordinates();
+	Frame frame = parentFrame->_CreateSubFrame("ModuleMain");
+	Separator menuLine(frame, 20, 1, 20, 0);
+	Separator headerLine(frame, ::width-4, 0, 2, 2);
+	frame._Split(headerLine, "ModuleHeader", "ModuleBody");
+	frame._Select("ModuleHeader")->_Split(menuLine, "MenuTitle", "BodyTitle");
+	frame._Select("ModuleBody")->_Split(menuLine, "MenuFrame", "ModuleFrame");
+	
+	frame._Select("MenuTitle")->_AddElement(Label("Main Menu"));
 
 
-
-
+	Frame::Coordinates coord = frame._Select("MenuFrame")->_GetCoordinates();
 	/*Cursor mainMenuPos(6, 1);
 	const char* mainMenu = "Main Menu ";*/
 
 	//Frame::Coordinates coord = header._GetCoordinates();
 
-	Cursor test1;
+	Cursor test3;
 	for (int i = coord.x1; i < coord.x2; i++)
 		for (int j = coord.y1; j < coord.y2; j++) {
-			test1._MoveToXY(i, j);
+			test3._MoveToXY(i, j);
 			cout << 'c';
 		}
 		
 	int test = 0;
 
-	_DisplaySeparator(menuLine);
-	_DisplaySeparator(headerLine);
+	_Display(menuLine);
+	_Display(headerLine);
 	//_DisplayContent(mainMenu, mainMenuPos);
 	//_DisplayCharacter(::headerSymbol);		
 
@@ -299,7 +309,7 @@ void Display::_DrawLayout_default() {
 	//short area = topHeader._GetArea();
 
 	//Display mainWindow;
-	char* currentDate = utility::_GetCurrentDate();
-	Cursor datePos(width - utility::_CharLength(currentDate) - 2, 1);
+	//char* currentDate = utility::_GetCurrentDate();
+	//Cursor datePos(width - utility::_CharLength(currentDate) - 2, 1);
 	//mainWindow._DisplayContent(currentDate, datePos);
 }

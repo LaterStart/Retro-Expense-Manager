@@ -42,7 +42,7 @@ public:
 	short _GetArea();
 
 	Coordinates _GetCoordinates();
-	~OComponent();
+	~OComponent() = default;
 };
 
 inline void OComponent::_SetX1(unsigned short x1) {
@@ -85,35 +85,46 @@ inline short OComponent::_GetArea() {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+class FrameElement;
 class Frame : public OComponent{	
 private:
 	friend class Console;
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
-	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
+	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);	
+	void _UpdateContainer(Frame* newFrame);
 
 protected:
 	Frame * parentFrame;	
 
 public:
-	struct Container {
-		friend class Frame;
-	private:		
-		Frame* firstFrame;
-		Frame* secondFrame;
+	class Container {
+	private:
+		Frame * _MoveFrame(Frame& source);		
 
 	public:
+		Frame** frames;
+		int frameNum;
 		Container();
-		Container(Container& copy);
+		Container(const Container& copy);
 		~Container();
+	};
 
-		Frame _FirstFrame();
-		Frame _SecondFrame();
-	};	
-
+	const char* IDname = nullptr;
 	Frame(Frame& parentFrame);
 	Coordinates _GetCoordinates();
-	Container _Split(Separator& separator);
-	Frame _CreateChildFrame();
+	Frame _CreateSubFrame(const char* IDname);
+	Container _GetSubFrames();
+	void _Split(Separator& separator, const char* firstID, const char* secondID);
+	void _SetIDname(const char* IDname);
+	Frame* _Select(const char* IDname);
+
+	FrameElement** elements = nullptr;
+	int elNum = 0;
+
+	void _AddElement(FrameElement newElement);
+
+private:
+	Container container;
 };
 
 inline Frame::Coordinates Frame::_GetCoordinates() {
@@ -124,22 +135,49 @@ inline Frame::Coordinates Frame::_GetCoordinates() {
 	return coord;
 }
 
+inline void Frame::_SetIDname(const char* IDname) {
+	this->IDname = IDname;
+}
+
+inline Frame::Container Frame::_GetSubFrames() {
+	return container;
+}
+
 class FrameElement : public OComponent {
 protected:
-	FrameElement(Frame& parentFrame);
 	Frame* parentFrame;
+	FrameElement(Frame* parentFrame);	
+
+public:
+	FrameElement(const FrameElement& copy, Frame* parentFrame);
+	void _SetParentFrame(Frame* parentFrame);
 };
 
+inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
+	this->parentFrame = parentFrame;
+}
+
 class Separator : public FrameElement {
-	friend void Display::_DisplaySeparator(Separator& separator);
+	friend void Display::_Display(Separator& separator);
 public:
 	short length;
 	bool direction;
 
-public:
 	// draw line - 0 = x spawn direction, 1 = y spawn direction
 	Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y);	
 	Separator(const Separator& copy);
+};
+
+class Label : public FrameElement {
+	friend void Display::_Display(Label& label);
+public:
+	char* text;
+	short length;
+	
+	Label(const char* text) : FrameElement(nullptr){}
+	Label(Frame* parentFrame, char* text) : text(text), FrameElement(parentFrame){}
+	Label(Frame* parentFrame, const char* text) : text((char*)text), FrameElement(parentFrame){}
+	Label(Frame* parentFrame) : text(nullptr), FrameElement(parentFrame){}
 };
 
 #include "../utility.h"

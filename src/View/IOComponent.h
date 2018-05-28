@@ -101,6 +101,7 @@ inline void Cursor::_SetXY(short x, short y) {
 
 class Separator;
 class Frame;
+class Label;
 class Display : public IOComponent {
 private:
 	unsigned short activePosNum;
@@ -118,17 +119,16 @@ public:
 	~Display();
 
 	void _ClearContent();
-	void _DisplayCharacter(unsigned char ch);
-	void _DisplayContent(const char* content, Cursor &pos);
-	void _DisplayContent(const char* content);
-	void _DisplayContent(const char* test, unsigned int cut);
-	void _DisplaySeparator(Separator& separator);
+	void _Display(unsigned char ch);
+	void _Display(const char* content, Cursor &pos);
+	void _Display(const char* content);
+	void _Display(const char* test, unsigned int cut);	
+	void _Display(Label& label);
+	void _Display(Label& label, Cursor& pos);
+	void _Display(Separator& separator);
 	void _DrawLayout_default();
 	void _LockContent(Cursor &pos);
 	void _SetParentFrame(Frame* parentFrame);
-
-	Separator* _GetFrameSeparators() const;
-	int _GetFrameSeparatorsNum() const;
 
 	Frame* _GetFrames() const;
 	int _GetFrameNum() const;
