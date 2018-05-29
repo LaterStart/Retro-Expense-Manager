@@ -9,6 +9,8 @@ OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, c
 OComponent::OComponent(OComponent& parentFrame) :
 	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {}
 
+OComponent::OComponent(OComponent* null) : max_x(0), min_x(0), max_y(0), min_y(0) {}
+
 // Frame Container default constructor
 Frame::Container::Container() : frames(nullptr), frameNum(0){}
 
@@ -39,15 +41,16 @@ Frame::Frame(const unsigned short max_x, const unsigned short min_x, const unsig
 
 //	Frame copy constructor
 Frame::Frame(Frame& copy) :
-	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname){}
+	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname), dsp(copy.dsp){}
 
 //	Frame constructor Used within split method setting new values using splitters
 Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
-	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame){}
+	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame), dsp(parentFrame.dsp){}
 
 //	Create new Frame within parent frame
-Frame Frame::_CreateSubFrame(const char* IDname) {
+Frame Frame::_CreateSubFrame(const char* IDname, Display* dsp) {
 	Frame* newFrame = new Frame(*this, this->max_x - 1, this->min_x + 1, this->max_y - 1, this->min_y + 1);
+	newFrame->dsp = dsp;
 	newFrame->IDname = IDname;
 	_UpdateContainer(newFrame);
 	return *container.frames[container.frameNum - 1];
@@ -93,17 +96,34 @@ Frame* Frame::_Select(const char* IDname) {
 	return nullptr;	
 }
 
-void Frame::_AddElement(FrameElement newElement) {
+void Frame::_AddElement(FrameElement& newElement) {
 	FrameElement** element = new FrameElement*(nullptr);	
 	utility::_AddElement(elements, *element, elNum);
-	elements[elNum - 1] = new FrameElement(newElement, this);	
+	elements[elNum - 1] = &newElement;
+	elements[elNum - 1]->_SetParentFrame(this);
+}
+
+void Frame::_ShowElements() {
+	for (int i = 0; i < elNum; i++) {
+		elements[i]->_Show();
+
+
+	}
 }
 
 // FrameElement default constructor
 FrameElement::FrameElement(Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
 
+FrameElement::FrameElement() : OComponent(nullptr), parentFrame(nullptr) {}
+
 // FrameElement copy constructor
 FrameElement::FrameElement(const FrameElement& copy, Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
+
+void Label::_Show() {
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	Cursor pos(coord.x1, coord.y1);
+	parentFrame->dsp->_Display(*this);
+}
 
 // draw line - 0 = x spawn direction, 1 = y spawn direction
 Separator::Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y) : 

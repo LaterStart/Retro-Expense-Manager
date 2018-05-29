@@ -7,6 +7,7 @@ class OComponent : public IOComponent {
 protected:
 	OComponent(const unsigned short min_x, const unsigned short max_x, const unsigned short min_y, const unsigned short max_y);
 	OComponent(OComponent& parentFrame);
+	OComponent(OComponent* outOfFrame);
 
 	const unsigned short min_x;
 	const unsigned short max_x;
@@ -92,7 +93,7 @@ private:
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
 	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);	
 	void _UpdateContainer(Frame* newFrame);
-
+	
 protected:
 	Frame * parentFrame;	
 
@@ -112,7 +113,7 @@ public:
 	const char* IDname = nullptr;
 	Frame(Frame& parentFrame);
 	Coordinates _GetCoordinates();
-	Frame _CreateSubFrame(const char* IDname);
+	Frame _CreateSubFrame(const char* IDname, Display* dsp);
 	Container _GetSubFrames();
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
 	void _SetIDname(const char* IDname);
@@ -120,12 +121,19 @@ public:
 
 	FrameElement** elements = nullptr;
 	int elNum = 0;
+	Display* dsp = nullptr;
 
-	void _AddElement(FrameElement newElement);
+	void _LinkDisplay(Display& dps);
+	void _AddElement(FrameElement& newElement);
+	void _ShowElements();
 
 private:
 	Container container;
 };
+
+inline void Frame::_LinkDisplay(Display& dsp){
+	this->dsp = &dsp;
+}
 
 inline Frame::Coordinates Frame::_GetCoordinates() {
 	coord.x1 = min_x;
@@ -144,14 +152,24 @@ inline Frame::Container Frame::_GetSubFrames() {
 }
 
 class FrameElement : public OComponent {
+	//typedef void(FrameElement::*displayPtr)();
+	
 protected:
+	//const displayPtr dsp;
 	Frame* parentFrame;
 	FrameElement(Frame* parentFrame);	
-
+	FrameElement();		
+	
 public:
 	FrameElement(const FrameElement& copy, Frame* parentFrame);
+	//FrameElement(const Label& cast) : OComponent(nullptr) {}
 	void _SetParentFrame(Frame* parentFrame);
+	virtual void _Show();
 };
+
+inline void FrameElement::_Show() {
+	int test = 2;
+}
 
 inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
 	this->parentFrame = parentFrame;
@@ -168,19 +186,19 @@ public:
 	Separator(const Separator& copy);
 };
 
+#include "../utility.h"
 class Label : public FrameElement {
 	friend void Display::_Display(Label& label);
 public:
 	char* text;
 	short length;
 	
-	Label(const char* text) : FrameElement(nullptr){}
-	Label(Frame* parentFrame, char* text) : text(text), FrameElement(parentFrame){}
-	Label(Frame* parentFrame, const char* text) : text((char*)text), FrameElement(parentFrame){}
-	Label(Frame* parentFrame) : text(nullptr), FrameElement(parentFrame){}
+	Label(const Label& copy) : text(copy.text), length(copy.length) {}
+	Label(const char* text) : text((char*)text) { length = utility::_CharLength(text); }
+
+	void _Show();
 };
 
-#include "../utility.h"
 class Menu : public Frame {
 private:
 	unsigned short x1, x2;

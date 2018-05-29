@@ -272,7 +272,7 @@ void Display::_LockContent(Cursor &pos) {
 }
 
 void Display::_DrawLayout_default() {
-	Frame frame = parentFrame->_CreateSubFrame("ModuleMain");
+	Frame frame = parentFrame->_CreateSubFrame("ModuleMain", this);
 	Separator menuLine(frame, 20, 1, 20, 0);
 	Separator headerLine(frame, ::width-4, 0, 2, 2);
 	frame._Split(headerLine, "ModuleHeader", "ModuleBody");
@@ -280,6 +280,8 @@ void Display::_DrawLayout_default() {
 	frame._Select("ModuleBody")->_Split(menuLine, "MenuFrame", "ModuleFrame");
 	
 	frame._Select("MenuTitle")->_AddElement(Label("Main Menu"));
+	frame._Select("MenuTitle")->_ShowElements();
+
 
 
 	Frame::Coordinates coord = frame._Select("MenuFrame")->_GetCoordinates();
@@ -295,7 +297,7 @@ void Display::_DrawLayout_default() {
 			cout << 'c';
 		}
 		
-	int test = 0;
+	int test1 = 0;
 
 	_Display(menuLine);
 	_Display(headerLine);
