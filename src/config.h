@@ -5,6 +5,9 @@ extern const char* const title;
 extern const char* const version;
 extern const char* const dataPath; 
 extern const char* const modulesDirectory;
+
+extern char* currentDate;
+
 extern unsigned short width;
 extern unsigned short height;
 

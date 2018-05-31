@@ -1,6 +1,7 @@
 #include <time.h>
 #include <iomanip>
 #include "utility.h"
+#include "config.h"
 
 namespace utility {
 
@@ -151,33 +152,34 @@ namespace utility {
 		struct tm timeinfo;
 		localtime_s(&timeinfo, &rawtime);
 
-		char* currentDate_char = new char[11];
-		currentDate_char[0] = 0 + '0';
-		currentDate_char[2] = '/';
-		currentDate_char[3] = 0 + '0';
-		currentDate_char[5] = '/';
-		currentDate_char[10] = '\0';
+		delete ::currentDate;
+		::currentDate = new char[11];
+		::currentDate[0] = 0 + '0';
+		::currentDate[2] = '/';
+		::currentDate[3] = 0 + '0';
+		::currentDate[5] = '/';
+		::currentDate[10] = '\0';
 
 		if (timeinfo.tm_mday < 10)
-			currentDate_char[1] = timeinfo.tm_mday + '0';
+			::currentDate[1] = timeinfo.tm_mday + '0';
 		else {
-			currentDate_char[1] = timeinfo.tm_mday % 10 + '0';
-			currentDate_char[0] = timeinfo.tm_mday / 10 + '0';
+			::currentDate[1] = timeinfo.tm_mday % 10 + '0';
+			::currentDate[0] = timeinfo.tm_mday / 10 + '0';
 		}
 		if (timeinfo.tm_mon < 10)
-			currentDate_char[4] = timeinfo.tm_mon + 1 + '0';
+			::currentDate[4] = timeinfo.tm_mon + 1 + '0';
 		else {
-			currentDate_char[4] = timeinfo.tm_mon + 1 % 10 + '0';
-			currentDate_char[3] = timeinfo.tm_mon + 1 / 10 + '0';
+			::currentDate[4] = timeinfo.tm_mon + 1 % 10 + '0';
+			::currentDate[3] = timeinfo.tm_mon + 1 / 10 + '0';
 		}
 		int year = timeinfo.tm_year + 1900;
 		short z = 9;
 		while (year > 0) {
-			currentDate_char[z--] = year % 10 + '0';
+			::currentDate[z--] = year % 10 + '0';
 			year /= 10;
 		}
 
-		return currentDate_char;
+		return ::currentDate;
 	}	
 
 	int _Find(char* word, char* arr) {
@@ -198,5 +200,23 @@ namespace utility {
 		} while (arr[pos++] != '\0');
 		delete[]checker;
 		return -1;
+	}
+
+	int _ReadAlign(const char* align) {
+		if (_CompareChar(align, "left"))
+			return 1;
+		else if (_CompareChar(align, "right"))
+			return 2;
+		else if (_CompareChar(align, "center"))
+			return 3;
+		return 0;
+	}
+
+	int _ReadDirection(const char* direction) {
+		if (_CompareChar(direction, "horizontal"))
+			return 0;
+		else if (_CompareChar(direction, "vertical"))
+			return 1;
+		return 2;
 	}
 }

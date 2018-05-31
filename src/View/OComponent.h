@@ -1,5 +1,6 @@
 #pragma once
 #include "IOComponent.h"
+#include "../config.h"
 
 class IComponent : public IOComponent {}; 
 
@@ -90,50 +91,56 @@ class FrameElement;
 class Frame : public OComponent{	
 private:
 	friend class Console;
+	friend class Layout;
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
 	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);	
 	void _UpdateContainer(Frame* newFrame);
-	
-protected:
-	Frame * parentFrame;	
+	short nextYpos = 0;	
 
 public:
-	class Container {
-	private:
-		Frame * _MoveFrame(Frame& source);		
-
-	public:
-		Frame** frames;
-		int frameNum;
-		Container();
+	struct Container {
+		Frame** frames = nullptr;
+		int frameNum = 0;
+		Container() = default;
 		Container(const Container& copy);
 		~Container();
 	};
 
 	const char* IDname = nullptr;
 	Frame(Frame& parentFrame);
-	Coordinates _GetCoordinates();
-	Frame _CreateSubFrame(const char* IDname, Display* dsp);
+	Coordinates _GetCoordinates();	
 	Container _GetSubFrames();
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
+	void _Split(unsigned short percent, const char* direction, const char* firstID, const char* secondID);
 	void _SetIDname(const char* IDname);
+	void _SetDisplay(Display& dsp);
 	Frame* _Select(const char* IDname);
+	Frame* _GetParentFrame();
 
-	FrameElement** elements = nullptr;
-	int elNum = 0;
+	Frame * parentFrame = nullptr;
 	Display* dsp = nullptr;
+	FrameElement** elements = nullptr;
+	int elNum = 0;		
 
-	void _LinkDisplay(Display& dps);
-	void _AddElement(FrameElement& newElement);
+	void _AddElement(FrameElement& newElement);		
 	void _ShowElements();
+
+	//	Add more FrameElements using variadic template
+	template <typename T>
+	void _AddElements(T& element) {
+		_AddElement(element);
+	}
+	template<typename T , typename ... TT>
+	void _AddElements(T& element, TT& ... nextElements ) {
+		_AddElement(element);
+		_AddElements(nextElements...);
+	}
+
+	~Frame();
 
 private:
 	Container container;
 };
-
-inline void Frame::_LinkDisplay(Display& dsp){
-	this->dsp = &dsp;
-}
 
 inline Frame::Coordinates Frame::_GetCoordinates() {
 	coord.x1 = min_x;
@@ -151,24 +158,53 @@ inline Frame::Container Frame::_GetSubFrames() {
 	return container;
 }
 
-class FrameElement : public OComponent {
-	//typedef void(FrameElement::*displayPtr)();
-	
+inline Frame* Frame::_GetParentFrame() {
+	return parentFrame;
+}
+
+inline void Frame::_SetDisplay(Display& dsp) {
+	this->dsp = &dsp;
+}
+
+class FrameElement : public OComponent {	
 protected:
-	//const displayPtr dsp;
+	const char* align = "left";
+	unsigned short padding = 0;
+	short Ypos;
 	Frame* parentFrame;
+	FrameElement();
 	FrameElement(Frame* parentFrame);	
-	FrameElement();		
-	
+
+	Display* _GetDisplay();
+	virtual Cursor _Align();
+
 public:
 	FrameElement(const FrameElement& copy, Frame* parentFrame);
-	//FrameElement(const Label& cast) : OComponent(nullptr) {}
 	void _SetParentFrame(Frame* parentFrame);
+	
 	virtual void _Show();
+	void _SetAlign(const char* align);
+	void _SetYpos(short y);
+	void _SetPadding(unsigned short padding);
 };
 
-inline void FrameElement::_Show() {
-	int test = 2;
+inline void FrameElement::_Show() {}
+
+inline void FrameElement::_SetAlign(const char* align) {
+	this->align = align;
+}
+
+inline void FrameElement::_SetPadding(unsigned short padding) {
+	this->padding = padding;
+}
+
+inline Cursor FrameElement::_Align() {
+	Cursor pos;
+	return pos;
+}
+
+inline void FrameElement::_SetYpos(short y) {
+	Ypos = y;
 }
 
 inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
@@ -176,28 +212,64 @@ inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
 }
 
 class Separator : public FrameElement {
+private:
 	friend void Display::_Display(Separator& separator);
+	void _SetValue(Frame& parentFrame, unsigned short start_X, unsigned short start_Y);
+
 public:
 	short length;
 	bool direction;
 
 	// draw line - 0 = x spawn direction, 1 = y spawn direction
-	Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y);	
+	Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y);
+	Separator(Layout& layout, short length, bool direction, unsigned short start_X, unsigned short start_Y);
 	Separator(const Separator& copy);
 };
 
-#include "../utility.h"
+
 class Label : public FrameElement {
-	friend void Display::_Display(Label& label);
+private:
+	friend void Display::_Display(Label& label, unsigned char, Cursor& pos);
+	friend void Display::_Display(Label& label, Cursor& pos);
+	Cursor _Align();
+
 public:
-	char* text;
-	short length;
-	
+	char* text = nullptr;
+	short length = 0;
+	unsigned char symbol = 0;
+
+	Label() = default;
 	Label(const Label& copy) : text(copy.text), length(copy.length) {}
 	Label(const char* text) : text((char*)text) { length = utility::_CharLength(text); }
+	Label(const char* text, const char* align) : text((char*)text) { length = utility::_CharLength(text); this->align = align; }
+	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {length = utility::_CharLength(text) + 1; this->align = align;  }
 
 	void _Show();
 };
+
+class Layout {	
+private:
+	Frame * parentFrame;
+	Frame * frame = nullptr;
+
+public:
+	Layout(Frame* parentFrame) : parentFrame(parentFrame) {}
+	Frame * _Select();
+	Frame* _Select(const char* IDname);
+	void _Split(Separator& separator, const char* firstID, const char* secondID);
+	void _DefaultFrameTemplate(Display& dsp);
+	void _ShowElements();
+
+	~Layout();
+};
+
+
+
+
+
+
+
+
 
 class Menu : public Frame {
 private:

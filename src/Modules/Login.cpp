@@ -28,14 +28,27 @@ void Login::_StartModule() {
 	}
 	else {
 		//	if no recent user profile is found, display available options
-		Display moduleDsp;
-		Console* test = console;
-		moduleDsp._SetParentFrame(console->_GetMainFrame());
-		moduleDsp._DrawLayout_default();
+		Frame* mainFrame = console->_GetMainFrame();	
+		Layout layout(mainFrame);
+		Display display;		
+
+		layout._DefaultFrameTemplate(display);
+		layout._Select("MenuHeader")->_AddElement(Label("Main Menu ",::headerSymbol, "center"));		
+		layout._Select("Date")->_AddElement(Label(utility::_GetCurrentDate(), "left"));
+
+		Label userProfile("User Profile ", ::headerSymbol, "left");
+		userProfile._SetPadding(4);
+		layout._Select("SelectionTitle")->_AddElement(userProfile);
+		layout._ShowElements();
 
 
 
 
+
+
+
+
+		
 		/*Menu menu(moduleDsp.)
 		menu._AddElements({ "Create Profileasdasdasdasdasdasdasd", "Load Profile", 0 });
 		menu._AddLinks({ "CreateUserProfile", "LoadUserProfile", 0 });

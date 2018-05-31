@@ -99,23 +99,17 @@ inline void Cursor::_SetXY(short x, short y) {
 	this->y = y;
 }
 
-class Separator;
-class Frame;
-class Label;
+class Separator; class Frame; class Label; class Layout;
 class Display : public IOComponent {
 private:
-	unsigned short activePosNum;
-	Cursor* activePositions;
+	unsigned short activePosNum = 0;
+	Cursor* activePositions = nullptr;
 
 	void _AddActivePosition(Cursor pos);
 	void _ExtendRegister();
 
-	Frame* parentFrame;
-	Frame* frames;
-	int frameNum;
-
 public:
-	Display();
+	Display() = default;
 	~Display();
 
 	void _ClearContent();
@@ -123,25 +117,8 @@ public:
 	void _Display(const char* content, Cursor &pos);
 	void _Display(const char* content);
 	void _Display(const char* test, unsigned int cut);	
-	void _Display(Label& label);
 	void _Display(Label& label, Cursor& pos);
+	void _Display(Label& label, unsigned char symbol, Cursor& pos);
 	void _Display(Separator& separator);
-	void _DrawLayout_default();
 	void _LockContent(Cursor &pos);
-	void _SetParentFrame(Frame* parentFrame);
-
-	Frame* _GetFrames() const;
-	int _GetFrameNum() const;
 };
-
-inline Frame* Display::_GetFrames() const {
-	return frames;
-}
-
-inline int Display::_GetFrameNum() const {
-	return frameNum;
-}
-
-inline void Display::_SetParentFrame(Frame* parentFrame) {
-	this->parentFrame = parentFrame;
-}

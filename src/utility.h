@@ -17,9 +17,11 @@ namespace utility {
 	int _CharLength(const char* arr);
 	int _CharSize(char* arr);
 	int _Find(char* word, char* arr);
+	int _ReadAlign(const char* align);
+	int _ReadDirection(const char* direction);
 
 	bool _CompareChar(char* first, char* second);
-	bool _CompareChar(const char* first, const char* second);
+	bool _CompareChar(const char* first, const char* second);	
 
 	template <typename T>
 	void _AddElement(T* &ptr, T &element, int &arrSize) {
@@ -122,4 +124,5 @@ namespace utility {
 			}
 		}
 	};	
+
 }

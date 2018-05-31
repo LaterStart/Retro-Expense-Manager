@@ -10,7 +10,9 @@ ModuleManagement::ModuleManagement(Console* myConsole) : moduleList(nullptr), mo
 	_InitializeModules();
 }
 
-ModuleManagement::~ModuleManagement(){}
+ModuleManagement::~ModuleManagement(){
+	delete[]moduleList;
+}
 
 //	wanna be framework implementation - each class registers its name at compile time
 void ModuleInitializer::_RegisterModule(string moduleName, function<Module*(void)> moduleInitializer){

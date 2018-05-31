@@ -149,11 +149,10 @@ void Cursor::_MoveToXY(short x_in, short y_in) {
 	_SetCursorPosition();
 }
 
-Display::Display() : activePositions(nullptr), frames(nullptr), activePosNum(0), frameNum(0) {}
-
 Display::~Display() {
+	for (int i = 0; i < activePosNum; i++)
+		activePositions[i]._ClearText();
 	delete[]activePositions;
-	delete[]frames;
 }
 
 void Display::_Display(unsigned char ch) {
@@ -195,11 +194,12 @@ void Display::_Display(Label& label, Cursor& pos) {
 	_AddActivePosition(pos);
 }
 
-void Display::_Display(Label& label) {
-	Cursor pos;
+void Display::_Display(Label& label, unsigned char symbol, Cursor& pos) {
+	pos._SetCursorPosition();
 	cout << label.text;
+	cout << symbol;
 
-	pos._SetCharacterNumber(label.length);
+	pos._SetCharacterNumber(label.length+1);
 	_AddActivePosition(pos);
 }
 
@@ -269,49 +269,4 @@ void Display::_LockContent(Cursor &pos) {
 			utility::_RemoveElement(activePositions, i, activePosNum);
 			activePosNum--;
 		}
-}
-
-void Display::_DrawLayout_default() {
-	Frame frame = parentFrame->_CreateSubFrame("ModuleMain", this);
-	Separator menuLine(frame, 20, 1, 20, 0);
-	Separator headerLine(frame, ::width-4, 0, 2, 2);
-	frame._Split(headerLine, "ModuleHeader", "ModuleBody");
-	frame._Select("ModuleHeader")->_Split(menuLine, "MenuTitle", "BodyTitle");
-	frame._Select("ModuleBody")->_Split(menuLine, "MenuFrame", "ModuleFrame");
-	
-	frame._Select("MenuTitle")->_AddElement(Label("Main Menu"));
-	frame._Select("MenuTitle")->_ShowElements();
-
-
-
-	Frame::Coordinates coord = frame._Select("MenuFrame")->_GetCoordinates();
-	/*Cursor mainMenuPos(6, 1);
-	const char* mainMenu = "Main Menu ";*/
-
-	//Frame::Coordinates coord = header._GetCoordinates();
-
-	Cursor test3;
-	for (int i = coord.x1; i < coord.x2; i++)
-		for (int j = coord.y1; j < coord.y2; j++) {
-			test3._MoveToXY(i, j);
-			cout << 'c';
-		}
-		
-	int test1 = 0;
-
-	_Display(menuLine);
-	_Display(headerLine);
-	//_DisplayContent(mainMenu, mainMenuPos);
-	//_DisplayCharacter(::headerSymbol);		
-
-
-	//topHeader._SetX(1, ::width-1);
-	//topHeader._SetY(1, headerLine.y1);
-
-	//short area = topHeader._GetArea();
-
-	//Display mainWindow;
-	//char* currentDate = utility::_GetCurrentDate();
-	//Cursor datePos(width - utility::_CharLength(currentDate) - 2, 1);
-	//mainWindow._DisplayContent(currentDate, datePos);
 }

@@ -7,15 +7,15 @@ int main() {
 	Console* myConsole = Initialize::_Console();
 
 	//	Display version label
-	Display version;
+	Display main;
 	Cursor versionPos(width - utility::_CharLength(::version) - 2, height - 2);
-	version._Display(::version, versionPos);
-	version._LockContent(versionPos); // -> makes label text on given position permanent
+	main._Display(::version, versionPos);	
 
 	//	Initialize modules
 	ModuleManagement moduler(myConsole);  // -> main module management instance
-	moduler._OpenModule("Login");	
 
-	while (true) {};
+	moduler._OpenModule("Login");
+
+	delete[]::currentDate;
 	return 0;
 }
