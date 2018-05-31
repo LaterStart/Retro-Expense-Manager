@@ -41,13 +41,22 @@ void Login::_StartModule() {
 		layout._Select("SelectionTitle")->_AddElement(userProfile);
 		layout._ShowElements();
 
+		Menu mainMenu;
+		mainMenu._AddElements(
+			Label("Itema 01"),
+			Label("Itembb 02"),
+			Label("Itema 03"),
+			Label("Itemccc 03")
+		);
+		mainMenu._SetPadding(1);
+
+		layout._Select("Menu")->_AddElement(mainMenu);
 
 
 
 
 
-
-
+		mainMenu._Show();
 		
 		/*Menu menu(moduleDsp.)
 		menu._AddElements({ "Create Profileasdasdasdasdasdasdasd", "Load Profile", 0 });

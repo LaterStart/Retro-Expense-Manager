@@ -5,6 +5,8 @@
 class IComponent : public IOComponent {}; 
 
 class OComponent : public IOComponent {	
+private:
+	void _SetInitialCoordinates();
 protected:
 	OComponent(const unsigned short min_x, const unsigned short max_x, const unsigned short min_y, const unsigned short max_y);
 	OComponent(OComponent& parentFrame);
@@ -108,7 +110,6 @@ public:
 
 	const char* IDname = nullptr;
 	Frame(Frame& parentFrame);
-	Coordinates _GetCoordinates();	
 	Container _GetSubFrames();
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
 	void _Split(unsigned short percent, const char* direction, const char* firstID, const char* secondID);
@@ -122,6 +123,7 @@ public:
 	FrameElement** elements = nullptr;
 	int elNum = 0;		
 
+	void _AddPadding(unsigned short padding);
 	void _AddElement(FrameElement& newElement);		
 	void _ShowElements();
 
@@ -141,14 +143,6 @@ public:
 private:
 	Container container;
 };
-
-inline Frame::Coordinates Frame::_GetCoordinates() {
-	coord.x1 = min_x;
-	coord.x2 = max_x;
-	coord.y1 = min_y;
-	coord.y2 = max_y;
-	return coord;
-}
 
 inline void Frame::_SetIDname(const char* IDname) {
 	this->IDname = IDname;
@@ -229,11 +223,10 @@ public:
 
 class Label : public FrameElement {
 private:
-	friend void Display::_Display(Label& label, unsigned char, Cursor& pos);
-	friend void Display::_Display(Label& label, Cursor& pos);
 	Cursor _Align();
 
 public:
+	char* orderNum = nullptr;
 	char* text = nullptr;
 	short length = 0;
 	unsigned char symbol = 0;
@@ -244,8 +237,13 @@ public:
 	Label(const char* text, const char* align) : text((char*)text) { length = utility::_CharLength(text); this->align = align; }
 	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {length = utility::_CharLength(text) + 1; this->align = align;  }
 
+	void _SetOrderNumber(char* orderNum);
 	void _Show();
 };
+
+inline void Label::_SetOrderNumber(char* orderNum) {
+	this->orderNum = orderNum;
+}
 
 class Layout {	
 private:
@@ -263,39 +261,41 @@ public:
 	~Layout();
 };
 
-
-
-
-
-
-
-
-
-class Menu : public Frame {
-private:
-	unsigned short x1, x2;
-	unsigned short y1, y2;
-	unsigned short x_min;
-	unsigned short x_max;
-	unsigned short y_min;
-	unsigned short y_max;
-
+class Menu : public FrameElement {
 public:
-	unsigned int size;
-	const char** elements;
-	const char** links;
-	unsigned short width;
-	unsigned short height;
+	int size = 0;
+	int linkNum = 0;
+	Label** elements = nullptr;
+	Link** links = nullptr;
 
-	void _AddLinks(utility::ElementsList<const char*> list);
-	void _AddElements(utility::ElementsList<const char*> list);
-	void _ModifyBorder(Separator* separators, unsigned int separatorNum);
-	void _ModifyBorder(Separator separator);
-	void _SetPosition(const char* position);
-	void _SetPosition(short x, short y);
-	void _ShowMenu();
+	void _AddElement(Label& element);
+	void _AddLink(Link& link);
 
-	Menu(Frame*);
-	Menu(Frame*, unsigned short width);
+	//	Add more Menu items using variadic template
+	template <typename T>
+	void _AddElements(T& element) {
+		_AddElement(element);
+	}
+	template<typename T, typename ... TT>
+	void _AddElements(T& element, TT& ... nextElements) {
+		_AddElement(element);
+		_AddElements(nextElements...);
+	}
+
+	//	Add links
+	template <typename T>
+	void _AddLinks(T& link) {
+		_AddLink(link);
+	}
+	template<typename T, typename ... TT>
+	void _AddLinks(T& link, TT& ... nextLinks) {
+		_AddLink(link);
+		_AddLinks(nextLinks...);
+	}
+
+	void _Show();
+
+	Menu() = default;
+	Menu(const Menu& copy){}
 	~Menu();
 };

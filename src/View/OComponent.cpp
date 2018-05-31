@@ -2,13 +2,26 @@
 
 //	General OComponent base constructor
 OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
-	max_x(max_x), min_x(min_x), max_y(max_y), min_y(min_y) {}
+	max_x(max_x), min_x(min_x), max_y(max_y), min_y(min_y) {
+	_SetInitialCoordinates();
+}
 
 //	OComponent copy constructor
 OComponent::OComponent(OComponent& parentFrame) :
-	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {}
+	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {
+	_SetInitialCoordinates();
+}
 
-OComponent::OComponent(OComponent* null) : max_x(0), min_x(0), max_y(0), min_y(0) {}
+OComponent::OComponent(OComponent* null) : max_x(0), min_x(0), max_y(0), min_y(0) {
+	_SetInitialCoordinates();
+}
+
+void OComponent::_SetInitialCoordinates() {
+	x1 = min_x;
+	x2 = max_x;
+	y1 = min_y;
+	y2 = max_y;
+}
 
 // Frame Container copy constructor
 Frame::Container::Container(const Container& copy) {
@@ -125,6 +138,13 @@ void Frame::_ShowElements() {
 	}
 }
 
+void Frame::_AddPadding(unsigned short padding) {
+	x1 += padding;
+	x2 -= padding;
+	y1 += padding;
+	y2 -= padding;
+}
+
 //	FrameElement default constructor
 FrameElement::FrameElement(Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
 
@@ -156,12 +176,12 @@ Cursor Label::_Align() {
 		break;
 	case 2:
 		//	 Right align
-		pos._SetXY(coord.x2 - length-padding, coord.y1+Ypos);
+		pos._SetXY(coord.x2 - (length+utility::_CharLength(orderNum))-padding, coord.y1+Ypos);
 		break;
 	case 3:
 		//	Center align
 		short frameSize = coord.x2 - coord.x1;
-		short margin = (frameSize-length)/2;
+		short margin = (frameSize- (length + utility::_CharLength(orderNum)))/2;
 		pos._SetXY(coord.x1+margin, coord.y1+Ypos);
 	}
 	return pos;
@@ -169,11 +189,19 @@ Cursor Label::_Align() {
 
 //	Display label
 void Label::_Show() {
+	short max_x = parentFrame->_GetCoordinates().x2;
 	Cursor pos = _Align();
-	Display* dsp = _GetDisplay();
-	if(symbol==0)
-		dsp->_Display(*this, pos);
-	else dsp->_Display(*this, symbol, pos);
+	Display* dsp = _GetDisplay();	
+	unsigned int cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length)-max_x) : 0;
+
+	if (cut == 0) {
+		if (symbol == 0) 
+			dsp->_Display(pos, orderNum,text);
+		else 
+			dsp->_Display(pos, symbol, orderNum, text);
+	}
+	else 
+		dsp->_Display(pos, text);
 }
 
 //	draw line - 0 = x spawn direction, 1 = y spawn direction
@@ -271,128 +299,35 @@ Layout::~Layout() {
 	delete frame;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Menu::Menu(Frame* parentFrame, unsigned short width) : Frame(*parentFrame), width(width), elements(nullptr), size(0), x_max(::width - 2), y_max(::height - 1), x_min(2), y_min(1) {
-	if (this->width > x_max)
-		this->width = x_max;
-
-	x1 = x_min;
-	y1 = y_min;
-	x2 = x1;
-	y2 = y1;
-}
-
-Menu::Menu(Frame* parentFrame) : Frame(*parentFrame) ,width(0), elements(nullptr), size(0), x_max(::width - 2), y_max(::height - 1), x_min(2), y_min(1) {
-	x1 = x_min;
-	y1 = y_min;
-	x2 = x1;
-	y2 = y1;
-}
-
 Menu::~Menu() {
 	delete[]elements;
 }
 
-//	add menu elements
-void Menu::_AddElements(utility::ElementsList<const char*> list) {
-	size = list._GetSize();
-	elements = new const char*[size];
-	unsigned int z = 0;
-	char num[] = "[0] ";
-	while (z < size) {
-		num[1] = (z + 1) + '0';
-		elements[z++] = utility::_InsertChar((char*)list.node, num);
-		list._NextNode();
-	}
+// Add new menu element
+void Menu::_AddElement(Label& element) {
+	Label** pp = new Label*(nullptr);
+	utility::_AddElement(elements,*pp, size);
+	elements[size - 1] = &element;
+	delete pp;
 }
 
 //	add menu links
-void Menu::_AddLinks(utility::ElementsList<const char*> list) {
-	unsigned int linksNum = list._GetSize();
-	links = new const char*[linksNum];
-	unsigned int z = 0;
-	while (z < linksNum) {
-		links[z++] = list.node;
-		list._NextNode();
-	}
+void Menu::_AddLink(Link& link) {
+	Link** pp = new Link*(nullptr);
+	utility::_AddElement(links, *pp, linkNum);
+	links[linkNum - 1] = &link;
+	delete pp;
 }
-
-//	sets desired position of menu - can be left, top, right or bottom
-void Menu::_SetPosition(const char* position) {
-	if (utility::_CompareChar("left", position)) {
-		x1 = 2; x2 = 2;
-		y1 = 1; y2 = 1;
-	}
-	else if (utility::_CompareChar("right", position)) {
-		x1 = (width > 0) ? ::width - width : ::width - 20;
-		x2 = ::width;
-		y1 = 3;
-		y2 = y1;
-	}
-}
-
-//	sets position of menu using coordinates 
-void Menu::_SetPosition(short x, short y) {}
-
 
 //	display menu elements
-void Menu::_ShowMenu() {
-	Cursor pos(x1, y1);
-	Display menuDisp; unsigned int cut = 0, length;
-	for (unsigned int i = 0; i < size; i++) {
-		length = utility::_CharLength(elements[i]); cut = 0;
-		if (length > width && (width > 0 || length > x_max)) {
-			int cutter = (width > 0) ? width : x_max;
-			cut = length - (cutter - x1);
-		}
-		menuDisp._Display(elements[i], cut);
-		pos._MoveToXY(x1, ++y2);
-	}
-	height = y2 - y1;
-}
-
-//	adjust menu border and position with display frame separators
-void Menu::_ModifyBorder(Separator* separators, unsigned int separatorNum) {
-	for (unsigned int i = 0; i < separatorNum; i++)
-		_ModifyBorder(separators[i]);
-}
-
-void Menu::_ModifyBorder(Separator separator) {
-	Coordinates menuBorder = separator._GetCoordinates();
-	short sep_x1 = menuBorder.x1;
-	short sep_y1 = menuBorder.y1;
-	short sep_x2 = menuBorder.x2;
-	short sep_y2 = menuBorder.y2;
-
-	if (separator.direction == 0) {
-		sep_x2 = sep_x1 + separator.length;
-
-		y_min = (sep_y1 > y_min) ? sep_y1 + 1 : y_min;
-		y1 = (y_min > y1) ? y_min : y1;
-		y2 = y1;
-
-	}
-	else if (separator.direction == 1) {
-		sep_y2 = sep_y1 + separator.length;
-
-		x_max = (sep_x1 < x_max) ? sep_x1 - 1 : x_max;
+void Menu::_Show() {
+	char num[] = "[ ] ";
+	for (int i = 0; i < size; i++) {
+		num[1] = i + 1 + '0';
+		elements[i]->_SetParentFrame(parentFrame);
+		elements[i]->_SetYpos(i);
+		elements[i]->_SetOrderNumber(num);
+		elements[i]->_SetPadding(padding);
+		elements[i]->_Show();
 	}
 }

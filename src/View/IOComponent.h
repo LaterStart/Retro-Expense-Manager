@@ -99,6 +99,16 @@ inline void Cursor::_SetXY(short x, short y) {
 	this->y = y;
 }
 
+class Link : public IOComponent {
+public:
+	unsigned short selectValue;
+	const char* moduleName;
+
+	Link(unsigned short value, const char* name) : selectValue(value), moduleName(name){}
+	Link(const char* name) : moduleName(name){}
+
+};
+
 class Separator; class Frame; class Label; class Layout;
 class Display : public IOComponent {
 private:
@@ -107,18 +117,56 @@ private:
 
 	void _AddActivePosition(Cursor pos);
 	void _ExtendRegister();
+	void _Show(const char* content);
+	void _Show(const char* content, unsigned char symbol);
 
 public:
 	Display() = default;
 	~Display();
 
+	template <typename T>
+	void _Display(Cursor& pos, unsigned char symbol, T element) {
+		pos._SetCursorPosition();
+		pos._SetCharacterNumber(utility::_CharLength(element)+1);
+		_AddActivePosition(pos);
+		_Show(element, symbol);
+	}
+	template<typename T, typename ... TT>
+	void _Display(Cursor& pos, unsigned char symbol, T element, TT ... nextElements) {
+		pos._SetCursorPosition();
+		pos._SetCharacterNumber(utility::_CharLength(element));
+		_AddActivePosition(pos);
+		_Show(element);
+		pos._GetCursorPosition();
+		_Display(pos, symbol, nextElements...);
+	}
+	
+	template <typename T>
+	void _Display(Cursor& pos, T element) {
+		pos._SetCursorPosition();
+		pos._SetCharacterNumber(utility::_CharLength(element));
+		_AddActivePosition(pos);
+		_Show(element);
+	}
+	template<typename T, typename ... TT>
+	void _Display(Cursor& pos, T element, TT ... nextElements) {
+		pos._SetCursorPosition();
+		pos._SetCharacterNumber(utility::_CharLength(element));
+		_AddActivePosition(pos);
+		_Show(element);
+		pos._GetCursorPosition();
+		_Display(pos, nextElements...);
+	}
+
 	void _ClearContent();
 	void _Display(unsigned char ch);
+	/*void _Display(const char* content);
 	void _Display(const char* content, Cursor &pos);
-	void _Display(const char* content);
-	void _Display(const char* test, unsigned int cut);	
-	void _Display(Label& label, Cursor& pos);
-	void _Display(Label& label, unsigned char symbol, Cursor& pos);
+	void _Display(const char* content, int cut);	
+	void _Display(const char* content, Cursor& pos, int cut);
+	void _Display(const char* content, unsigned char symbol);
+	void _Display(const char* content, unsigned char symbol, Cursor& pos);*/
+
 	void _Display(Separator& separator);
 	void _LockContent(Cursor &pos);
 };

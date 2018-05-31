@@ -9,13 +9,14 @@ int main() {
 	//	Display version label
 	Display main;
 	Cursor versionPos(width - utility::_CharLength(::version) - 2, height - 2);
-	main._Display(::version, versionPos);	
+	main._Display(versionPos, ::version);	
 
 	//	Initialize modules
 	ModuleManagement moduler(myConsole);  // -> main module management instance
 
 	moduler._OpenModule("Login");
-
+		
 	delete[]::currentDate;
+	while (true) {}
 	return 0;
 }

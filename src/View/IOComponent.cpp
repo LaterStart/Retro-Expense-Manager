@@ -162,45 +162,14 @@ void Display::_Display(unsigned char ch) {
 	_AddActivePosition(pos);
 }
 
-void Display::_Display(const char* content, Cursor &pos) {
-	pos._SetCursorPosition();
+void Display::_Show(const char* content) {
+	if(content!=nullptr)
+		cout << content;
+}
+
+void Display::_Show(const char* content, unsigned char symbol) {
 	cout << content;
-	pos._SetCharacterNumber(utility::_CharLength(content));
-	_AddActivePosition(pos);
-}
-
-void Display::_Display(const char* content) {
-	Cursor pos;
-	cout << content;
-	pos._SetCharacterNumber((short)utility::_CharLength(content));
-	_AddActivePosition(pos);
-}
-
-void Display::_Display(const char* content, unsigned int cut) {
-	Cursor pos;
-	int length = utility::_CharLength(content) - cut;
-	for (int i = 0; i < length; i++)
-		cout << content[i];
-
-	pos._SetCharacterNumber(length);
-	_AddActivePosition(pos);
-}
-
-void Display::_Display(Label& label, Cursor& pos) {
-	pos._SetCursorPosition();
-	cout << label.text;
-
-	pos._SetCharacterNumber(label.length);
-	_AddActivePosition(pos);
-}
-
-void Display::_Display(Label& label, unsigned char symbol, Cursor& pos) {
-	pos._SetCursorPosition();
-	cout << label.text;
 	cout << symbol;
-
-	pos._SetCharacterNumber(label.length+1);
-	_AddActivePosition(pos);
 }
 
 void Display::_Display(Separator& separator) {
