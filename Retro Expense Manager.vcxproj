@@ -23,20 +23,24 @@
     <ClInclude Include="src\Controllers\Controller.h" />
     <ClInclude Include="src\Controllers\ModuleController.h" />
     <ClInclude Include="src\Controllers\ProfileController.h" />
+    <ClInclude Include="src\IO\Input.h" />
+    <ClInclude Include="src\IO\IOComponent.h" />
+    <ClInclude Include="src\IO\OComponent.h" />
     <ClInclude Include="src\Models\Profile.h" />
     <ClInclude Include="src\Modules\CreateUserProfile.h" />
     <ClInclude Include="src\Modules\LoadUserProfile.h" />
     <ClInclude Include="src\Modules\Login.h" />
     <ClInclude Include="src\Modules\ModuleManagement.h" />
     <ClInclude Include="src\utility.h" />
-    <ClInclude Include="src\View\IOComponent.h" />
-    <ClInclude Include="src\View\OComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\Controllers\Controller.cpp" />
     <ClCompile Include="src\Controllers\ModuleController.cpp" />
     <ClCompile Include="src\Controllers\ProfileController.cpp" />
+    <ClCompile Include="src\IO\Input.cpp" />
+    <ClCompile Include="src\IO\IOComponent.cpp" />
+    <ClCompile Include="src\IO\OComponent.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Models\Profile.cpp" />
     <ClCompile Include="src\Modules\CreateUserProfile.cpp" />
@@ -44,8 +48,6 @@
     <ClCompile Include="src\Modules\Login.cpp" />
     <ClCompile Include="src\Modules\ModuleManagement.cpp" />
     <ClCompile Include="src\utility.cpp" />
-    <ClCompile Include="src\View\IOComponent.cpp" />
-    <ClCompile Include="src\View\OComponent.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

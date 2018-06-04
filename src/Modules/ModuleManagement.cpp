@@ -46,14 +46,17 @@ void ModuleManagement::_InitializeModules() {
 	ModuleInitializer& initializer = initializer._GetInstance();
 	ModuleController modCtrl;
 	utility::LinkedList<string>* classList = modCtrl._ReadModules();
+	utility::LinkedList<string>* deleter = nullptr;
 
 	while (classList != nullptr) {
 		auto module = initializer._CreateInstance(classList->element);	
 		if (module != nullptr) {
 			Module& ref = module->_GetInstance();
 			_AddModule(ref, classList->element);
-		}			
+		}	
+		deleter = classList;
 		classList = classList->nextNode;
+		delete deleter;
 	}	
 }
 

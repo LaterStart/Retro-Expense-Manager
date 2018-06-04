@@ -1,5 +1,5 @@
 #include "Modules/ModuleManagement.h"
-#include "View/IOComponent.h"
+#include "IO/IOComponent.h"
 #include "config.h"
 
 int main() {

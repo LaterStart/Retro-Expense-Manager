@@ -176,13 +176,35 @@ Cursor Label::_Align() {
 		break;
 	case 2:
 		//	 Right align
-		pos._SetXY(coord.x2 - (length+utility::_CharLength(orderNum))-padding, coord.y1+Ypos);
+		pos._SetXY(coord.x2 - length-padding, coord.y1+Ypos);
 		break;
 	case 3:
 		//	Center align
 		short frameSize = coord.x2 - coord.x1;
-		short margin = (frameSize- (length + utility::_CharLength(orderNum)))/2;
+		short margin = (frameSize- length)/2;
 		pos._SetXY(coord.x1+margin, coord.y1+Ypos);
+	}
+	return pos;
+}
+
+//	Return menu item display position using align property
+Cursor MenuItem::_Align() {
+	Cursor pos;
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	switch (utility::_ReadAlign(align)) {
+	case 1:
+		//	Left align
+		pos._SetXY(coord.x1 + padding, coord.y1 + Ypos);
+		break;
+	case 2:
+		//	 Right align
+		pos._SetXY(coord.x2 - (length + utility::_CharLength(orderNum)) - padding, coord.y1 + Ypos);
+		break;
+	case 3:
+		//	Center align
+		short frameSize = coord.x2 - coord.x1;
+		short margin = (frameSize - (length + utility::_CharLength(orderNum))) / 2;
+		pos._SetXY(coord.x1 + margin, coord.y1 + Ypos);
 	}
 	return pos;
 }
@@ -196,11 +218,28 @@ void Label::_Show() {
 
 	if (cut == 0) {
 		if (symbol == 0) 
-			dsp->_Display(pos, orderNum,text);
+			dsp->_Display(pos, text);
 		else 
-			dsp->_Display(pos, symbol, orderNum, text);
+			dsp->_Display(pos, symbol, text);
 	}
 	else 
+		dsp->_Display(pos, text);
+}
+
+//	Display menu item
+void MenuItem::_Show() {
+	short max_x = parentFrame->_GetCoordinates().x2;
+	Cursor pos = _Align();
+	Display* dsp = _GetDisplay();
+	unsigned int cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length) - max_x) : 0;
+
+	if (cut == 0) {
+		if (symbol == 0)
+			dsp->_Display(pos, orderNum, text);
+		else
+			dsp->_Display(pos, symbol, orderNum, text);
+	}
+	else
 		dsp->_Display(pos, text);
 }
 
@@ -262,7 +301,7 @@ void Layout::_DefaultFrameTemplate(Display& dsp) {
 	frame->_SetIDname("DefaultLayout");
 	frame->_SetDisplay(dsp);
 	
-	Separator menuLine(*this, 26, 1, 20, 0);
+	Separator menuLine(*this, 26, 1, 22, 0);
 	Separator headerLine(*this, ::width - 4, 0, 2, 2);
 
 	frame->_Split(headerLine, "Header", "Body");
@@ -300,34 +339,26 @@ Layout::~Layout() {
 }
 
 Menu::~Menu() {
-	delete[]elements;
+	delete[]items;
 }
 
 // Add new menu element
-void Menu::_AddElement(Label& element) {
-	Label** pp = new Label*(nullptr);
-	utility::_AddElement(elements,*pp, size);
-	elements[size - 1] = &element;
+void Menu::_AddItem(MenuItem& item) {
+	MenuItem** pp = new MenuItem*(nullptr);
+	utility::_AddElement(items,*pp, size);
+	items[size - 1] = &item;
 	delete pp;
 }
 
-//	add menu links
-void Menu::_AddLink(Link& link) {
-	Link** pp = new Link*(nullptr);
-	utility::_AddElement(links, *pp, linkNum);
-	links[linkNum - 1] = &link;
-	delete pp;
-}
-
-//	display menu elements
+//	display menu items
 void Menu::_Show() {
 	char num[] = "[ ] ";
 	for (int i = 0; i < size; i++) {
 		num[1] = i + 1 + '0';
-		elements[i]->_SetParentFrame(parentFrame);
-		elements[i]->_SetYpos(i);
-		elements[i]->_SetOrderNumber(num);
-		elements[i]->_SetPadding(padding);
-		elements[i]->_Show();
+		items[i]->_SetParentFrame(parentFrame);
+		items[i]->_SetYpos(i);
+		items[i]->_SetOrderNumber(num);
+		items[i]->_SetPadding(padding);
+		items[i]->_Show();
 	}
 }

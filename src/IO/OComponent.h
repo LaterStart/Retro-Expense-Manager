@@ -99,6 +99,7 @@ private:
 	void _UpdateContainer(Frame* newFrame);
 	short nextYpos = 0;	
 
+	void _AddElement(FrameElement& newElement);
 public:
 	struct Container {
 		Frame** frames = nullptr;
@@ -123,8 +124,7 @@ public:
 	FrameElement** elements = nullptr;
 	int elNum = 0;		
 
-	void _AddPadding(unsigned short padding);
-	void _AddElement(FrameElement& newElement);		
+	void _AddPadding(unsigned short padding);	
 	void _ShowElements();
 
 	//	Add more FrameElements using variadic template
@@ -225,8 +225,7 @@ class Label : public FrameElement {
 private:
 	Cursor _Align();
 
-public:
-	char* orderNum = nullptr;
+public:	
 	char* text = nullptr;
 	short length = 0;
 	unsigned char symbol = 0;
@@ -237,13 +236,8 @@ public:
 	Label(const char* text, const char* align) : text((char*)text) { length = utility::_CharLength(text); this->align = align; }
 	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {length = utility::_CharLength(text) + 1; this->align = align;  }
 
-	void _SetOrderNumber(char* orderNum);
 	void _Show();
 };
-
-inline void Label::_SetOrderNumber(char* orderNum) {
-	this->orderNum = orderNum;
-}
 
 class Layout {	
 private:
@@ -261,41 +255,54 @@ public:
 	~Layout();
 };
 
+class MenuItem;
 class Menu : public FrameElement {
+private:
+	void _AddItem(MenuItem& item);
+
 public:
 	int size = 0;
 	int linkNum = 0;
-	Label** elements = nullptr;
-	Link** links = nullptr;
-
-	void _AddElement(Label& element);
-	void _AddLink(Link& link);
+	MenuItem** items = nullptr;
+	
 
 	//	Add more Menu items using variadic template
 	template <typename T>
-	void _AddElements(T& element) {
-		_AddElement(element);
+	void _AddItems(T& item) {
+		_AddItem(item);
 	}
 	template<typename T, typename ... TT>
-	void _AddElements(T& element, TT& ... nextElements) {
-		_AddElement(element);
-		_AddElements(nextElements...);
-	}
-
-	//	Add links
-	template <typename T>
-	void _AddLinks(T& link) {
-		_AddLink(link);
-	}
-	template<typename T, typename ... TT>
-	void _AddLinks(T& link, TT& ... nextLinks) {
-		_AddLink(link);
-		_AddLinks(nextLinks...);
+	void _AddItems(T& item, TT& ... nextItems) {
+		_AddItem(item);
+		_AddItems(nextItems...);
 	}
 
 	void _Show();
+	const char* _OpenLink(int selection);
 
 	Menu() = default;
 	Menu(const Menu& copy){}
 	~Menu();
 };
+
+class MenuItem : public Label {
+private:
+	friend const char* Menu::_OpenLink(int selection);
+
+	Cursor _Align();
+	char* orderNum = nullptr;
+	const char* link;
+
+public:
+	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName) {}
+	void _SetOrderNumber(char* orderNum);
+	void _Show();
+};
+
+inline void MenuItem::_SetOrderNumber(char* orderNum) {
+	this->orderNum = orderNum;
+}
+
+inline const char* Menu::_OpenLink(int selection) {
+	return items[selection - 1]->link;
+}

@@ -1,6 +1,5 @@
 #include "LoadUserProfile.h"
 #include "../Controllers/ProfileController.h"
-#include "../View/IOComponent.h"
 #include "../config.h"
 
 LoadUserProfile::LoadUserProfile() : initialized(false) {}

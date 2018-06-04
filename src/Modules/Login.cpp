@@ -1,7 +1,6 @@
 #include "Login.h"
 #include "../Controllers/ProfileController.h"
-#include "../View/IOComponent.h"
-#include "../View/OComponent.h"
+#include "../IO/IOComponent.h"
 #include "../config.h"
 
 Login::Login() : initialized_(false) {}
@@ -33,36 +32,34 @@ void Login::_StartModule() {
 		Display display;		
 
 		layout._DefaultFrameTemplate(display);
-		layout._Select("MenuHeader")->_AddElement(Label("Main Menu ",::headerSymbol, "center"));		
-		layout._Select("Date")->_AddElement(Label(utility::_GetCurrentDate(), "left"));
+		layout._Select("MenuHeader")->_AddElements(Label("Main Menu ", ::headerSymbol, "center"));		
+		layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
 		Label userProfile("User Profile ", ::headerSymbol, "left");
 		userProfile._SetPadding(4);
-		layout._Select("SelectionTitle")->_AddElement(userProfile);
-		layout._ShowElements();
+		layout._Select("SelectionTitle")->_AddElements(userProfile);
 
 		Menu mainMenu;
-		mainMenu._AddElements(
-			Label("Itema 01"),
-			Label("Itembb 02"),
-			Label("Itema 03"),
-			Label("Itemccc 03")
+		mainMenu._AddItems(
+			MenuItem("Create Profile", "CreateUserProfile"),
+			MenuItem("Load Profile", "LoadUserProfile")
 		);
 		mainMenu._SetPadding(1);
+		layout._Select("Menu")->_AddElements(mainMenu);
 
-		layout._Select("Menu")->_AddElement(mainMenu);
+		Label text1("No recent user profile was detected.");
+		Label text2("Please create new one or load existing.");
+		text1._SetPadding(4); text2._SetPadding(4);
+		layout._Select("Content")->_AddElements(text1, text2);
 
+		layout._ShowElements();		
 
-
-
-
-		mainMenu._Show();
-		
-		/*Menu menu(moduleDsp.)
-		menu._AddElements({ "Create Profileasdasdasdasdasdasdasd", "Load Profile", 0 });
-		menu._AddLinks({ "CreateUserProfile", "LoadUserProfile", 0 });
-		menu._SetPosition("right");
-		menu._ModifyBorder(moduleDsp._GetFrameSeparators(), moduleDsp._GetFrameSeparatorsNum());
-		menu._ShowMenu();*/
+		Cursor(1, ::height - 2);
+		UserInput select(menuSelect);
+		while (select.selection <  1 || select.selection > mainMenu.size) {
+			select._ClearInput();
+			select._ReadUserInput();
+		}
+		moduler->_OpenModule(mainMenu._OpenLink(select.selection));
 	}
 }

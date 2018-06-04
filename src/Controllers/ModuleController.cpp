@@ -25,8 +25,10 @@ utility::LinkedList<string>* ModuleController::_ReadModules() {
 	do {
 		//	find and return list with only files under .h extension (classes)		
 		char* className = utility::_ChopChar((char*)list->element.c_str(), (char*)modulesDirectory, (char*)".h");
-		if (className != nullptr)
+		if (className != nullptr) {
 			list->element = className;
+			delete[]className;
+		}
 		else {
 			temp = list;
 			list->_RemoveLink();

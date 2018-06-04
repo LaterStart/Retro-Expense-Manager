@@ -1,5 +1,5 @@
 #include "CreateUserProfile.h"
-#include "../View/IOComponent.h"
+#include "../IO/IOComponent.h"
 #include "../config.h"
 
 CreateUserProfile::CreateUserProfile() : initialized_(false) {}

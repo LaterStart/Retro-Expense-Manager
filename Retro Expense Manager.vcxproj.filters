@@ -25,17 +25,17 @@
     <Filter Include="Header Files\Models">
       <UniqueIdentifier>{39379c4e-6a7b-4641-98be-bec8a727dbda}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\View">
-      <UniqueIdentifier>{e3b56a14-17e2-4347-8e89-86d38c279586}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\View">
-      <UniqueIdentifier>{cd88ff60-a23e-4b52-99b7-e92805f78a91}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Modules">
       <UniqueIdentifier>{4111b159-da2d-4a4c-80aa-384cde253a1e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Modules">
       <UniqueIdentifier>{d56c2ed2-7777-438e-95c5-abd3e70eba83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input/Output">
+      <UniqueIdentifier>{cd88ff60-a23e-4b52-99b7-e92805f78a91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input/Output">
+      <UniqueIdentifier>{e3b56a14-17e2-4347-8e89-86d38c279586}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,17 +63,20 @@
     <ClInclude Include="src\Modules\LoadUserProfile.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="src\View\IOComponent.h">
-      <Filter>Header Files\View</Filter>
-    </ClInclude>
     <ClInclude Include="src\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\Login.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="src\View\OComponent.h">
-      <Filter>Header Files\View</Filter>
+    <ClInclude Include="src\IO\Input.h">
+      <Filter>Header Files\Input/Output</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IO\IOComponent.h">
+      <Filter>Header Files\Input/Output</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IO\OComponent.h">
+      <Filter>Header Files\Input/Output</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -110,11 +113,14 @@
     <ClCompile Include="src\Modules\Login.cpp">
       <Filter>Source Files\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\View\IOComponent.cpp">
-      <Filter>Source Files\View</Filter>
+    <ClCompile Include="src\IO\Input.cpp">
+      <Filter>Source Files\Input/Output</Filter>
     </ClCompile>
-    <ClCompile Include="src\View\OComponent.cpp">
-      <Filter>Source Files\View</Filter>
+    <ClCompile Include="src\IO\IOComponent.cpp">
+      <Filter>Source Files\Input/Output</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IO\OComponent.cpp">
+      <Filter>Source Files\Input/Output</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

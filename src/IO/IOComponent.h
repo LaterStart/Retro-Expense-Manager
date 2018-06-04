@@ -160,13 +160,9 @@ public:
 
 	void _ClearContent();
 	void _Display(unsigned char ch);
-	/*void _Display(const char* content);
-	void _Display(const char* content, Cursor &pos);
-	void _Display(const char* content, int cut);	
-	void _Display(const char* content, Cursor& pos, int cut);
-	void _Display(const char* content, unsigned char symbol);
-	void _Display(const char* content, unsigned char symbol, Cursor& pos);*/
-
 	void _Display(Separator& separator);
 	void _LockContent(Cursor &pos);
 };
+
+#include "OComponent.h"
+#include "Input.h"
