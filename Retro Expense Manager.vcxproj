@@ -38,6 +38,7 @@
     <ClCompile Include="src\Controllers\Controller.cpp" />
     <ClCompile Include="src\Controllers\ModuleController.cpp" />
     <ClCompile Include="src\Controllers\ProfileController.cpp" />
+    <ClCompile Include="src\IO\Form.cpp" />
     <ClCompile Include="src\IO\Input.cpp" />
     <ClCompile Include="src\IO\IOComponent.cpp" />
     <ClCompile Include="src\IO\OComponent.cpp" />

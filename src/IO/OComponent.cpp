@@ -1,4 +1,5 @@
 #include "OComponent.h"
+#include "../Modules/ModuleManagement.h"
 
 //	General OComponent base constructor
 OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
@@ -224,6 +225,10 @@ void Label::_Show() {
 	}
 	else 
 		dsp->_Display(pos, text);
+}
+
+MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
+	link = *previousModule;
 }
 
 //	Display menu item

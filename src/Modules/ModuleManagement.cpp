@@ -14,18 +14,18 @@ ModuleManagement::~ModuleManagement(){
 	delete[]moduleList;
 }
 
-//	wanna be framework implementation - each class registers its name at compile time
+//	Wanna be framework implementation - each class registers its name at compile time
 void ModuleInitializer::_RegisterModule(string moduleName, function<Module*(void)> moduleInitializer){
 	moduleRegistry[moduleName] = moduleInitializer;
 }
 
-//	module initializer is activated at compile time
+//	Module initializer is activated at compile time
 ModuleInitializer& ModuleInitializer::_GetInstance(){
 	static ModuleInitializer instance;
 	return instance;
 }
 
-//	create instance of module at run time
+//	Create instance of module at run time
 shared_ptr<Module>ModuleInitializer::_CreateInstance(string name) {
 	Module* instance = nullptr;
 
@@ -41,7 +41,7 @@ shared_ptr<Module>ModuleInitializer::_CreateInstance(string name) {
 		return nullptr;
 }
 
-//	find existing module classes and initialize singleton instances
+//	Find existing module classes and initialize singleton instances
 void ModuleManagement::_InitializeModules() {
 	ModuleInitializer& initializer = initializer._GetInstance();
 	ModuleController modCtrl;
@@ -60,11 +60,14 @@ void ModuleManagement::_InitializeModules() {
 	}	
 }
 
+//	Open module from active modules list using module name
 void ModuleManagement::_OpenModule(const char* name) {
 	for (int i = 0; i < moduleNum; i++)
 		if (moduleList[i].name == name) {
 			moduleList[i].module->moduler = this;
 			moduleList[i].module->console = this->console;
+			moduleList[i].module->previousModule = this->previousModule;
+			moduleList[i].module->name = name;
 			moduleList[i].module->_StartModule();
 		}
 }

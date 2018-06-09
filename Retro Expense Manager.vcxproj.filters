@@ -122,5 +122,8 @@
     <ClCompile Include="src\IO\OComponent.cpp">
       <Filter>Source Files\Input/Output</Filter>
     </ClCompile>
+    <ClCompile Include="src\IO\Form.cpp">
+      <Filter>Source Files\Input/Output</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -13,8 +13,16 @@ class Module {
 protected:
 	virtual void _StartModule() = 0;
 	virtual Module& _GetInstance() = 0;
+
 	ModuleManagement* moduler;
 	Console* console;
+	Module* previousModule;
+	const char* name;
+
+public:
+	operator const char*() {
+		return name;
+	}
 };
 
 //	container class - enables storage of active modules singleton references
@@ -38,8 +46,13 @@ private:
 
 	Console* console;
 
+	const char* nextModule;
+	Module* previousModule;
+
 public:
 	void _OpenModule(const char* name);
+	void _OpenNextModule();
+	void _SetNextModule(Module* previousModule, const char* name);
 
 	ModuleManagement(Console* myConsole);
 	~ModuleManagement();
@@ -53,6 +66,15 @@ public:
 		moduleList[moduleNum - 1].name = name;
 	}
 };
+
+inline void ModuleManagement::_OpenNextModule() {	
+	_OpenModule(this->nextModule);
+}
+
+inline void ModuleManagement::_SetNextModule(Module* previousModule, const char* name) {
+	this->previousModule = previousModule;
+	this->nextModule = name;
+}
 
 //	compile time class used to add each module into register
 class ModuleInitializer {

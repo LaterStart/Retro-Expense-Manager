@@ -1,6 +1,7 @@
 #include "Login.h"
 #include "../Controllers/ProfileController.h"
 #include "../IO/IOComponent.h"
+#include "../IO/Input.h"
 #include "../config.h"
 
 Login::Login() : initialized_(false) {}
@@ -25,8 +26,9 @@ void Login::_StartModule() {
 	if (profCtrl._GetStatus()) {
 
 	}
+	//	if no recent user profile is found, display available options
 	else {
-		//	if no recent user profile is found, display available options
+		//	Create default frame layout
 		Frame* mainFrame = console->_GetMainFrame();	
 		Layout layout(mainFrame);
 		Display display;		
@@ -39,6 +41,7 @@ void Login::_StartModule() {
 		userProfile._SetPadding(4);
 		layout._Select("SelectionTitle")->_AddElements(userProfile);
 
+		//	Main menu
 		Menu mainMenu;
 		mainMenu._AddItems(
 			MenuItem("Create Profile", "CreateUserProfile"),
@@ -47,6 +50,7 @@ void Login::_StartModule() {
 		mainMenu._SetPadding(1);
 		layout._Select("Menu")->_AddElements(mainMenu);
 
+		//	Module text
 		Label text1("No recent user profile was detected.");
 		Label text2("Please create new one or load existing.");
 		text1._SetPadding(4); text2._SetPadding(4);
@@ -54,12 +58,16 @@ void Login::_StartModule() {
 
 		layout._ShowElements();		
 
+		//	Read user input - menu selection only available 
 		Cursor(1, ::height - 2);
 		UserInput select(menuSelect);
 		while (select.selection <  1 || select.selection > mainMenu.size) {
 			select._ClearInput();
 			select._ReadUserInput();
 		}
-		moduler->_OpenModule(mainMenu._OpenLink(select.selection));
+
+		//	Set module name (link) as the next one to be opened in main.cpp game loop.
+		//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
+		moduler->_SetNextModule(this, mainMenu._GetLink(select.selection));
 	}
 }

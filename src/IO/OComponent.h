@@ -96,8 +96,7 @@ private:
 	friend class Layout;
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
 	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);	
-	void _UpdateContainer(Frame* newFrame);
-	short nextYpos = 0;	
+	void _UpdateContainer(Frame* newFrame);	
 
 	void _AddElement(FrameElement& newElement);
 public:
@@ -109,6 +108,7 @@ public:
 		~Container();
 	};
 
+	short nextYpos = 0;
 	const char* IDname = nullptr;
 	Frame(Frame& parentFrame);
 	Container _GetSubFrames();
@@ -164,7 +164,7 @@ class FrameElement : public OComponent {
 protected:
 	const char* align = "left";
 	unsigned short padding = 0;
-	short Ypos;
+	short Ypos = 0;
 	Frame* parentFrame;
 	FrameElement();
 	FrameElement(Frame* parentFrame);	
@@ -198,7 +198,7 @@ inline Cursor FrameElement::_Align() {
 }
 
 inline void FrameElement::_SetYpos(short y) {
-	Ypos = y;
+	this->Ypos = y;
 }
 
 inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
@@ -263,8 +263,7 @@ private:
 public:
 	int size = 0;
 	int linkNum = 0;
-	MenuItem** items = nullptr;
-	
+	MenuItem** items = nullptr;	
 
 	//	Add more Menu items using variadic template
 	template <typename T>
@@ -276,33 +275,45 @@ public:
 		_AddItem(item);
 		_AddItems(nextItems...);
 	}
-
+	const char* _GetLink(int selection);
 	void _Show();
-	const char* _OpenLink(int selection);
 
 	Menu() = default;
 	Menu(const Menu& copy){}
 	~Menu();
 };
 
+class Module;
 class MenuItem : public Label {
 private:
-	friend const char* Menu::_OpenLink(int selection);
+	friend const char* Menu::_GetLink(int selection);
 
 	Cursor _Align();
 	char* orderNum = nullptr;
-	const char* link;
+	const char* prefix = nullptr;
+	const char* link = nullptr;
 
 public:
-	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName) {}
+	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName){}
+	MenuItem(const char* text, Module* previousModule);
 	void _SetOrderNumber(char* orderNum);
+	void _SetSpecialPrefix(const char* prefix);
 	void _Show();
 };
 
 inline void MenuItem::_SetOrderNumber(char* orderNum) {
-	this->orderNum = orderNum;
+	if(prefix==nullptr)
+		this->orderNum = orderNum;
+	else {
+		this->orderNum = (char*)prefix;
+		Ypos++;
+	}
 }
 
-inline const char* Menu::_OpenLink(int selection) {
-	return items[selection - 1]->link;
+inline const char* Menu::_GetLink(int selection) {
+	return items[selection-1]->link;
+}
+
+inline void MenuItem::_SetSpecialPrefix(const char* prefix) {
+	this->prefix = prefix;
 }

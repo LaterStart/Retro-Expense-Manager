@@ -14,9 +14,12 @@ int main() {
 	//	Initialize modules
 	ModuleManagement moduler(myConsole);  // -> main module management instance
 
-	moduler._OpenModule("Login");
-		
+	moduler._OpenModule("Login");		
+	
+	//	Game loop
+	while (true) 
+		moduler._OpenNextModule();	
+
 	delete[]::currentDate;
-	while (true) {}
 	return 0;
 }

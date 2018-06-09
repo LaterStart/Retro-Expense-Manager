@@ -29,13 +29,20 @@ void UserInput::_ReadUserInput() {
 }
 
 int UserInput::_VerifyInput(char& ch) {
-	switch (type) {
-	case menuSelect:
-		return _Verify_menuSelect(ch);
-	case text:
-		return _Verify_text(ch);
-	default:
-		return 0;
+	if (ch == 27) {
+		control = -1;
+		return 1;
+	}
+
+	else {
+		switch (type) {
+		case InputType::menuSelect:
+			return _Verify_menuSelect(ch);
+		case InputType::text:
+			return _Verify_text(ch);
+		default:
+			return 0;
+		}
 	}
 }
 
