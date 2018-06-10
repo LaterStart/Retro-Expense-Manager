@@ -213,43 +213,19 @@ Cursor Label::_Align() {
 	return pos;
 }
 
-//	Return menu item display position using align property
-Cursor MenuItem::_Align() {
-	Cursor pos;
-	Frame::Coordinates coord = parentFrame->_GetCoordinates();
-	switch (utility::_ReadAlign(align)) {
-	case 1:
-		//	Left align
-		pos._SetXY(coord.x1 + padding, coord.y1 + Ypos);
-		break;
-	case 2:
-		//	 Right align
-		pos._SetXY(coord.x2 - (length + utility::_CharLength(orderNum)) - padding, coord.y1 + Ypos);
-		break;
-	case 3:
-		//	Center align
-		short frameSize = coord.x2 - coord.x1;
-		short margin = (frameSize - (length + utility::_CharLength(orderNum))) / 2;
-		pos._SetXY(coord.x1 + margin, coord.y1 + Ypos);
-	}
-	return pos;
-}
-
 //	Display label
 void Label::_Show() {
 	short max_x = parentFrame->_GetCoordinates().x2;
 	Cursor pos = _Align();
 	Display* dsp = _GetDisplay();	
-	unsigned int cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length)-max_x) : 0;
+	cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length)-max_x) : 0;
 
-	if (cut == 0) {
-		if (symbol == 0) 
-			dsp->_Display(pos, text);
-		else 
-			dsp->_Display(pos, symbol, text);
-	}
-	else 
-		dsp->_Display(pos, text);
+	dsp->_Display(this, pos);
+}
+
+void Label::_Hide() {
+	Display* dsp = _GetDisplay();
+	dsp->_HideContent(this->id);
 }
 
 MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
@@ -261,16 +237,9 @@ void MenuItem::_Show() {
 	short max_x = parentFrame->_GetCoordinates().x2;
 	Cursor pos = _Align();
 	Display* dsp = _GetDisplay();
-	unsigned int cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length) - max_x) : 0;
-
-	if (cut == 0) {
-		if (symbol == 0)
-			dsp->_Display(pos, orderNum, text);
-		else
-			dsp->_Display(pos, symbol, orderNum, text);
-	}
-	else
-		dsp->_Display(pos, text);
+	cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length) - max_x) : 0;
+	
+	dsp->_Display(this, pos);
 }
 
 //	draw line - 0 = x spawn direction, 1 = y spawn direction

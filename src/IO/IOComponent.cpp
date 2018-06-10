@@ -5,6 +5,8 @@
 #include "OComponent.h"
 using namespace std;
 
+int IOComponent::idCounter = 0;
+
 bool Initialize::initialized = false;
 Console* Initialize::_Console() {
 	if (!initialized) {
@@ -151,15 +153,18 @@ void Cursor::_MoveToXY(short x_in, short y_in) {
 
 Display::~Display() {
 	for (int i = 0; i < activePosNum; i++)
-		activePositions[i]._ClearText();
+		activePositions[i]._ClearContent();
 	delete[]activePositions;
 }
 
-void Display::_Display(unsigned char ch) {
-	Cursor pos;
-	cout << ch;
-	pos._SetCharacterNumber(1);
-	_AddActivePosition(pos);
+void Display::_HideContent(int elementID) {
+	for (int i = 0; i < activePosNum; i++)
+		if (activePositions[i].elementID == elementID)
+			activePositions[i]._ClearContent();
+}
+
+void Display::_Backspace() {
+	activePositions[--activePosNum]._ClearContent();
 }
 
 void Display::_Show(const char* content) {
@@ -170,6 +175,49 @@ void Display::_Show(const char* content) {
 void Display::_Show(const char* content, unsigned char symbol) {
 	cout << content;
 	cout << symbol;
+}
+
+void Display::_Display(char ch) {
+	Cursor pos;
+	cout << ch;
+	pos._SetCharacterNumber(1);
+	ActivePos apos(pos, -1);
+	_AddActivePosition(apos);
+}
+
+void Display::_Display(const char* text) {
+	Cursor pos;
+	cout << text;
+	pos._SetCharacterNumber(utility::_CharLength(text));
+	ActivePos apos(pos, -1);
+	_AddActivePosition(apos);
+}
+
+void Display::_Display(Label* label, Cursor& pos) {
+	pos._SetCursorPosition();
+	if(label->cut>0)
+		for (int i = 0; i < (label->length - label->cut);i++)
+			cout <<label->text[i];
+	else cout << label->text;
+
+	pos._SetCharacterNumber((label->length - label->cut));
+
+	if (label->symbol != 0) {
+		cout << label->symbol;
+		pos._ChangeCharacterNumber(1);
+	}
+
+	ActivePos apos(pos, label->id);
+	_AddActivePosition(apos);
+}
+
+void Display::_Display(MenuItem* item, Cursor& pos) {
+	pos._SetCursorPosition();
+	cout << item->orderNum;	
+	_Display((Label*)item);	
+	pos._SetCharacterNumber(item->length);
+	ActivePos apos(pos, item->id);
+	_AddActivePosition(apos);
 }
 
 void Display::_Display(Separator& separator) {
@@ -187,36 +235,49 @@ void Display::_Display(Separator& separator) {
 		cout << line;
 		if (separator.direction == 1) {
 			pos._SetCharacterNumber(1);
-			_AddActivePosition(pos);
+			ActivePos apos(pos, separator.id);
+			_AddActivePosition(apos);
 		}
 		(pos.*(pos.ptr))(1);
 	}
 	if (separator.direction == 0) {
 		Cursor pos(separator.x1, separator.y1);
 		pos._SetCharacterNumber(separator.length);
-		_AddActivePosition(pos);
+		ActivePos apos(pos, separator.id);
+		_AddActivePosition(apos);
 	}
 }
 
-void Display::_AddActivePosition(Cursor pos) {
-	bool newPos = true;
-
-	if (activePositions != nullptr) {
-		for (int i = 0; i < activePosNum; i++) {
-			if (activePositions[i] == pos) {
-				newPos = false;
-				break;
-			}
+void Display::_Loading() {
+	Cursor loadng;
+	const char* load = "...";
+	int j = 0;
+	for (int i = 0; i < 300000000; i++) {
+		if (i % 100000000 == 0) {
+			cout << load[j++];
 		}
 	}
+	loadng._SetCharacterNumber(utility::_CharLength(load));
+	ActivePos apos(loadng, -1);
+	_AddActivePosition(apos);
+}
+
+void Display::_AddActivePosition(ActivePos apos) {
+	bool newPos = true;
+	if (activePositions != nullptr) 
+		for (int i = 0; i < activePosNum; i++) 
+			if (activePositions[i] == apos) {
+				newPos = false;
+				break;
+			}	
 	if (newPos) {
 		_ExtendRegister();
-		activePositions[activePosNum++] = pos;
+		activePositions[activePosNum++] = apos;
 	}
 }
 
 void Display::_ExtendRegister() {
-	Cursor* tmp = new Cursor[activePosNum + 1];
+	ActivePos* tmp = new ActivePos[activePosNum + 1];
 	for (int i = 0; i < activePosNum; i++)
 		tmp[i] = activePositions[i];
 
@@ -224,9 +285,9 @@ void Display::_ExtendRegister() {
 	activePositions = tmp;
 }
 
-void Display::_ClearContent() {
+void Display::_WipeContent() {
 	for (int i = 0; i < activePosNum; i++)
-		activePositions[i]._ClearText();
+		activePositions[i]._ClearContent();
 	delete[]activePositions;
 	activePositions = nullptr;
 	activePosNum = 0;
@@ -234,7 +295,7 @@ void Display::_ClearContent() {
 
 void Display::_LockContent(Cursor &pos) {
 	for (int i = 0; i < activePosNum; i++)
-		if (activePositions[i] == pos) {
+		if (activePositions[i].pos == pos) {
 			utility::_RemoveElement(activePositions, i, activePosNum);
 			activePosNum--;
 		}

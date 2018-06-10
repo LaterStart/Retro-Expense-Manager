@@ -179,12 +179,15 @@ public:
 	void _SetParentFrame(Frame* parentFrame);
 	
 	virtual void _Show();
+	virtual void _Hide();
 	void _SetAlign(const char* align);
 	void _SetYpos(short y);
 	void _SetPadding(unsigned short padding);
 };
 
 inline void FrameElement::_Show() {}
+
+inline void FrameElement::_Hide() {}
 
 inline void FrameElement::_SetAlign(const char* align) {
 	this->align = align;
@@ -224,13 +227,14 @@ public:
 
 
 class Label : public FrameElement {
-private:
+protected:
 	Cursor _Align();
 
 public:	
 	char* text = nullptr;
 	short length = 0;
 	unsigned char symbol = 0;
+	unsigned short cut = 0;
 
 	Label() = default;
 	Label(const Label& copy) : text(copy.text), length(copy.length) {}
@@ -238,7 +242,8 @@ public:
 	Label(const char* text, const char* align) : text((char*)text) { length = utility::_CharLength(text); this->align = align; }
 	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {length = utility::_CharLength(text) + 1; this->align = align;  }
 
-	void _Show();
+	virtual void _Show() override;
+	virtual void _Hide() override;
 };
 
 class Layout {	
@@ -279,7 +284,7 @@ public:
 	}
 	const char* _GetLink(int selection);
 	void _ChangeItem(MenuItem& item, int pos);
-	void _Show();
+	void _Show() override;
 
 	Menu() = default;
 	Menu(const Menu& copy){}
@@ -291,17 +296,16 @@ class MenuItem : public Label {
 private:
 	friend const char* Menu::_GetLink(int selection);
 
-	Cursor _Align();
-	char* orderNum = nullptr;
 	const char* prefix = nullptr;
 	const char* link = nullptr;
 
 public:
+	char* orderNum = nullptr;
 	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName){}
 	MenuItem(const char* text, Module* previousModule);
 	void _SetOrderNumber(char* orderNum);
 	void _SetSpecialPrefix(const char* prefix);
-	void _Show();
+	void _Show() override;
 };
 
 inline void MenuItem::_SetOrderNumber(char* orderNum) {
@@ -311,6 +315,7 @@ inline void MenuItem::_SetOrderNumber(char* orderNum) {
 		this->orderNum = (char*)prefix;
 		Ypos++;
 	}
+	length += utility::_CharLength(orderNum);
 }
 
 inline const char* Menu::_GetLink(int selection) {

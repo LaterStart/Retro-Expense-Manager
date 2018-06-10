@@ -12,7 +12,15 @@ public:
 	static Console* _Console();
 };
 
-class IOComponent {};
+class IOComponent {
+public:
+	static int idCounter;
+	int id;
+	IOComponent() {
+		id = idCounter;
+		idCounter++;
+	}
+};
 
 class Frame;
 class Console : public IOComponent {
@@ -66,6 +74,7 @@ public:
 	void _MoveY(short);
 	void _ClearText();
 	void _SetCharacterNumber(short);
+	void _ChangeCharacterNumber(short);
 	void _SetXY(short, short);
 	void _MoveToXY(short x, short y);
 
@@ -94,6 +103,9 @@ inline short Cursor::_GetX() {
 inline void Cursor::_SetCharacterNumber(short num) {
 	n = num;
 }
+inline void Cursor::_ChangeCharacterNumber(short num) {
+	n += num;
+}
 inline void Cursor::_SetXY(short x, short y) {
 	this->x = x;
 	this->y = y;
@@ -109,13 +121,31 @@ public:
 
 };
 
-class Separator; class Frame; class Label; class Layout;
+class Separator; class Label; class MenuItem;
 class Display : public IOComponent {
 private:
-	unsigned short activePosNum = 0;
-	Cursor* activePositions = nullptr;
+	struct ActivePos {
+		Cursor pos;
+		int elementID;
 
-	void _AddActivePosition(Cursor pos);
+		ActivePos() = default;
+		ActivePos(Cursor pos, int elementID) : pos(pos), elementID(elementID){}
+		ActivePos(const ActivePos& copy) : pos(copy.pos), elementID(copy.elementID){}
+		bool operator == (ActivePos& equal) {
+			if (elementID == equal.elementID && pos == equal.pos)
+				return true;
+			else return false;
+		}
+
+		void _ClearContent() {
+			pos._ClearText();
+		}
+	};
+
+	int activePosNum = 0;
+	ActivePos* activePositions = nullptr;
+
+	void _AddActivePosition(ActivePos);
 	void _ExtendRegister();
 	void _Show(const char* content);
 	void _Show(const char* content, unsigned char symbol);
@@ -125,43 +155,36 @@ public:
 	~Display();
 
 	template <typename T>
-	void _Display(Cursor& pos, unsigned char symbol, T element) {
-		pos._SetCursorPosition();
-		pos._SetCharacterNumber(utility::_CharLength(element)+1);
-		_AddActivePosition(pos);
-		_Show(element, symbol);
+	void _Display(Cursor& pos, T item) {
+		pos._GetCursorPosition();
+		pos._SetCharacterNumber(utility::_CharLength(item));
+		_Display(item);
+		ActivePos apos(pos, -1);
+		_AddActivePosition(apos);
 	}
 	template<typename T, typename ... TT>
-	void _Display(Cursor& pos, unsigned char symbol, T element, TT ... nextElements) {
+	void _Display(Cursor& pos, T item, TT ... nextItems) {
 		pos._SetCursorPosition();
-		pos._SetCharacterNumber(utility::_CharLength(element));
-		_AddActivePosition(pos);
-		_Show(element);
-		pos._GetCursorPosition();
-		_Display(pos, symbol, nextElements...);
-	}
-	
-	template <typename T>
-	void _Display(Cursor& pos, T element) {
-		pos._SetCursorPosition();
-		pos._SetCharacterNumber(utility::_CharLength(element));
-		_AddActivePosition(pos);
-		_Show(element);
-	}
-	template<typename T, typename ... TT>
-	void _Display(Cursor& pos, T element, TT ... nextElements) {
-		pos._SetCursorPosition();
-		pos._SetCharacterNumber(utility::_CharLength(element));
-		_AddActivePosition(pos);
-		_Show(element);
-		pos._GetCursorPosition();
-		_Display(pos, nextElements...);
+		_Display(pos, item);
+		_Display(pos, nextItems...);
 	}
 
-	void _ClearContent();
-	void _Display(unsigned char ch);
+	bool _IsEmpty();
+	void _Backspace();
+	void _HideContent(int elementID);
+	void _WipeContent();
+	void _Display(char ch);
+	void _Display(const char* text);
+	void _Display(Label* label, Cursor& pos = Cursor());
+	void _Display(MenuItem* item, Cursor& pos = Cursor());
 	void _Display(Separator& separator);
 	void _LockContent(Cursor &pos);
+	void _Loading();
 };
 
+inline bool Display::_IsEmpty() {
+	if (activePosNum == 0)
+		return true;
+	else return false;
+}
 #include "OComponent.h"

@@ -32,134 +32,13 @@ void OptionField::_CreateInputFrame() {
 	}
 }
 
-void FormField::_Show() {
-	Label::_Show();
-	if (!activated) {
-		parentForm->_UpdateActiveFields(1);
-		activated = true;
-	}
-	if (inputField != nullptr) {
-		if (!filled) {
-			inputField->_ReadUserInput();
-			filled = true;
-			parentForm->_ShowNextField(this);
-
-
-		}
-	}
-}
-
-void OptionField::_Show() {
-	Label::_Show();
-	if (!activated) {
-		parentForm->_UpdateActiveFields(1);
-		activated = true;
-	}
-	if (inputField != nullptr) {
-		if (!filled) {
-			inputField->_ReadUserInput();
-			filled = true;		
-			parentForm->_UpdateActiveFields(1);
-		}
-
-		if (inputField->check == true) {
-			if (enabled = false)
-				parentForm->_EnableOptional(optFieldNum);
-			for (int i = 0; i < optFieldNum; i++)
-				optionalFields[i]->_Show();
-		}
-		else if (enabled) {
-			parentForm->_DisableOptional(optFieldNum);
-			for (int i = 0; i < optFieldNum; i++)
-				if (optionalFields[i]->_ActiveStatus() == true)
-					parentForm->_UpdateActiveFields(-1);
-
-			enabled = false;
-		}
-		parentForm->_ShowNextField(this);
-	}
-}
-
-FormField* Form::_GetNextField(FormField* currentField) const {
-	for (int i = 0; i < fieldNum; i++) 
-		if (fields[i]->_GetNextField(currentField) != nullptr)
-			return fields[i]->_GetNextField(currentField);
-	return nullptr;
-}
-
-FormField* OptionField::_GetNextField(FormField* currentField) {
-	for (int i = 0; i < optFieldNum; i++)
-		if (optionalFields[i] == currentField) {
-			if(i+1 < optFieldNum)
-				return optionalFields[i + 1];
-			else return nullptr;
-		}			
-	return nullptr;
-}
-
-void PasswordField::_Show() {
-	Label::_Show();
-	if (!activated) {
-		parentForm->_UpdateActiveFields(1);
-		activated = true;
-	}
-	if (inputField != nullptr) {
-		if (!filled) {
-			inputField->_ReadUserInput();
-			filled = true;
-			parentForm->_UpdateActiveFields(1);
-
-			if (master) {
-				PasswordField* slave = dynamic_cast<PasswordField*>(parentForm->_GetNextField(this));
-				slave->_SetKeyField(this);
-				parentForm->_ShowNextField(this);
-			}
-			else if (keyField != nullptr)
-				_VerifyPassword();			
-		}
-	}
-}
-
-void PasswordField::_VerifyPassword() {
-	if (utility::_CompareChar(inputField->input, keyField->inputField->input) == false) {
-		keyField->inputField->_ClearInput();
-		keyField->filled = false;
-		this->inputField->_ClearInput();
-		this->filled = false;
-		parentForm->_ChangeCurrentField(-1);
-		parentForm->_DisplayMessage("Passwords didn't match.");
-	}
-	else {
-		filled = true;
-		parentForm->_ClearMessage();
-		parentForm->_ShowNextField(this);
-	}
-}
-
-void Form::_DisplayMessage(const char* message) {
-	Frame::Coordinates coord = parentFrame->_GetCoordinates();
-	coord.x1 += padding;
-	coord.y1 += activeFields+2;
-	Cursor mssgPos(coord.x1, coord.y1);
-	this->message._Display(mssgPos, message);
-}
-
-void Form::_EnableOptional(int optFieldNum) {
-	for (int i = currField + 1; i < fieldNum; i++)
-		fields[i]->_ShiftInputFrame(optFieldNum);
-}
-
-void Form::_DisableOptional(int optFieldNum) {
-	for (int i = currField + 1; i < fieldNum; i++) 
-		fields[i]->_ShiftInputFrame(optFieldNum*-1);	
-}
-
 void FormField::_ShiftInputFrame(int num) {
 	Ypos += num;
 	Frame::Coordinates coord = parentFrame->_Select(text)->_GetCoordinates();
 	coord.y1 += num;
 	coord.y2 += num;
 	parentFrame->_Select(text)->_ChangeCoordinates(coord);
+	this->_Hide();
 }
 
 void OptionField::_ShiftInputFrame(int num) {
@@ -168,13 +47,200 @@ void OptionField::_ShiftInputFrame(int num) {
 		optionalFields[i]->_ShiftInputFrame(num);
 }
 
-void Form::_InitializeFields() {	
+void Form::_InitializeFields() {
 	for (int i = 0; i < fieldNum; i++) {
 		fields[i]->_SetParentFrame(parentFrame);
 		fields[i]->_SetPadding(padding);
 		fields[i]->_SetYpos(parentFrame->nextYpos++);
 		fields[i]->_SetParentForm(this);
-		fields[i]->_CreateInputFrame();		
+		fields[i]->_CreateInputFrame();
+	}
+}
+
+bool FormField::_InputControl() {
+	if (!activated) {
+		parentForm->_UpdateActiveFields(1);
+		activated = true;
+	}
+	inputField->_ReadUserInput();
+
+	if (inputField->control == 1)
+		return false;
+	else if (inputField->control == 2)
+		return false;
+	else if (inputField->control == -1)
+		return false;
+	else {
+		if (mandatory && inputField->length < 1) {
+			parentForm->_DisplayMessage("This field cannot be blank.");
+			return false;
+		}
+		parentForm->_ClearMessage();
+		return true;
+	}
+}
+
+void FormField::_SwitchField(int control) {
+	switch (control) {
+	case -1:
+		parentForm->_Exit(this);
+		break;
+	case 1:
+		parentForm->_ShowPreviousField(this);
+		break;
+	case 2:
+		if(filled)
+			parentForm->_ShowNextField(this);
+		else this->_Show();
+		break;
+	default:
+		this->_Show();
+	}
+}
+
+void FormField::_Show() {
+	Label::_Show();
+	if (_InputControl()) {
+		filled = true;
+		parentForm->_ShowNextField(this);
+	}
+	else _SwitchField(inputField->control);
+}
+
+void OptionField::_Show() {
+	Label::_Show();
+	if (_InputControl()) {
+		if (inputField->check == true) {
+			if (enabled == false)
+				parentForm->_EnableOptional(optFieldNum, this);
+			enabled = true;
+		}
+		else if (enabled) {			
+			for (int i = 0; i < optFieldNum; i++)
+				if (optionalFields[i]->_GetActiveStatus() == true) {
+					optionalFields[i]->_SetActiveStatus(false);					
+					optionalFields[i]->_Clear();
+				}
+			parentForm->_DisableOptional(optFieldNum, this);
+			enabled = false;
+		}
+		filled = true;
+		parentForm->_ShowNextField(this);
+	}
+	else _SwitchField(inputField->control);
+}
+
+void PasswordField::_Show() {
+	Label::_Show();
+	bool control = false;
+	if (_InputControl()) {
+		if (inputField->length < 5) {
+			parentForm->_DisplayMessage("Password must be at least 5 characters long.");
+			this->_Show();
+		}
+		else {			
+			if (master) {
+				PasswordField* slave = dynamic_cast<PasswordField*>(parentForm->_GetNextField(this));
+				slave->_SetKeyField(this);
+				control = true;
+			}
+			else if (keyField != nullptr)
+				control = _VerifyPassword();
+
+			filled = true;			
+			if (control) {
+				parentForm->_ClearMessage();
+				parentForm->_ShowNextField(this);
+			}
+			else parentForm->_ShowPreviousField(this);
+		}
+	}
+	else {
+		if (inputField->control == 2 && keyField != nullptr) {
+			if (utility::_CompareChar(inputField->input, keyField->inputField->input))
+				_SwitchField(inputField->control);
+			else {
+				parentForm->_DisplayMessage("Passwords didn't match.");
+				this->_Show();
+			}
+		}
+		else {
+			parentForm->_ClearMessage();
+			_SwitchField(inputField->control);
+		}
+	}
+}
+
+bool PasswordField::_VerifyPassword() {
+	if (utility::_CompareChar(inputField->input, keyField->inputField->input) == false) {
+		keyField->inputField->_ClearInput();
+		keyField->filled = false;
+		this->inputField->_ClearInput();
+		this->filled = false;
+		parentForm->_DisplayMessage("Passwords didn't match.");	
+		return false;
+	}
+	else {
+		parentForm->_ClearMessage();
+		return true;
+	}
+}
+
+void ConfirmField::_Show() {
+	Label::_Show();
+	if (_InputControl()) {
+		this->_Clear();
+		if (inputField->check == true) {
+			parentForm->_UpdateActiveFields(-1);
+			parentForm->_DisplayMessage("Saved successfully.");
+			Display* dsp = _GetDisplay();
+			parentForm->_SetStatus(true);
+			dsp->_Loading();
+		}
+	}
+	else {
+		this->_Clear();
+		parentForm->_UpdateActiveFields(-1);
+		_SwitchField(inputField->control);
+	}
+}
+
+void FormField::_Clear() {
+	Label::_Hide();
+	this->inputField->_ClearInput();	
+}
+
+void FormField::_Hide() {
+	Label::_Hide();
+	this->inputField->_HideInput();
+}
+
+void Form::_DisplayMessage(const char* message) {
+	_ClearMessage();
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	coord.x1 += padding;
+	coord.y1 += activeFields+2;
+	Cursor mssgPos(coord.x1, coord.y1);
+	this->message._Display(mssgPos, message);
+}
+
+void Form::_EnableOptional(int optFieldNum, FormField* currentField) {
+	_UpdateActiveFields(optFieldNum);
+
+	FormField* nextField = _GetNextField(currentField);
+	while (nextField != nullptr) {
+		nextField->_ShiftInputFrame(optFieldNum);
+		nextField = _GetNextField(nextField);
+	}
+}
+
+void Form::_DisableOptional(int optFieldNum, FormField* currentField) {
+	_UpdateActiveFields(optFieldNum*-1);
+
+	FormField* nextField = _GetNextField(currentField);
+	while (nextField != nullptr) {
+		nextField->_ShiftInputFrame(optFieldNum*-1);
+		nextField = _GetNextField(nextField);
 	}
 }
 
@@ -183,33 +249,115 @@ void Form::_Show() {
 	_ShowNextField(nullptr);
 }
 
+FormField* Form::_GetNextField(FormField* currentField) {
+	FormField* field;
+	for (int i = 0; i < fieldNum; i++) {
+		field = fields[i]->_GetNextField(currentField);
+		if (field != nullptr && field != fields[i])
+			return field;
+		else if (field == fields[i] && i+1<fieldNum)
+			return fields[i + 1];
+		else if (fields[i] == currentField && i + 1 < fieldNum)
+			return fields[i + 1];
+	}
+	return nullptr;
+}
+
+FormField* OptionField::_GetNextField(FormField* currentField) {
+	for (int i = 0; i < optFieldNum; i++) {
+		if (optionalFields[i] == currentField && i + 1 < optFieldNum)
+			return optionalFields[i + 1];
+		else if (optionalFields[i] == currentField && i == optFieldNum - 1)
+			return this;
+	}
+	return nullptr;
+}
+
+FormField* OptionField::_GetNextField() {
+	if (enabled && optFieldNum > 0)
+		return optionalFields[0];
+	return nullptr;
+}
+
+FormField* OptionField::_GetPreviousField(FormField* currentField) {
+	for (int i = 0; i < optFieldNum; i++) {
+		if (enabled && optionalFields[i] == currentField && i > 0)
+			return optionalFields[i - 1];	
+		else if (optionalFields[i] == currentField && i == 0)
+			return this;
+	}
+	return nullptr;
+}
+
+FormField* OptionField::_GetLastSubField() {
+	if (enabled && optFieldNum > 0)
+		return optionalFields[optFieldNum - 1];
+	else return nullptr;
+}
+
 void Form::_ShowNextField(FormField* currentField) {
-	if (currentField == nullptr)
+	if (currentField == nullptr) 
 		fields[0]->_Show();
 	else {
-		for (int i = 0; i < fieldNum; i++) {
-			if (fields[i] == currentField) {
-				if (i + 1 < fieldNum) {
+		FormField* field = currentField->_GetNextField();
+		if (field != nullptr) {
+			field->_Show();
+		}
+		else {
+			for (int i = 0; i < fieldNum; i++) {
+				field = fields[i]->_GetNextField(currentField);
+				if (field != nullptr && field != fields[i]) {
+					field->_Show();
+					break;
+				}
+				else if (field != nullptr && field == fields[i] && i + 1 < fieldNum) {
 					fields[i + 1]->_Show();
 					break;
 				}
-				else break;
-			}
-			else if (fields[i]->_GetNextField(currentField) != nullptr) {
-				fields[i]->_GetNextField(currentField)->_Show();
-				break;
+				else if (fields[i] == currentField && i + 1 < fieldNum) {
+					fields[i + 1]->_Show();
+					break;
+				}
 			}
 		}
 	}
 }
 
 void Form::_ShowPreviousField(FormField* currentField) {
-	for (int i = 0; i < fieldNum; i++) {
-		if (fields[i] == currentField) {
-			if (i > 0)
-				fields[i - 1]->_Show();
-			else fields[i]->_Show();
-		}
-		//else if(fields[i].get)
+	if (fields[0] == currentField)
+		fields[0]->_Show();
+	else {
+		FormField* field;
+		for (int i = 0; i < fieldNum; i++) {
+			field = fields[i]->_GetPreviousField(currentField);
+			if (field != nullptr) {
+				field->_Show();
+				break;
+			}
+			else if (fields[i] == currentField && i > 0) {
+				field = fields[i - 1]->_GetLastSubField();
+				if (field != nullptr) {
+					fields[i - 1]->_GetLastSubField()->_Show();
+					break;
+				}
+				else {
+					fields[i - 1]->_Show();
+					break;
+				}
+			}
+		}		
+	}
+}
+
+void Form::_Exit(FormField* currentField) {
+	_DisplayMessage("Are you sure you want to cancel ? Y/N : ");
+	UserInput confirm(InputType::YN);
+	confirm._ReadUserInput();
+	if(confirm.check == true)
+		status = false;
+	else {
+		_ClearMessage();
+		confirm._ClearInput();
+		currentField->_Show();
 	}
 }

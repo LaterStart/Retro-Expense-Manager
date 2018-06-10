@@ -61,9 +61,9 @@ void Login::_StartModule() {
 		//	Read user input - menu selection only available 
 		Cursor(1, ::height - 2);
 		UserInput select(InputType::menuSelect);
-		while (select.selection <  1 || select.selection > mainMenu.size) {
-			select._ClearInput();
+		while (select.selection <  1 || select.selection > mainMenu.size) {			
 			select._ReadUserInput();
+			select._ClearInput();
 		}
 
 		//	Set module name (link) as the next one to be opened in main.cpp game loop.

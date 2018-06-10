@@ -3,19 +3,72 @@
 #include "Input.h"
 using namespace std;
 
-void UserInput::_ReadUserInput() {
+UserInput::UserInput(InputType type) : type(type) {}
+
+UserInput::~UserInput(){
+	_ClearInput();
+}
+
+void UserInput::_Initialize() {
+	if (node == nullptr) {
+		node = new List;
+		first = node;
+		initial = node;
+	}	
+
 	if (parentFrame != nullptr) {
 		Frame::Coordinates coord = parentFrame->_GetCoordinates();
+		if (dsp._IsEmpty() && length > 0) {
+			pos._SetXY(coord.x1,coord.y1);
+			pos._SetCursorPosition();
+			dsp._Display(input);
+		}
+
+		if (length > 0)
+			coord.x1 += length;
+	
 		pos._SetXY(coord.x1, coord.y1);
 		pos._SetCursorPosition();
-		min_x = coord.x1; 
+		min_x = coord.x1;
 		max_x = coord.x2;
 	}
 	else pos._GetCursorPosition();
 
-	node = new List;
-	first = node;
-	char ch; int control;
+	selection = 0;
+	control = 0;
+	check = 0;
+
+	if (length > 0) {
+		delete[]input;
+		delete[]buffer;
+		while (node->nextNode != nullptr) {
+			node = node->nextNode;
+		}
+		node->nextNode = new List;
+		node->nextNode->previousNode = node;
+		node = node->nextNode;
+	}
+}
+
+void UserInput::_Conclude() {
+	if (length > 0) {
+		input = new char[length + 1];
+		input[length] = '\0';
+		unsigned int z = length - 1;
+
+		while (node != nullptr) {
+			input[z--] = node->value;
+			node = node->previousNode;
+		}		
+	}
+	node = initial;
+}
+
+void UserInput::_ReadUserInput() {
+	_Initialize();
+	char ch; 
+	int control;
+
 	while (true) {
 		ch = _getch();
 		control = _VerifyInput(ch);
@@ -24,35 +77,29 @@ void UserInput::_ReadUserInput() {
 			break;
 	}
 
-	input = new char[length + 1];
-	input[length] = '\0';
-	unsigned int z = length-1;
-	List* deleter;
-
-	while (node != nullptr) {
-		input[z--] = node->value;
-		deleter = node;
-		node = node->previousNode;
-		delete deleter;
-	}
-	delete node;
+	_Conclude();
 }
 
 int UserInput::_VerifyInput(char& ch) {
 	if (ch == 27) {
 		control = -1;
-		return 1;
+		return -1;
 	}
 	else if (ch == -32) {
 		ch = _getch();
 		switch (ch) {
 		case 72:
-			control = 1;			
+			control = 1;
+			return 6;
+		case 80:
+			control = 2;
 			return 6;
 		default:
 			return 0;
 		}
 	}
+	else if (ch == 8)
+		return 7;
 
 	else {
 		switch (type) {
@@ -109,11 +156,21 @@ int UserInput::_Verify_password(char& ch) {
 
 int UserInput::_UpdateInput(int& control, char& ch) {	
 	switch (control) {
+	case -1: 
+	del: {
+		if (node->previousNode != nullptr) {
+			List* deleter;
+			deleter = node;
+			node = node->previousNode;
+			node->nextNode = nullptr;
+			delete deleter;
+		}
+		
+	}
+		return 1;
 	case 0:
 		return 0;
 	case 1:
-		length++;
-		node->value = ch;
 		return 1;
 	case 2:
 		length++;
@@ -123,9 +180,7 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		node = node->nextNode;
 		_DisplayInput(ch);
 		return 2;
-	case 3:		
-		node = node->previousNode;
-		return 1;
+	case 3:	goto del;
 	case 4:
 		_DisplayInput(ch);
 		return 1;
@@ -138,11 +193,24 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		ch = '*';
 		_DisplayInput(ch);
 		return 2;
-	case 6:
-		saveState = true;
-		return 1;
+	case 6: goto del;
+	case 7: {
+		if (node->previousNode != nullptr) {
+			List* back;
+			back = node;
+			node = node->previousNode;
+			node->nextNode = nullptr;
+			delete back;
+			length--;
+			dsp._Backspace();
+		}
+		else if (node->previousNode == nullptr && length>0) {
+			length--;
+			dsp._Backspace();
+		}
+	}	
+		return 2;
 	default: 
-
 		return 0;
 	}
 }
@@ -158,7 +226,7 @@ void UserInput::_DisplayInput(char& ch) {
 		}
 		else if (x == max_x-1) {
 			first = first->nextNode;
-			dsp._ClearContent();			
+			dsp._WipeContent();			
 			pos._SetX(min_x);
 			_LoadBuffer();
 			dsp._Display(pos,buffer);
@@ -185,6 +253,17 @@ void UserInput::_ClearInput() {
 	input = nullptr;
 	buffer = nullptr;
 	first = nullptr;
+	initial = nullptr;
+	dsp._WipeContent();
+	List* deleter;
+	while (node != nullptr) {
+		deleter = node;
+		node = node->nextNode;
+		delete deleter;
+	}	
 	node = nullptr;
-	dsp._ClearContent();
+}
+
+void UserInput::_HideInput() {
+	dsp._WipeContent();
 }

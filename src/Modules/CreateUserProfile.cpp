@@ -47,21 +47,13 @@ void CreateUserProfile::_StartModule() {
 	form._AddFields(
 		FormField("Username:", InputType::text),
 		OptionField("Password protected?:",
-			PasswordField("Password:", true), // true marks as key field
+			// add optional fields - true marks as key password field
+			PasswordField("Password:", true),	
 			PasswordField("Repeat password:")),
-		FormField("Default currency:", InputType::scrollDown),
-		FormField("Save?:", InputType::confirm)
+		FormField("Default currency:", InputType::text),
+		ConfirmField("Save?:")
 	);
 	form._SetPadding(4);
 	layout._Select("Content")->_AddElements(form);
 	layout._ShowElements(); 
-
-	Cursor(1, ::height - 2);
-	UserInput select(InputType::menuSelect);
-	select._ReadUserInput();
-
-	if (select.control == -1)
-		moduler->_SetNextModule(this, mainMenu._GetLink(mainMenu.size));
-	else
-		moduler->_SetNextModule(this, mainMenu._GetLink(select.selection));
 }
