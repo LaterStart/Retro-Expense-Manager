@@ -37,26 +37,24 @@ void CreateUserProfile::_StartModule() {
 	esc._SetYpos(1);
 	mainMenu._SetPadding(1);
 	mainMenu._AddItems(
-		MenuItem("Load Profile", "LoadUserProfile"),
+		MenuItem("Load Profile", "LoadUserProfile"),		
 		esc
 	);	
-
 	layout._Select("Menu")->_AddElements(mainMenu);	
 	
 	//	Input form
 	Form form;
 	form._AddFields(
-		FormField("Username: ", FieldType::text),
-		OptionField("Password protected?: ", FieldType::YN,
-			FormField("Password: ", FieldType::password),
-			FormField("Repeat password: ", FieldType::password)),
-		FormField("Default currency: ", FieldType::scrollDown),
-		FormField("Save?: ", FieldType::confirm)
+		FormField("Username:", InputType::text),
+		OptionField("Password protected?:",
+			PasswordField("Password:", true), // true marks as key field
+			PasswordField("Repeat password:")),
+		FormField("Default currency:", InputType::scrollDown),
+		FormField("Save?:", InputType::confirm)
 	);
 	form._SetPadding(4);
 	layout._Select("Content")->_AddElements(form);
-	layout._ShowElements();
-
+	layout._ShowElements(); 
 
 	Cursor(1, ::height - 2);
 	UserInput select(InputType::menuSelect);

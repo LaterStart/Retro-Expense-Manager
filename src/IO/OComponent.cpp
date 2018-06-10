@@ -139,11 +139,36 @@ void Frame::_ShowElements() {
 	}
 }
 
+//	Add frame padding
 void Frame::_AddPadding(unsigned short padding) {
 	x1 += padding;
 	x2 -= padding;
 	y1 += padding;
 	y2 -= padding;
+}
+
+//	Create subframe using new frame coordinates
+void Frame::_CreateSubFrame(const char* IDname, Coordinates& coord) {
+	if (coord.x2 > max_x)
+		coord.x2 = max_x;
+	if (coord.x1 < min_x)
+		coord.x1 = min_x;
+	if (coord.y2 > max_y)
+		coord.y2 = max_y;
+	if (coord.y1 < min_y)
+		coord.y1 = min_y;
+
+	Frame* newFrame = new Frame(*this, coord.x2, coord.x1, coord.y2, coord.y1);
+	newFrame->IDname = IDname;
+	_UpdateContainer(newFrame);
+}
+
+//	Change frame coordinates
+void Frame::_ChangeCoordinates(Coordinates& coord) {
+	x1 = coord.x1;
+	x2 = coord.x2;
+	y1 = coord.y1;
+	y2 = coord.y2;
 }
 
 //	FrameElement default constructor
@@ -353,6 +378,11 @@ void Menu::_AddItem(MenuItem& item) {
 	utility::_AddElement(items,*pp, size);
 	items[size - 1] = &item;
 	delete pp;
+}
+
+// Change existing menu item with new item
+void Menu::_ChangeItem(MenuItem& item, int pos) {
+	items[pos] = &item;
 }
 
 //	display menu items

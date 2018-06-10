@@ -60,7 +60,7 @@ void Login::_StartModule() {
 
 		//	Read user input - menu selection only available 
 		Cursor(1, ::height - 2);
-		UserInput select(menuSelect);
+		UserInput select(InputType::menuSelect);
 		while (select.selection <  1 || select.selection > mainMenu.size) {
 			select._ClearInput();
 			select._ReadUserInput();

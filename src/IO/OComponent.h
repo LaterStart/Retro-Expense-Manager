@@ -114,8 +114,10 @@ public:
 	Container _GetSubFrames();
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
 	void _Split(unsigned short percent, const char* direction, const char* firstID, const char* secondID);
+	void _CreateSubFrame(const char* IDname, Coordinates& coord);
 	void _SetIDname(const char* IDname);
 	void _SetDisplay(Display& dsp);
+	void _ChangeCoordinates(Coordinates& coord);
 	Frame* _Select(const char* IDname);
 	Frame* _GetParentFrame();
 
@@ -276,6 +278,7 @@ public:
 		_AddItems(nextItems...);
 	}
 	const char* _GetLink(int selection);
+	void _ChangeItem(MenuItem& item, int pos);
 	void _Show();
 
 	Menu() = default;
