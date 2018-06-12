@@ -2,7 +2,7 @@
 #include "Controller.h"
 #include "../config.h"
 
-class ModuleController : public Controller {
+class ModuleController {
 public:	
 	ModuleController();
 	~ModuleController();

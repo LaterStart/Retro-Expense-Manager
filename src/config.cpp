@@ -2,7 +2,7 @@
 
 const char* const title = "Retro Expense Manager";
 const char* const version = "v2.1";
-const char* const dataPath = "..\\data.dat";
+const char* const database = "database.dat";
 const char* const modulesDirectory = "src\\Modules\\";
 
 char* currentDate = nullptr;

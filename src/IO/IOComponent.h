@@ -139,6 +139,7 @@ private:
 
 		void _ClearContent() {
 			pos._ClearText();
+			pos._SetCharacterNumber(0);
 		}
 	};
 

@@ -16,6 +16,7 @@ namespace utility {
 	int _CharLength(char* arr);
 	int _CharLength(const char* arr);
 	int _CharSize(char* arr);
+	int _CharSize(const char* arr);
 	int _Find(char* word, char* arr);
 	int _ReadAlign(const char* align);
 	int _ReadDirection(const char* direction);

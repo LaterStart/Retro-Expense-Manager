@@ -18,12 +18,12 @@ Login& Login::_LoadModule() {
 }
 
 void Login::_StartModule() {
-	//	Check for last used user profile in preconfigured "dataPath" binary file
+	//	Check for last used user profile in database binary file
 	ProfileController profCtrl;
-	profCtrl._GetLastUsedProfile(::dataPath);
+	Profile* profile = profCtrl._GetLastUsedProfile();
 
 	//	if profile contoller has found last used user
-	if (profCtrl._GetStatus()) {
+	if (profile != nullptr) {
 
 	}
 	//	if no recent user profile is found, display available options

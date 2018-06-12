@@ -4,10 +4,9 @@
 
 class ProfileController : public Controller {
 public:
-	Profile * profile;
-
 	ProfileController();
 	~ProfileController();
 
-	void _GetLastUsedProfile(const char*);
+	Profile* _GetLastUsedProfile();
+	bool _CreateNewProfile(utility::LinkedList<UserInput*>*data);
 };

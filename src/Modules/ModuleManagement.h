@@ -16,10 +16,10 @@ protected:
 
 	ModuleManagement* moduler;
 	Console* console;
-	Module* previousModule;
-	const char* name;
+	Module* previousModule;	
 
 public:
+	const char* name;
 	operator const char*() {
 		return name;
 	}

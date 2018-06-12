@@ -118,11 +118,13 @@ void OptionField::_Show() {
 		else if (enabled) {			
 			for (int i = 0; i < optFieldNum; i++)
 				if (optionalFields[i]->_GetActiveStatus() == true) {
-					optionalFields[i]->_SetActiveStatus(false);					
-					optionalFields[i]->_Clear();
+					optionalFields[i]->_SetActiveStatus(false);	
+					optionalFields[i]->_SetFilledStatus(false);
+					optionalFields[i]->_Clear();	
+					parentForm->_UpdateActiveFields(-1);
 				}
-			parentForm->_DisableOptional(optFieldNum, this);
 			enabled = false;
+			parentForm->_DisableOptional(optFieldNum, this);			
 		}
 		filled = true;
 		parentForm->_ShowNextField(this);
@@ -132,7 +134,7 @@ void OptionField::_Show() {
 
 void PasswordField::_Show() {
 	Label::_Show();
-	bool control = false;
+	bool control = true;
 	if (_InputControl()) {
 		if (inputField->length < 5) {
 			parentForm->_DisplayMessage("Password must be at least 5 characters long.");
@@ -144,8 +146,10 @@ void PasswordField::_Show() {
 				slave->_SetKeyField(this);
 				control = true;
 			}
-			else if (keyField != nullptr)
+			else if (keyField != nullptr) {
 				control = _VerifyPassword();
+				dataField = false;
+			}
 
 			filled = true;			
 			if (control) {
@@ -190,16 +194,18 @@ void ConfirmField::_Show() {
 	Label::_Show();
 	if (_InputControl()) {
 		this->_Clear();
-		if (inputField->check == true) {
-			parentForm->_UpdateActiveFields(-1);
+		activated = false;
+		parentForm->_UpdateActiveFields(-1);
+		if (inputField->check == true) {			
 			parentForm->_DisplayMessage("Saved successfully.");
-			Display* dsp = _GetDisplay();
 			parentForm->_SetStatus(true);
+			Display* dsp = _GetDisplay();		
 			dsp->_Loading();
 		}
 	}
 	else {
 		this->_Clear();
+		activated = false;
 		parentForm->_UpdateActiveFields(-1);
 		_SwitchField(inputField->control);
 	}
@@ -225,22 +231,26 @@ void Form::_DisplayMessage(const char* message) {
 }
 
 void Form::_EnableOptional(int optFieldNum, FormField* currentField) {
-	_UpdateActiveFields(optFieldNum);
-
 	FormField* nextField = _GetNextField(currentField);
 	while (nextField != nullptr) {
+		if (nextField->_GetActiveStatus()) {
+			nextField->_SetActiveStatus(false);
+			_UpdateActiveFields(-1);
+		}
 		nextField->_ShiftInputFrame(optFieldNum);
-		nextField = _GetNextField(nextField);
+		nextField = _GetNextField(nextField);	
 	}
 }
 
 void Form::_DisableOptional(int optFieldNum, FormField* currentField) {
-	_UpdateActiveFields(optFieldNum*-1);
-
 	FormField* nextField = _GetNextField(currentField);
-	while (nextField != nullptr) {
+	while (nextField != nullptr) {	
+		if (nextField->_GetActiveStatus()) {
+			nextField->_SetActiveStatus(false);
+			_UpdateActiveFields(-1);
+		}
 		nextField->_ShiftInputFrame(optFieldNum*-1);
-		nextField = _GetNextField(nextField);
+		nextField = _GetNextField(nextField);		
 	}
 }
 
@@ -252,23 +262,28 @@ void Form::_Show() {
 FormField* Form::_GetNextField(FormField* currentField) {
 	FormField* field;
 	for (int i = 0; i < fieldNum; i++) {
+		field = currentField->_GetNextField();
+		if (field != nullptr)
+			return field;
 		field = fields[i]->_GetNextField(currentField);
 		if (field != nullptr && field != fields[i])
 			return field;
-		else if (field == fields[i] && i+1<fieldNum)
+		else if (field == fields[i] && i + 1 < fieldNum)
 			return fields[i + 1];
 		else if (fields[i] == currentField && i + 1 < fieldNum)
-			return fields[i + 1];
+			return fields[i + 1];	
 	}
 	return nullptr;
 }
 
 FormField* OptionField::_GetNextField(FormField* currentField) {
-	for (int i = 0; i < optFieldNum; i++) {
-		if (optionalFields[i] == currentField && i + 1 < optFieldNum)
-			return optionalFields[i + 1];
-		else if (optionalFields[i] == currentField && i == optFieldNum - 1)
-			return this;
+	if (enabled) {
+		for (int i = 0; i < optFieldNum; i++) {
+			if (optionalFields[i] == currentField && i + 1 < optFieldNum)
+				return optionalFields[i + 1];
+			else if (optionalFields[i] == currentField && i == optFieldNum - 1)
+				return this;
+		}
 	}
 	return nullptr;
 }
@@ -360,4 +375,18 @@ void Form::_Exit(FormField* currentField) {
 		confirm._ClearInput();
 		currentField->_Show();
 	}
+}
+
+utility::LinkedList<UserInput*>* Form::_GetData() {	
+	FormField* field = fields[0];
+	utility::LinkedList<UserInput*>* data = new utility::LinkedList<UserInput*>(fields[0]->inputField);
+	utility::LinkedList<UserInput*>* first = data;
+	while (field != nullptr) {		
+		field = _GetNextField(field);
+		if (field != nullptr && field->_GetDataStatus()) {
+			data->_AddNextLink(field->inputField);
+			data = data->nextNode;
+		}
+	}
+	return data;
 }

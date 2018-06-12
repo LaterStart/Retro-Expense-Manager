@@ -25,6 +25,10 @@ namespace utility {
 		return size + 1 * sizeof(char);
 	}
 
+	int _CharSize(const char* arr) {
+		return _CharSize((char*)arr);
+	}
+
 	char* _ChopChar(char* arr, char* remove) {
 		int originalSize = _CharSize(arr);
 		int removeLength = _CharLength(remove);

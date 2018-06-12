@@ -47,7 +47,8 @@ void CreateUserProfile::_StartModule() {
 	form._AddFields(
 		FormField("Username:", InputType::text),
 		OptionField("Password protected?:",
-			// add optional fields - true marks as key password field
+			// add optional fields 
+			// true marks as key password field
 			PasswordField("Password:", true),	
 			PasswordField("Repeat password:")),
 		FormField("Default currency:", InputType::text),
@@ -56,4 +57,14 @@ void CreateUserProfile::_StartModule() {
 	form._SetPadding(4);
 	layout._Select("Content")->_AddElements(form);
 	layout._ShowElements(); 
+
+	//	Get form data and pass it to controller
+	//	Set module name (link) as the next one to be opened in main.cpp game loop.
+	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
+	if (form._GetStatus()) {
+		utility::LinkedList<UserInput*>* data = form._GetData();
+		controller._CreateNewProfile(data);
+		moduler->_SetNextModule(this, "Dashboard");
+	}	
+	else moduler->_SetNextModule(this, "Login");
 }

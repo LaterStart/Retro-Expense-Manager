@@ -76,7 +76,8 @@ protected:
 	Form* parentForm = nullptr;	
 	bool mandatory = true;
 	bool activated = false;
-	bool filled = false;	
+	bool filled = false;
+	bool dataField = true;
 
 	bool _InputControl();		
 	void _SwitchField(int control);
@@ -86,8 +87,10 @@ public:
 	
 	UserInput* inputField = nullptr;	
 
+	void _SetFilledStatus(bool status);
 	void _SetActiveStatus(bool status);
 	bool _GetActiveStatus() const;
+	bool _GetDataStatus() const;
 	void _SetParentForm(Form* parentForm);
 
 	virtual void _CreateInputFrame();
@@ -123,12 +126,20 @@ inline FormField* FormField::_GetPreviousField(FormField* currentField) {
 	return nullptr;
 }
 
+inline bool FormField::_GetDataStatus() const {
+	return dataField;
+}
+
 inline bool FormField::_GetActiveStatus() const {
 	return activated;
 }
 
 inline void FormField::_SetActiveStatus(bool status){
 	this->activated = status;
+}
+
+inline void FormField::_SetFilledStatus(bool status) {
+	this->filled = status;
 }
 
 class OptionField : public FormField {
@@ -189,7 +200,10 @@ inline void PasswordField::_SetKeyField(PasswordField* keyField) {
 class ConfirmField : public FormField {
 
 public: 
-	ConfirmField(const char* text) : FormField(text, InputType::YN) { this->mandatory = false; }
+	ConfirmField(const char* text) : FormField(text, InputType::YN) { 
+		this->mandatory = false; 
+		this->dataField = false; 
+	}
 	void _Show() override;
 };
 
@@ -232,6 +246,7 @@ public:
 	void _SetStatus(bool status);
 	void _Exit(FormField* currentField);
 	bool _GetStatus();
+	utility::LinkedList<UserInput*>* _GetData();
 
 	FormField* _GetNextField(FormField* currentField);
 
@@ -241,6 +256,7 @@ public:
 
 inline void Form::_UpdateActiveFields(int change) {
 	this->activeFields+=change;
+	int test = 0;
 }
 
 inline void Form::_ClearMessage() {
