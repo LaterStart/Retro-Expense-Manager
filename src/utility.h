@@ -24,6 +24,8 @@ namespace utility {
 	bool _CompareChar(char* first, char* second);
 	bool _CompareChar(const char* first, const char* second);	
 
+	void _XOR(char* &password);
+
 	template <typename T>
 	void _AddElement(T* &ptr, T &element, int &arrSize) {
 		T* newArr = new T[arrSize + 1];

@@ -223,4 +223,13 @@ namespace utility {
 			return 1;
 		return 2;
 	}
+
+	void _XOR(char* &password) {
+		const char* key = "!=)#(98hjdA";
+		int j = 0;
+		int size = _CharLength(password);
+		for (int i = 0; i < size; i++) {
+			password[i] ^= key[j++];
+		}
+	}
 }

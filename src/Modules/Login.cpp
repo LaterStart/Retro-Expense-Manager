@@ -20,8 +20,8 @@ Login& Login::_LoadModule() {
 void Login::_StartModule() {
 	//	Check for last used user profile in database binary file
 	ProfileController profCtrl;
-	Profile* profile = profCtrl._GetLastUsedProfile();
-
+	//Profile* profile = profCtrl._GetLastUsedProfile();
+	Profile* profile = nullptr;
 	//	if profile contoller has found last used user
 	if (profile != nullptr) {
 

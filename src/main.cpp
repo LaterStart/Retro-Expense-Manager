@@ -1,10 +1,17 @@
 #include "Modules/ModuleManagement.h"
 #include "IO/IOComponent.h"
 #include "config.h"
+#include "Controllers/_Controller.h" //debg
 
 int main() {
 	//	Initialize program
 	Console* myConsole = Initialize::_Console();
+
+	//debug
+	Controller mainCtrl;
+	mainCtrl._LoadHeader();
+
+	
 
 	//	Display version label
 	Display main;

@@ -377,16 +377,18 @@ void Form::_Exit(FormField* currentField) {
 	}
 }
 
-utility::LinkedList<UserInput*>* Form::_GetData() {	
+utility::LinkedList<Data*>* Form::_GetData() {	
 	FormField* field = fields[0];
-	utility::LinkedList<UserInput*>* data = new utility::LinkedList<UserInput*>(fields[0]->inputField);
-	utility::LinkedList<UserInput*>* first = data;
+	Data* data = new Data(fields[0]->dataType, fields[0]->inputField);
+	utility::LinkedList<Data*>* list = new utility::LinkedList<Data*>(data);
+	utility::LinkedList<Data*>* first = list;
 	while (field != nullptr) {		
 		field = _GetNextField(field);
 		if (field != nullptr && field->_GetDataStatus()) {
-			data->_AddNextLink(field->inputField);
-			data = data->nextNode;
+			data = new Data(field->dataType, field->inputField);
+			list->_AddNextLink(data);
+			list = list->nextNode;
 		}
 	}
-	return data;
+	return first;
 }

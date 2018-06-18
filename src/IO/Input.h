@@ -1,5 +1,6 @@
 #pragma once
 #include "OComponent.h"
+#include "../Controllers/_Controller.h"
 
 const enum class InputType { 
 	none, 
@@ -72,7 +73,7 @@ inline void UserInput::_SetParentFrame(Frame* parentFrame) {
 class Form;
 class FormField : public Input, public Label {	
 protected:
-	InputType type = InputType::none;
+	InputType type = InputType::none;	
 	Form* parentForm = nullptr;	
 	bool mandatory = true;
 	bool activated = false;
@@ -83,9 +84,10 @@ protected:
 	void _SwitchField(int control);
 	
 public:		
-	FormField(const char* text, InputType type) : Label(text), type(type){}
+	FormField(const char* text, InputType type, Field field) : Label(text), type(type), dataType(field){}
 	
-	UserInput* inputField = nullptr;	
+	UserInput* inputField = nullptr;
+	Field dataType = Field::none;
 
 	void _SetFilledStatus(bool status);
 	void _SetActiveStatus(bool status);
@@ -161,7 +163,7 @@ class OptionField : public FormField {
 
 public:
 	template<typename ... TT>
-	OptionField(const char* text, TT& ... fields) : FormField(text, InputType::YN) {
+	OptionField(const char* text, Field field,  TT& ... fields) : FormField(text, InputType::YN, field) {
 		this->mandatory = false;
 		_AddFields(fields ...);
 	}
@@ -188,8 +190,7 @@ class PasswordField : public FormField {
 	bool _VerifyPassword();
 
 public:
-	PasswordField(const char* text) : FormField(text, InputType::password){}
-	PasswordField(const char* text, bool master) : FormField(text, InputType::password), master(master){}
+	PasswordField(const char* text, bool master = false) : FormField(text, InputType::password, Field::password), master(master){}
 	void _Show() override;
 };
 
@@ -200,7 +201,7 @@ inline void PasswordField::_SetKeyField(PasswordField* keyField) {
 class ConfirmField : public FormField {
 
 public: 
-	ConfirmField(const char* text) : FormField(text, InputType::YN) { 
+	ConfirmField(const char* text) : FormField(text, InputType::YN, Field::none) { 
 		this->mandatory = false; 
 		this->dataField = false; 
 	}
@@ -246,7 +247,7 @@ public:
 	void _SetStatus(bool status);
 	void _Exit(FormField* currentField);
 	bool _GetStatus();
-	utility::LinkedList<UserInput*>* _GetData();
+	utility::LinkedList<Data*>* _GetData();
 
 	FormField* _GetNextField(FormField* currentField);
 

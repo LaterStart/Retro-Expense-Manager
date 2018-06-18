@@ -1,5 +1,5 @@
 #pragma once
-#include "Controller.h"
+#include "_Controller.h"
 #include "../Models/Profile.h"
 
 class ProfileController : public Controller {
@@ -8,5 +8,5 @@ public:
 	~ProfileController();
 
 	Profile* _GetLastUsedProfile();
-	bool _CreateNewProfile(utility::LinkedList<UserInput*>*data);
+	bool _WriteNewProfile(utility::LinkedList<Data*>*data);
 };

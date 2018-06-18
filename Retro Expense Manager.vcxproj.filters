@@ -39,9 +39,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Controllers\Controller.h">
-      <Filter>Header Files\Controllers</Filter>
-    </ClInclude>
     <ClInclude Include="src\Controllers\ModuleController.h">
       <Filter>Header Files\Controllers</Filter>
     </ClInclude>
@@ -78,11 +75,17 @@
     <ClInclude Include="src\IO\OComponent.h">
       <Filter>Header Files\Input/Output</Filter>
     </ClInclude>
+    <ClInclude Include="src\Controllers\_Controller.h">
+      <Filter>Header Files\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\_Model.h">
+      <Filter>Header Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\Header.h">
+      <Filter>Header Files\Models</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Controllers\Controller.cpp">
-      <Filter>Source Files\Controllers</Filter>
-    </ClCompile>
     <ClCompile Include="src\Controllers\ModuleController.cpp">
       <Filter>Source Files\Controllers</Filter>
     </ClCompile>
@@ -124,6 +127,12 @@
     </ClCompile>
     <ClCompile Include="src\IO\Form.cpp">
       <Filter>Source Files\Input/Output</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Controllers\_Controller.cpp">
+      <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Models\Header.cpp">
+      <Filter>Source Files\Models</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
