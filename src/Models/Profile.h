@@ -15,7 +15,7 @@ private:
 
 public:
 	char* _Serialize();
-	void _Deserialize(std::ifstream* stream);
+	void _Deserialize(char* page);
 
 	Profile(utility::LinkedList<Data*>* data);
 	~Profile() = default;

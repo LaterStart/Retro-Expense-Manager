@@ -4,7 +4,8 @@
 
 const enum class ModelName {
 	none,
-	header,
+	mainHeader,
+	modelHeader,
 	profile,
 	account,
 	transaction
@@ -27,42 +28,31 @@ public:
 	Data(Field field, UserInput* input) : field(field), input(input) {}
 };
 
-class DataBlock {
-private:
-	ModelName type = ModelName::none;
-	int blockSize = 0;
-
-public:
-	void _WrapData(char* &buffer, ModelName name);
-	int _Size() const;
-	ModelName _Type() const;
-};
-
-inline int DataBlock::_Size() const {
-	return blockSize;
-}
-
-inline ModelName DataBlock::_Type() const {
-	return type;
-}
-
-class Header;
+class DataBlock; class Header; class MainHeader; class ModelHeader;
 class Controller {
 private:
 	const char* filePath = ::database;
 	const int clusterSize = 4096;
-	static Header header;
+	static MainHeader header;
+	static void _Load();
 
 	char* _ReadPage(std::fstream* stream);
+	DataBlock _GetBlock(char* page, ModelName name);
+	void _DeleteBuffers(char* &buffer, char* &dblock);
+	void _UpdateHeader(std::fstream* stream, Header& header);	
+
 protected:		
 	ModelName model;
 	
 	std::fstream* _OpenStream();
 	bool _CreateDatabase();
+	void _WriteNewModelHeader(std::fstream* stream, ModelHeader& header);
+	void _WriteModel(std::fstream* stream, ModelHeader& header, char* buffer);
 
 public:
 	void _SetFilePath(const char* filePath);
 	bool _LoadHeader();
+	bool _LoadHeader(ModelHeader& header); //test put private
 
 	Controller() = default; //test main - put private
 	~Controller() = default; //test main

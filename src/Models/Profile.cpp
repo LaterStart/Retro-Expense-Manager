@@ -1,6 +1,5 @@
 #include "Profile.h"
-#include "../IO/Input.h"
-using namespace std;
+#include "../IO/Input.h" //dbg
 
 Profile::Profile(utility::LinkedList<Data*>* data){
 	while (data != nullptr) {
@@ -64,6 +63,6 @@ char* Profile::_Serialize() {
 	return buffer;
 }
 
-void Profile::_Deserialize(ifstream* stream) {
+void Profile::_Deserialize(char* page) {
 
 }

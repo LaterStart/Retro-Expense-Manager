@@ -1,11 +1,14 @@
 #pragma once
 #include "_Controller.h"
-#include "../Models/Profile.h"
 
+class Profile; class ModelHeader;
 class ProfileController : public Controller {
+private:
+	static ModelHeader header;
+
 public:
 	ProfileController();
-	~ProfileController();
+	~ProfileController();	
 
 	Profile* _GetLastUsedProfile();
 	bool _WriteNewProfile(utility::LinkedList<Data*>*data);

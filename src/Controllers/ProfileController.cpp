@@ -1,9 +1,15 @@
 #include <fstream>
 #include "ProfileController.h"
+#include "../Models/Header.h"
+#include "../Models/Profile.h"
 using namespace std;
+
+ModelHeader ProfileController::header(ModelName::profile);
 
 ProfileController::ProfileController() {
 	this->model = ModelName::profile;
+	if (this->header._Loaded() == false)
+		_LoadHeader(this->header);
 }
 
 ProfileController::~ProfileController(){}
@@ -38,18 +44,16 @@ bool ProfileController::_WriteNewProfile(utility::LinkedList<Data*>*data) {
 	else { //Create database file	
 		this->_CreateDatabase();
 		// add profile model header
-		//ModelHeader profiles(ModelName::profile);
-		//this->_AddNewModelHeader(stream, profiles);
+		stream = _OpenStream();
+		this->_WriteNewModelHeader(stream, this->header);
 	}
 
 	if (control) { // write model
-		/*Profile profile(data);
+		Profile profile(data);
 		char* buffer = profile._Serialize();
-		_WriteModel(stream, ModelName::profile, buffer);
-		streamoff pos = stream->tellp();		*/	
+		_WriteModel(stream, this->header, buffer);		
 	}
-
-	stream->close();
+	
 	delete stream;
 	return control;
 }
