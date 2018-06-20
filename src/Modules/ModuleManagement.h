@@ -101,7 +101,7 @@ class ModuleRegistrar {
 public:
 	// registrar constructor - register the class name at compile time 
 	ModuleRegistrar(std::string moduleName) {		
-		ModuleInitializer& instance = instance._GetInstance();
+		ModuleInitializer& instance = ModuleInitializer::_GetInstance();
 		instance._RegisterModule(moduleName, [](void) -> Module* { return new T(); });
 	}	
 };

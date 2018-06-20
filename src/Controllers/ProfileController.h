@@ -11,5 +11,5 @@ public:
 	~ProfileController();	
 
 	Profile* _GetLastUsedProfile();
-	bool _WriteNewProfile(utility::LinkedList<Data*>*data);
+	bool _WriteNewProfile(utility::LinkedList<Data*>*data);	
 };

@@ -16,6 +16,7 @@ public:
 	ModelName _Type() const;
 	void _SetOffset(int pos);
 	int _Offset() const;
+	int _PagePos() const;
 	
 	char* _Serialize();
 	void _Deserialize(char* page);
@@ -39,4 +40,8 @@ inline void DataBlock::_SetOffset(int pos) {
 
 inline int DataBlock::_Offset() const {
 	return this->offset + blockSize;
+}
+
+inline int DataBlock::_PagePos() const {
+	return this->offset;
 }

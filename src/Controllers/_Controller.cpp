@@ -7,6 +7,14 @@ using namespace std;
 //	static header class instance - stores frequently accessed database data
 MainHeader Controller::header;
 
+//	load main haeder from database
+Controller::Controller(bool& initialize) {
+	if (!header._Loaded()) {
+		_LoadHeader();
+		initialize = true;
+	}
+}
+
 //	create fstream instance for binary write and read mode
 fstream* Controller::_OpenStream() {
 	fstream* stream = new fstream;
@@ -85,8 +93,8 @@ DataBlock Controller::_GetBlock(char* page, ModelName name) {
 	return empty;
 }
 
-//	load main header at application startup
-bool Controller::_LoadHeader() {
+//	load main header from database
+void Controller::_LoadHeader() {
 	fstream* stream = new fstream;
 	stream->open(filePath);
 	if (stream->is_open()) {
@@ -98,18 +106,58 @@ bool Controller::_LoadHeader() {
 				page += block._Offset();
 				header._Deserialize(page);
 				header._SetPosition(pos + block._Offset() - block._BlockSize());
+				header._SetLoadStatus(true);
 				page -= block._Offset();
 				delete[]page;
 				break;
 			}			
 			delete[]page;
 		} while (!stream->eof());
-	}
-	stream->close();
+		stream->close();
+	}	
 	delete stream;
-	if (header._Status())
-		return true;
-	else return false;
+}
+
+//	load requested model header from database
+ModelHeader Controller::_LoadHeader(ModelName name) {
+	fstream* stream = new fstream;
+	stream->open(filePath);
+	if (stream->is_open()) {
+		int pageCount = 0;
+		do {
+			streamoff pos = stream->tellg();
+			char* page = _ReadPage(stream);
+			int readPos = 0;
+			do {
+				DataBlock block = _GetBlock((page+readPos), ModelName::modelHeader);
+				if (!block.empty) {
+					readPos += block._PagePos();
+					ModelHeader header;
+					header._Deserialize(page+block._Offset());					
+					delete[]page;
+
+					if (header._Name() == name) {
+						header._SetPosition(pos + block._Offset());
+						stream->close();
+						delete stream;
+						return header;
+					}
+					else if (header._NextNodePage() != pageCount) {
+						pageCount = header._NextNodePage() - 1;
+						stream->seekg(clusterSize*header._NextNodePage(), ios::beg);
+						break;
+					}
+				}
+				else break;
+			} while (readPos < clusterSize);
+			delete[]page;
+			pageCount++;
+		} while (!stream->eof());
+		stream->close();
+	}
+	delete stream;
+	ModelHeader empty;
+	return empty;
 }
 
 //	updates existing header database record with new value
@@ -163,14 +211,6 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 	_UpdateHeader(stream, this->header);
 }
 
-bool Controller::_LoadHeader(ModelHeader& header) {
-	fstream* stream = _OpenStream();
-
-
-
-	return true;
-}
-
 //	write new model data into database
 void Controller::_WriteModel(std::fstream* stream, ModelHeader& header, char* buffer) {
 	stream->seekp(0, ios::end);
@@ -193,4 +233,3 @@ void Controller::_WriteModel(std::fstream* stream, ModelHeader& header, char* bu
 
 	_UpdateHeader(stream, header);
 }
-

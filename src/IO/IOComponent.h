@@ -1,16 +1,5 @@
 #pragma once
-
-class Console;
-class Initialize {
-private:
-	Initialize() = delete;
-	~Initialize() = delete;
-
-	static bool initialized;
-
-public:
-	static Console* _Console();
-};
+#include "../utility.h"
 
 class IOComponent {
 public:

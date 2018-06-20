@@ -8,8 +8,10 @@ ModelHeader ProfileController::header(ModelName::profile);
 
 ProfileController::ProfileController() {
 	this->model = ModelName::profile;
-	if (this->header._Loaded() == false)
-		_LoadHeader(this->header);
+	if (this->header._Loaded() == false) {
+		this->header = _LoadHeader(model);
+		this->header._SetLoadStatus(true);
+	}
 }
 
 ProfileController::~ProfileController(){}

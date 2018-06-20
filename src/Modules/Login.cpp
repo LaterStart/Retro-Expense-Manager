@@ -4,10 +4,6 @@
 #include "../IO/Input.h"
 #include "../config.h"
 
-Login::Login() : initialized_(false) {}
-
-Login::~Login() = default;
-
 Module& Login::_GetInstance() {
 	return _LoadModule();
 }
@@ -19,7 +15,7 @@ Login& Login::_LoadModule() {
 
 void Login::_StartModule() {
 	//	Check for last used user profile in database binary file
-	ProfileController profCtrl;
+
 	//Profile* profile = profCtrl._GetLastUsedProfile();
 	Profile* profile = nullptr;
 	//	if profile contoller has found last used user

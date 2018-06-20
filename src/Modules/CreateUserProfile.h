@@ -9,11 +9,10 @@ class CreateUserProfile : public Module {
 	friend class ModuleManagement;
 
 private:
-	bool initialized_;
 	ProfileController controller;
 
-	CreateUserProfile();
-	~CreateUserProfile();	
+	CreateUserProfile() = default;
+	~CreateUserProfile() = default;
 
 	static CreateUserProfile& _LoadModule();
 	Module & _GetInstance();

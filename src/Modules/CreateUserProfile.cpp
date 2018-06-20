@@ -3,10 +3,6 @@
 #include "../IO/Input.h"
 #include "../config.h"
 
-CreateUserProfile::CreateUserProfile() : initialized_(false) {}
-
-CreateUserProfile::~CreateUserProfile() = default;
-
 Module& CreateUserProfile::_GetInstance() {
 	return _LoadModule();
 }

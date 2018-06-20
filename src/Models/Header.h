@@ -66,10 +66,7 @@ inline void Header::_SetLoadStatus(bool status) {
 }
 
 class MainHeader : public Header {
-private:
-	bool valid = false;
 public:	
-	bool _Status() const;
 	char* _Serialize();
 	void _Deserialize(char* page);
 
@@ -77,16 +74,13 @@ public:
 	~MainHeader() = default;
 };
 
-inline bool MainHeader::_Status() const {
-	return valid;
-}
-
 class ModelHeader : public Header {
 private:
 	ModelName model = ModelName::none;
 	
 public:	
 	ModelHeader(ModelName name) : Header(ModelName::modelHeader), model(name){}
+	ModelHeader() : Header(ModelName::modelHeader) {}
 	~ModelHeader() = default;
 
 	char* _Serialize();

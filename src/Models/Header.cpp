@@ -47,7 +47,6 @@ void MainHeader::_Deserialize(char* page) {
 			this->nextNodePage = *(int*)page;
 			page += sizeof(int);
 			this->lastNodePage = *(int*)page;
-			this->valid = true;
 		}
 	}
 }
@@ -82,4 +81,3 @@ void ModelHeader::_Deserialize(char* page) {
 	this->lastNodePage = *(int*)page;
 	page += sizeof(int);
 }
-

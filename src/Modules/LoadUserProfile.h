@@ -1,5 +1,6 @@
 #pragma once
 #include "ModuleManagement.h"
+#include "../Controllers/ProfileController.h"
 
 class LoadUserProfile : public Module {
 	template<class T>
@@ -8,10 +9,10 @@ class LoadUserProfile : public Module {
 	friend class ModuleManagement;
 
 private:
-	bool initialized;
+	ProfileController controller;
 
-	LoadUserProfile();
-	~LoadUserProfile();
+	LoadUserProfile() = default;
+	~LoadUserProfile() = default;
 
 	static LoadUserProfile& _LoadModule();
 	Module & _GetInstance();

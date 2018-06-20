@@ -14,7 +14,7 @@ ModuleManagement::~ModuleManagement(){
 	delete[]moduleList;
 }
 
-//	Wanna be framework implementation - each class registers its name at compile time
+//	Wanna be framework implementation - each module class registers its name at compile time
 void ModuleInitializer::_RegisterModule(string moduleName, function<Module*(void)> moduleInitializer){
 	moduleRegistry[moduleName] = moduleInitializer;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "ModuleManagement.h"
+#include "../Controllers/ProfileController.h"
 
 class Login : public Module {
 	template<class T>
@@ -8,10 +9,10 @@ class Login : public Module {
 	friend class ModuleManagement;
 
 private:
-	bool initialized_;
+	ProfileController controller;
 
-	Login();
-	~Login();
+	Login() = default;
+	~Login() = default;
 
 	static Login& _LoadModule();
 	Module& _GetInstance() override;
@@ -23,4 +24,4 @@ public:
 };
 
 // register module name into modules list registar
-ModuleRegistrar<Login> name("Login");
+ModuleRegistrar<Login> _name("Login");

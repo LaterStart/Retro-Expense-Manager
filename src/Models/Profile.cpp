@@ -58,7 +58,7 @@ char* Profile::_Serialize() {
 
 	// store default currency ID into buffer
 	std::memcpy(buffer, &defCCYid, sizeof(int));
-	buffer -= (size + sizeof(int));
+	buffer -= size;
 
 	return buffer;
 }

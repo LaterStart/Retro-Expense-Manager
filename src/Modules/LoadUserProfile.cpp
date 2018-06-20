@@ -2,10 +2,6 @@
 #include "../Controllers/ProfileController.h"
 #include "../config.h"
 
-LoadUserProfile::LoadUserProfile() : initialized(false) {}
-
-LoadUserProfile::~LoadUserProfile() = default;
-
 Module& LoadUserProfile::_GetInstance() {
 	return _LoadModule();
 }

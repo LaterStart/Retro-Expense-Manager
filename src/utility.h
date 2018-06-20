@@ -2,6 +2,25 @@
 #include <initializer_list>
 #include <cstdarg> 
 
+class Console;
+class Initialize {
+private:
+	Initialize() = delete;
+	~Initialize() = delete;
+
+	static bool consoleInit;
+	static bool controllerInit;
+
+public:
+	static Console* _Console();
+	static void _Controller();
+
+	class CtrlLoader {
+	public:
+		CtrlLoader();
+	};
+};
+
 namespace utility {
 
 	char* _ChopChar(char* arr, char* remove);

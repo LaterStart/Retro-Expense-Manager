@@ -7,20 +7,6 @@ using namespace std;
 
 int IOComponent::idCounter = 0;
 
-bool Initialize::initialized = false;
-Console* Initialize::_Console() {
-	if (!initialized) {
-		Console& ref = Console::_GetInstance();
-		Console* myConsole = &ref;
-		myConsole->_Initialize();
-		myConsole->_DrawFrame();
-
-		initialized = true;
-		return myConsole;
-	}
-	return nullptr;
-}
-
 Console::Console() : mainFrame(nullptr) {}
 
 Console::~Console() {

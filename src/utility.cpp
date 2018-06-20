@@ -2,6 +2,34 @@
 #include <iomanip>
 #include "utility.h"
 #include "config.h"
+#include "IO/IOComponent.h"
+#include "Controllers/_Controller.h"
+
+bool Initialize::consoleInit = false;
+bool Initialize::controllerInit = false;
+
+Console* Initialize::_Console() {
+	if (!consoleInit) {
+		Console& ref = Console::_GetInstance();
+		Console* myConsole = &ref;
+		myConsole->_Initialize();
+		myConsole->_DrawFrame();
+
+		consoleInit = true;
+		return myConsole;
+	}
+	return nullptr;
+}
+
+void Initialize::_Controller() {
+	Controller instance(controllerInit);
+}
+
+Initialize::CtrlLoader::CtrlLoader() {
+	Initialize::_Controller();
+}
+
+Initialize::CtrlLoader _load;
 
 namespace utility {
 
