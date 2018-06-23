@@ -17,6 +17,13 @@ public:
 	char* _Serialize();
 	void _Deserialize(char* page);
 
+	char* _Username() const;
+
 	Profile(utility::LinkedList<Data*>* data);
+	Profile(char* buffer);
 	~Profile() = default;
 };
+
+inline char* Profile::_Username() const {
+	return this->username;
+}

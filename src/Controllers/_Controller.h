@@ -19,6 +19,11 @@ const enum class Field {
 	defCCYid
 };
 
+const enum class Range {
+	none,
+	all
+};
+
 class UserInput;
 struct Data {
 	Field field;
@@ -26,7 +31,22 @@ struct Data {
 
 public:
 	Data(Field field, UserInput* input) : field(field), input(input) {}
+	~Data() = default;
 };
+
+class Query {
+	Range range = Range::none;
+
+public:
+	void _SetRange(Range range);
+	Query() = default;
+	Query(Range range) : range(range){}
+	~Query() = default;
+};
+
+inline void Query::_SetRange(Range range) {
+	this->range = range;
+}
 
 class DataBlock; class Header; class MainHeader; class ModelHeader;
 class Controller {
@@ -37,10 +57,10 @@ private:
 	static MainHeader header;
 	void _LoadHeader();	
 
-	char* _ReadPage(std::fstream* stream);
-	DataBlock _GetBlock(char* page, ModelName name);
+	DataBlock _GetBlock(char* page, int offset, ModelName name);
 	void _DeleteBuffers(char* &buffer, char* &dblock);
-	void _UpdateHeader(std::fstream* stream, Header& header);		
+	void _UpdateHeader(std::fstream* stream, Header& header);
+	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);	
 
 	Controller(bool& initialize);
 
@@ -51,7 +71,8 @@ protected:
 	bool _CreateDatabase();
 	void _WriteNewModelHeader(std::fstream* stream, ModelHeader& header);
 	void _WriteModel(std::fstream* stream, ModelHeader& header, char* buffer);
-	ModelHeader _LoadHeader(ModelName name);
+	void _LoadHeader(ModelHeader& header);
+	char** _GetModels(std::fstream* stream, ModelHeader& name, Query query);
 	
 	Controller() = default;
 	~Controller() = default;

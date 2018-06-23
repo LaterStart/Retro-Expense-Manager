@@ -1,6 +1,7 @@
 #include "Profile.h"
 #include "../IO/Input.h" //dbg
 
+// construct profile model using form data
 Profile::Profile(utility::LinkedList<Data*>* data){
 	while (data != nullptr) {
 		_BindData(data->element);
@@ -8,6 +9,12 @@ Profile::Profile(utility::LinkedList<Data*>* data){
 	}
 }
 
+// construct profile model using buffer
+Profile::Profile(char* buffer) {
+	this->_Deserialize(buffer);
+}
+
+//	binds form data to object data
 void Profile::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::username:
@@ -29,11 +36,13 @@ void Profile::_BindData(Data* data) {
 	}
 }
 
+//	serialize profile model
 char* Profile::_Serialize() {
-	//	Total object size
-	int size = usernameSize + passwordSize + sizeof(bool) + (2 * sizeof(int));
+	//	Total object size					//pw status   username size   pw size       def ccy id    
+	int size = usernameSize + passwordSize + sizeof(bool) + sizeof(int) + sizeof(int) + sizeof(int);
 	//	insert object size info at buffer start
 	char* buffer = new char[size+sizeof(int)];
+	char* firstByte = buffer;
 	std::memcpy(buffer, &size, sizeof(int));	
 	buffer += sizeof(int);
 
@@ -58,11 +67,30 @@ char* Profile::_Serialize() {
 
 	// store default currency ID into buffer
 	std::memcpy(buffer, &defCCYid, sizeof(int));
-	buffer -= size;
 
-	return buffer;
+	return firstByte;
 }
 
+//	deserialize profile model
 void Profile::_Deserialize(char* page) {
+	this->usernameSize = *(int*)page;
+	page += sizeof(int);
 
+	this->username = new char[usernameSize];
+	std::memcpy(username, page, usernameSize);
+	page += usernameSize;
+
+	this->pwProtected = *(bool*)page;
+	page += sizeof(bool);
+
+	this->passwordSize = *(int*)page;
+	page += sizeof(int);
+
+	if (pwProtected) {
+		this->password = new char[passwordSize];
+		std::memcpy(password, page, passwordSize);
+		page += passwordSize;
+	}		
+
+	this->defCCYid = *(int*)page;
 }

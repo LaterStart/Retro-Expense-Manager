@@ -3,10 +3,11 @@
 char* MainHeader::_Serialize() {
 	int versionSize = utility::_CharSize(::version);
 	int size =  versionSize + sizeof(int); //version char* + size info int
-	size += 3 * sizeof(int); //model headers number + next & last header page num
+	size += sizeof(int) + 2*sizeof(std::streamoff); //model headers number + next & last header page num
 
 	//write size at beggining of buffer
 	char* buffer = new char[size + sizeof(int)]; 
+	char* firstByte = buffer;
 	std::memcpy(buffer, &size, sizeof(int));
 	buffer += sizeof(int);
 
@@ -23,12 +24,11 @@ char* MainHeader::_Serialize() {
 	buffer += sizeof(int);
 
 	//create place to store next header page  and last header page number
-	std::memcpy(buffer, &nextNodePage, sizeof(int));
-	buffer += sizeof(int);
-	std::memcpy(buffer, &lastNodePage, sizeof(int));
+	std::memcpy(buffer, &firstNode, sizeof(std::streamoff));
+	buffer += sizeof(std::streamoff);
+	std::memcpy(buffer, &lastNode, sizeof(std::streamoff));
 
-	buffer -= size;
-	return buffer;
+	return firstByte;
 }
 
 //	deserialize main header object data from database file
@@ -44,30 +44,30 @@ void MainHeader::_Deserialize(char* page) {
 		if (utility::_CompareChar(version, ::version)) {
 			this->nodeCount = *(int*)page;
 			page += sizeof(int);
-			this->nextNodePage = *(int*)page;
-			page += sizeof(int);
-			this->lastNodePage = *(int*)page;
+			this->firstNode = *(std::streamoff*)page;
+			page += sizeof(std::streamoff);
+			this->lastNode = *(std::streamoff*)page;
 		}
 	}
 }
 
 //	serialize model header object
 char* ModelHeader::_Serialize() {
-	int size = 4 * sizeof(int);
+	int size = 2 * sizeof(int) + 2* sizeof(std::streamoff);
 	char* buffer = new char[size+sizeof(int)];
-	
+	char* firstByte = buffer;
+
 	std::memcpy(buffer, &size, sizeof(int));
 	buffer += sizeof(int);
 	std::memcpy(buffer, &this->model, sizeof(int));
 	buffer += sizeof(int);
 	std::memcpy(buffer, &this->nodeCount, sizeof(int));
 	buffer += sizeof(int);
-	std::memcpy(buffer, &this->nextNodePage, sizeof(int));
-	buffer += sizeof(int);
-	std::memcpy(buffer, &this->lastNodePage, sizeof(int));
+	std::memcpy(buffer, &this->firstNode, sizeof(std::streamoff));
+	buffer += sizeof(std::streamoff);
+	std::memcpy(buffer, &this->lastNode, sizeof(std::streamoff));
 
-	buffer -= size;
-	return buffer;
+	return firstByte;
 }
 
 //	deserialize model header object
@@ -76,8 +76,7 @@ void ModelHeader::_Deserialize(char* page) {
 	page += sizeof(int);
 	this->nodeCount = *(int*)page;
 	page += sizeof(int);
-	this->nextNodePage = *(int*)page;
-	page += sizeof(int);
-	this->lastNodePage = *(int*)page;
-	page += sizeof(int);
+	this->firstNode = *(std::streamoff*)page;
+	page += sizeof(std::streamoff);
+	this->lastNode = *(std::streamoff*)page;
 }

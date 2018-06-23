@@ -6,43 +6,44 @@ protected:
 	bool loaded = false;
 	ModelName type = ModelName::none;
 	int nodeCount = 0;
-	int nextNodePage = -1;
-	int lastNodePage = -1;
+	std::streamoff firstNode = -1;
+	std::streamoff lastNode = -1;
 	std::streamoff pos = -1;	
 
 	Header(ModelName type) : type(type){}
 	
 public:
 	void _IncreaseNodeCount();
-	void _EditNextNodePage(int pageNum);
-	void _EditLastNodePage(int page);
-	int _NextNodePage() const;
-	int _LastNodePage() const;
+	void _EditFirstNode(std::streamoff pageNum);
+	void _EditLastNode(std::streamoff page);
+	std::streamoff _FirstNode() const;
+	std::streamoff _LastNode() const;
 	void _SetPosition(std::streamoff pos);
 	std::streamoff _Position() const;
 	ModelName _Type() const;
 	bool _Loaded() const;
 	void _SetLoadStatus(bool status);
+	int _NodeCount() const;
 };
 
 inline void Header::_IncreaseNodeCount() {
 	this->nodeCount++;
 }
 
-inline void Header::_EditNextNodePage(int pageNum) {
-	this->nextNodePage = pageNum;
+inline void Header::_EditFirstNode(std::streamoff pageNum) {
+	this->firstNode = pageNum;
 }
 
-inline void Header::_EditLastNodePage(int pageNum) {
-	this->lastNodePage = pageNum;
+inline void Header::_EditLastNode(std::streamoff pageNum) {
+	this->lastNode = pageNum;
 }
 
-inline int Header::_NextNodePage() const {
-	return this->nextNodePage;
+inline std::streamoff Header::_FirstNode() const {
+	return this->firstNode;
 }
 
-inline int Header::_LastNodePage() const {
-	return this->lastNodePage;
+inline std::streamoff Header::_LastNode() const {
+	return this->lastNode;
 }
 
 inline std::streamoff Header::_Position() const {
@@ -63,6 +64,10 @@ inline bool Header::_Loaded() const {
 
 inline void Header::_SetLoadStatus(bool status) {
 	this->loaded = status;
+}
+
+inline int Header::_NodeCount() const {
+	return this->nodeCount;
 }
 
 class MainHeader : public Header {
