@@ -4,8 +4,10 @@
 #include "../Models/Profile.h"
 using namespace std;
 
+//	static profile model header
 ModelHeader ProfileController::header(ModelName::profile);
 
+//	profile controller constructor - loads profile model header from database
 ProfileController::ProfileController() {
 	this->model = ModelName::profile;
 	if (this->header._Loaded() == false) {
@@ -13,48 +15,72 @@ ProfileController::ProfileController() {
 	}
 }
 
-ProfileController::~ProfileController(){}
-
+//	find last active user profile
 Profile* ProfileController::_GetLastUsedProfile() {	
-	//fstream* stream = _OpenStream();
-	//if (stream != nullptr) {
-		/*Profile profile;
-		return new Profile;*/
-		return nullptr;
-	//}
-	//else
-		//return nullptr;
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char** buffer = _GetModels(stream, this->header, Query(Range::all));
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
+			Profile temporary(buffer[i]);
+			delete[]buffer[i];
+			if (temporary._Active() == true) {
+				this->activeProfile = new Profile(temporary);
+				break;
+			}
+		}
+		delete[]buffer;
+		stream->close();
+	}
+	return this->activeProfile;
+}
+
+//	check if user profile with the given username already exists
+bool ProfileController::_Exists(char* username) {
+	fstream* stream = _OpenStream();
+	bool result = false;
+	if (stream != nullptr) {
+		char** buffer = _GetModels(stream, this->header, Query(Range::all));
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
+			Profile temporary(buffer[i]);
+			delete[]buffer[i];
+			if (utility::_CompareChar(temporary._Username(), username)) {
+				result = true;				
+				break;
+			}
+		}
+		delete[]buffer;
+		stream->close();
+	}
+	delete stream;
+	return result;
 }
 
 //	Add new user profile
-bool ProfileController::_WriteNewProfile(utility::LinkedList<Data*>*data) {		
-	Profile profile(data);
+void ProfileController::_AddNewProfile(utility::LinkedList<Data*>*data) {
+	Profile* newProfile = new Profile(data, header._GiveID());
 	fstream* stream = _OpenStream();
-	bool control = true;
-	if (stream != nullptr) { // check if database is created
-		// and if user profile with the given username already exists		
-		char** buffer = _GetModels(stream, this->header, Query(Range::all));
-		for (int i = 0; i < header._NodeCount(); i++) {
-			Profile temporary(buffer[i]);
-			if (utility::_CompareChar(temporary._Username(), profile._Username()))
-				control = false;
-			delete[]buffer[i];
-		}
-		delete[]buffer;		
-	}
-	else { // Create database file	
+
+	// check if database is created
+	if (stream == nullptr) { 
 		this->_CreateDatabase();
 		// add profile model header
 		stream = _OpenStream();
 		this->_WriteNewModelHeader(stream, this->header);
 	}
+	// write model		
+	char* buffer = newProfile->_Serialize();
+	_WriteModel(stream, this->header, buffer);	
 
-	if (control) { // write model		
-		char* buffer = profile._Serialize();
-		_WriteModel(stream, this->header, buffer);		
+	// deactivate current profile
+	if (this->activeProfile != nullptr) {
+		activeProfile->_Deactivate();
+		char*buffer = activeProfile->_Serialize();
+		_UpdateModel(stream, header, activeProfile->_ID(), buffer);		
 	}
+
+	delete this->activeProfile;
+	activeProfile = newProfile;
 	
 	stream->close();
 	delete stream;
-	return control;
 }

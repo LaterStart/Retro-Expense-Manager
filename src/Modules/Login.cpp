@@ -1,5 +1,6 @@
 #include "Login.h"
 #include "../Controllers/ProfileController.h"
+#include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
 #include "../config.h"
@@ -15,14 +16,11 @@ Login& Login::_LoadModule() {
 
 void Login::_StartModule() {
 	//	Check for last used user profile in database binary file
+	Profile* profile = controller._GetLastUsedProfile();
 
-	//Profile* profile = profCtrl._GetLastUsedProfile();
-	Profile* profile = nullptr;
-	//	if profile contoller has found last used user
-	if (profile != nullptr) {
-
-	}
-	//	if no recent user profile is found, display available options
+	//	if profile contoller has found last used user and is not password protected
+	if (profile != nullptr && !profile->_PwStatus())		
+		moduler->_SetNextModule("Dashboard");
 	else {
 		//	Create default frame layout
 		Frame* mainFrame = console->_GetMainFrame();	
@@ -46,24 +44,56 @@ void Login::_StartModule() {
 		mainMenu._SetPadding(1);
 		layout._Select("Menu")->_AddElements(mainMenu);
 
-		//	Module text
-		Label text1("No recent user profile was detected.");
-		Label text2("Please create new one or load existing.");
-		text1._SetPadding(4); text2._SetPadding(4);
-		layout._Select("Content")->_AddElements(text1, text2);
+		//	No user profile detected
+		if (profile == nullptr) {
+			Label text1("No recent user profile was detected.");
+			Label text2("Please create new one or load existing.");
+			text1._SetPadding(4); text2._SetPadding(4);
+			layout._Select("Content")->_AddElements(text1, text2);
+			layout._ShowElements();
 
-		layout._ShowElements();		
-
-		//	Read user input - menu selection only available 
-		Cursor(1, ::height - 2);
-		UserInput select(InputType::menuSelect);
-		while (select.selection <  1 || select.selection > mainMenu.size) {			
-			select._ReadUserInput();
-			select._ClearInput();
+			//	Read user input - menu selection only available 
+			Cursor(1, ::height - 2);
+			UserInput select(InputType::menuSelect);
+			while (select.selection <  1 || select.selection > mainMenu.size) {
+				select._ReadUserInput();
+				select._ClearInput();
+			}			
+			moduler->_SetNextModule(mainMenu._GetLink(select.selection), this);
 		}
+		//	Profile password protected
+		else if (profile->_PwStatus()) {
+			TextBar bar(
+				Label("Welcome"),
+				Label(profile->_Username())
+			);
+			bar._SetPadding(4);
+			layout._Select("Content")->_AddElements(bar);
+			layout._ShowElements();
+
+			//	Read user input - password field 
+			InputField pw("Enter password:", InputType::password);
+			pw._SetPadding(4);
+			pw._SetYpos(++layout._Select("Content")->nextYpos);
+			layout._Select("Content")->_AddElements(pw);
+
+			Label wrongPw("Incorrect password.");
+			wrongPw._SetParentFrame(layout._Select("Content"));
+			wrongPw._SetYpos(layout._Select("Content")->nextYpos + 2);
+			wrongPw._SetPadding(4);
+
+			do {
+				pw._Show();
+				if (profile->_VerifyPassword(pw.inputField->input))
+					break;
+				else 					
+					wrongPw._Show();
+			} while (true);
+
+			moduler->_SetNextModule("Dashboard");
+		}				
 
 		//	Set module name (link) as the next one to be opened in main.cpp game loop.
 		//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
-		moduler->_SetNextModule(this, mainMenu._GetLink(select.selection));
 	}
 }

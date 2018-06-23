@@ -52,7 +52,7 @@ private:
 public:
 	void _OpenModule(const char* name);
 	void _OpenNextModule();
-	void _SetNextModule(Module* previousModule, const char* name);
+	void _SetNextModule(const char* name, Module* previousModule = nullptr);
 
 	ModuleManagement(Console* myConsole);
 	~ModuleManagement();
@@ -71,9 +71,9 @@ inline void ModuleManagement::_OpenNextModule() {
 	_OpenModule(this->nextModule);
 }
 
-inline void ModuleManagement::_SetNextModule(Module* previousModule, const char* name) {
-	this->previousModule = previousModule;
+inline void ModuleManagement::_SetNextModule(const char* name, Module* previousModule) {	
 	this->nextModule = name;
+	this->previousModule = previousModule;
 }
 
 //	compile time class used to add each module into register

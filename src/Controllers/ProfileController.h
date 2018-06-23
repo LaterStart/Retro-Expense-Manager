@@ -5,11 +5,13 @@ class Profile; class ModelHeader;
 class ProfileController : public Controller {
 private:
 	static ModelHeader header;
+	Profile* activeProfile = nullptr;
 
 public:
 	ProfileController();
-	~ProfileController();	
+	~ProfileController() = default;
 
 	Profile* _GetLastUsedProfile();
-	bool _WriteNewProfile(utility::LinkedList<Data*>*data);	
+	bool _Exists(char* username);
+	void _AddNewProfile(utility::LinkedList<Data*>*data);	
 };

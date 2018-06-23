@@ -325,3 +325,37 @@ inline const char* Menu::_GetLink(int selection) {
 inline void MenuItem::_SetSpecialPrefix(const char* prefix) {
 	this->prefix = prefix;
 }
+
+class TextBar : public Label {
+private:
+	Label** items = nullptr;
+	int num = 0;
+	int spacing = 1;
+
+	void _AddItem(Label& item);
+
+public:
+	template <typename T>
+	void _AddItems(T& item) {
+		_AddItem(item);
+	}
+	template<typename T, typename ... TT>
+	void _AddItems(T& item, TT& ... nextItems) {
+		_AddItem(item);
+		_AddItems(nextItems...);
+	}
+
+	template<typename ... TT>
+	TextBar(TT& ... items) {	
+		_AddItems(items ...);
+	}
+
+	void _SetSpacing(int spacing);
+	void _Show() override;
+
+	~TextBar();
+};
+
+inline void TextBar::_SetSpacing(int spacing) {
+	this->spacing = spacing;
+}

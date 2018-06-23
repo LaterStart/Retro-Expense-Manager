@@ -3,9 +3,11 @@
 
 class Header : public Model {
 protected:	
+	int ID = 0;
 	bool loaded = false;
 	ModelName type = ModelName::none;
-	int nodeCount = 0;
+	unsigned int nodeCount = 0;
+	unsigned int idCount = 0;
 	std::streamoff firstNode = -1;
 	std::streamoff lastNode = -1;
 	std::streamoff pos = -1;	
@@ -23,7 +25,8 @@ public:
 	ModelName _Type() const;
 	bool _Loaded() const;
 	void _SetLoadStatus(bool status);
-	int _NodeCount() const;
+	unsigned int _NodeCount() const;
+	unsigned int _GiveID();
 };
 
 inline void Header::_IncreaseNodeCount() {
@@ -66,8 +69,12 @@ inline void Header::_SetLoadStatus(bool status) {
 	this->loaded = status;
 }
 
-inline int Header::_NodeCount() const {
+inline unsigned int Header::_NodeCount() const {
 	return this->nodeCount;
+}
+
+inline unsigned int Header::_GiveID(){
+	return this->idCount++;
 }
 
 class MainHeader : public Header {

@@ -2,12 +2,15 @@
 
 char* MainHeader::_Serialize() {
 	int versionSize = utility::_CharSize(::version);
-	int size =  versionSize + sizeof(int); //version char* + size info int
-	size += sizeof(int) + 2*sizeof(std::streamoff); //model headers number + next & last header page num
+	//version char* + size info int
+	int size =  versionSize + sizeof(int); 
+	//model headers count, id count and next & last header page num
+	size += 2*sizeof(unsigned int) + 2*sizeof(std::streamoff); 
 
-	//write size at beggining of buffer
+	//write size and ID at beggining of buffer
 	char* buffer = new char[size + sizeof(int)]; 
 	char* firstByte = buffer;
+
 	std::memcpy(buffer, &size, sizeof(int));
 	buffer += sizeof(int);
 
@@ -20,8 +23,12 @@ char* MainHeader::_Serialize() {
 		*buffer++ = version[i];
 
 	//create place for active model types number
-	std::memcpy(buffer, &nodeCount, sizeof(int));
-	buffer += sizeof(int);
+	std::memcpy(buffer, &nodeCount, sizeof(unsigned int));
+	buffer += sizeof(unsigned int);
+
+	//create place for id counter
+	std::memcpy(buffer, &idCount, sizeof(unsigned int));
+	buffer += sizeof(unsigned int);
 
 	//create place to store next header page  and last header page number
 	std::memcpy(buffer, &firstNode, sizeof(std::streamoff));
@@ -42,8 +49,10 @@ void MainHeader::_Deserialize(char* page) {
 		for (int i = 0; i < versionReadSize; i++)
 			version[i] = *page++;
 		if (utility::_CompareChar(version, ::version)) {
-			this->nodeCount = *(int*)page;
-			page += sizeof(int);
+			this->nodeCount = *(unsigned int*)page;
+			page += sizeof(unsigned int);
+			this->idCount = *(unsigned int*)page;
+			page += sizeof(unsigned int);
 			this->firstNode = *(std::streamoff*)page;
 			page += sizeof(std::streamoff);
 			this->lastNode = *(std::streamoff*)page;
@@ -53,7 +62,7 @@ void MainHeader::_Deserialize(char* page) {
 
 //	serialize model header object
 char* ModelHeader::_Serialize() {
-	int size = 2 * sizeof(int) + 2* sizeof(std::streamoff);
+	int size = sizeof(int) + 2* sizeof(std::streamoff) + 2*sizeof(unsigned int);
 	char* buffer = new char[size+sizeof(int)];
 	char* firstByte = buffer;
 
@@ -61,8 +70,10 @@ char* ModelHeader::_Serialize() {
 	buffer += sizeof(int);
 	std::memcpy(buffer, &this->model, sizeof(int));
 	buffer += sizeof(int);
-	std::memcpy(buffer, &this->nodeCount, sizeof(int));
-	buffer += sizeof(int);
+	std::memcpy(buffer, &this->nodeCount, sizeof(unsigned int));
+	buffer += sizeof(unsigned int);
+	std::memcpy(buffer, &this->idCount, sizeof(unsigned int));
+	buffer += sizeof(unsigned int);
 	std::memcpy(buffer, &this->firstNode, sizeof(std::streamoff));
 	buffer += sizeof(std::streamoff);
 	std::memcpy(buffer, &this->lastNode, sizeof(std::streamoff));
@@ -74,8 +85,10 @@ char* ModelHeader::_Serialize() {
 void ModelHeader::_Deserialize(char* page) {
 	this->model = *(ModelName*)page;
 	page += sizeof(int);
-	this->nodeCount = *(int*)page;
-	page += sizeof(int);
+	this->nodeCount = *(unsigned int*)page;
+	page += sizeof(unsigned int);
+	this->idCount = *(unsigned int*)page;
+	page += sizeof(unsigned int);
 	this->firstNode = *(std::streamoff*)page;
 	page += sizeof(std::streamoff);
 	this->lastNode = *(std::streamoff*)page;

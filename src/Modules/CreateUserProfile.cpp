@@ -41,7 +41,7 @@ void CreateUserProfile::_StartModule() {
 	//	Input form
 	Form form;
 	form._AddFields(
-		FormField("Username:", InputType::text, Field::username),
+		UsernameField("Username:", this->controller),
 		OptionField("Password protected?:", Field::pwStatus,
 			// add optional fields 
 			// true marks as key password field
@@ -59,8 +59,8 @@ void CreateUserProfile::_StartModule() {
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 	if (form._GetStatus()) {
 		utility::LinkedList<Data*>* data = form._GetData();
-		controller._WriteNewProfile(data);
-		moduler->_SetNextModule(this, "Login");
+		controller._AddNewProfile(data);
+		moduler->_SetNextModule("Login", this);
 	}	
-	else moduler->_SetNextModule(this, "Login");
+	else moduler->_SetNextModule("Login", this);
 }

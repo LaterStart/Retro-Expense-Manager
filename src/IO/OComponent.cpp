@@ -366,3 +366,24 @@ void Menu::_Show() {
 		items[i]->_Show();
 	}
 }
+
+void TextBar::_AddItem(Label& item) {
+	Label** pp = new Label*(nullptr);
+	utility::_AddElement(items, *pp, num);
+	items[num - 1] = &item;
+	delete pp;
+}
+
+void TextBar::_Show() {
+	int padding = this->padding;
+	for (int i = 0; i < num; i++) {
+		items[i]->_SetParentFrame(this->parentFrame);
+		items[i]->_SetPadding(padding);
+		items[i]->_Show();
+		padding += items[i]->length + spacing;
+	}
+}
+
+TextBar::~TextBar() {
+	delete[]items;
+}

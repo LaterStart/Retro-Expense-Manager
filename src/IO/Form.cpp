@@ -1,4 +1,5 @@
 #include "Input.h"
+#include "../Controllers/ProfileController.h"
 #include "../utility.h"
 
 void OptionField::_AddField(FormField& field) {
@@ -105,6 +106,31 @@ void FormField::_Show() {
 		parentForm->_ShowNextField(this);
 	}
 	else _SwitchField(inputField->control);
+}
+
+void UsernameField::_Show() {
+	Label::_Show();
+	if (_InputControl()) {
+		if (controller._Exists(inputField->input)) {
+			parentForm->_DisplayMessage("Username already exists.");
+			filled = false;
+			this->_Show();
+		}
+		else {
+			filled = true;
+			parentForm->_ShowNextField(this);
+		}		
+	}
+	else {
+		if (inputField->control == 2 && controller._Exists(inputField->input)) {
+			parentForm->_DisplayMessage("Username already exists.");
+			this->_Show();
+		}
+		else {
+			parentForm->_ClearMessage();
+			_SwitchField(inputField->control);
+		}
+	}
 }
 
 void OptionField::_Show() {

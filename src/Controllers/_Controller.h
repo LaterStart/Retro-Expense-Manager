@@ -58,7 +58,7 @@ private:
 	void _LoadHeader();	
 
 	DataBlock _GetBlock(char* page, int offset, ModelName name);
-	void _DeleteBuffers(char* &buffer, char* &dblock);
+	void _DeleteBuffers(char* &buffer, char* &dblock, bool containsID = true);
 	void _UpdateHeader(std::fstream* stream, Header& header);
 	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);	
 
@@ -72,7 +72,9 @@ protected:
 	void _WriteNewModelHeader(std::fstream* stream, ModelHeader& header);
 	void _WriteModel(std::fstream* stream, ModelHeader& header, char* buffer);
 	void _LoadHeader(ModelHeader& header);
-	char** _GetModels(std::fstream* stream, ModelHeader& name, Query query);
+	char** _GetModels(std::fstream* stream, ModelHeader& header, Query query);
+	char* _GetModel(std::fstream* stream, ModelHeader& header, int ID);
+	void _UpdateModel(std::fstream* stream, ModelHeader& header, int ID, char* buffer);
 	
 	Controller() = default;
 	~Controller() = default;

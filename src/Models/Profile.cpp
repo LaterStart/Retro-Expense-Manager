@@ -2,16 +2,29 @@
 #include "../IO/Input.h" //dbg
 
 // construct profile model using form data
-Profile::Profile(utility::LinkedList<Data*>* data){
+Profile::Profile(utility::LinkedList<Data*>* data, int ID){
 	while (data != nullptr) {
 		_BindData(data->element);
 		data = data->nextNode;
 	}
+	this->ID = ID;
 }
 
 // construct profile model using buffer
 Profile::Profile(char* buffer) {
 	this->_Deserialize(buffer);
+}
+
+// profile copy constructor
+Profile::Profile(const Profile& copy) {
+	this->ID = copy.ID;
+	this->active = copy.active;
+	this->defCCYid = copy.defCCYid;
+	this->pwProtected = copy.pwProtected;
+	this->usernameSize = copy.usernameSize;
+	this->passwordSize = copy.passwordSize;
+	this->password = utility::_CopyChar(copy.password);
+	this->username = utility::_CopyChar(copy.username);
 }
 
 //	binds form data to object data
@@ -38,19 +51,23 @@ void Profile::_BindData(Data* data) {
 
 //	serialize profile model
 char* Profile::_Serialize() {
-	//	Total object size					//pw status   username size   pw size       def ccy id    
-	int size = usernameSize + passwordSize + sizeof(bool) + sizeof(int) + sizeof(int) + sizeof(int);
-	//	insert object size info at buffer start
-	char* buffer = new char[size+sizeof(int)];
-	char* firstByte = buffer;
+	//	Total object size					  pw status   username size   pw size       def ccy id   active status
+	int size = usernameSize + passwordSize + sizeof(bool) + sizeof(int) + sizeof(int) + sizeof(int) + sizeof(bool);
+
+	//	insert object size info and ID at buffer start
+	char* buffer = new char[size+2*sizeof(int)];
+	char* firstByte = buffer;	
+
+	std::memcpy(buffer, &ID, sizeof(int));
+	buffer += sizeof(int);
 	std::memcpy(buffer, &size, sizeof(int));	
 	buffer += sizeof(int);
 
 	//	store username into buffer
 	std::memcpy(buffer, &usernameSize, sizeof(int));
 	buffer += sizeof(int);
-	for (int i = 0; i < usernameSize; i++)
-		*buffer++ = *username++;
+	std::memcpy(buffer, username, usernameSize);
+	buffer += usernameSize;
 
 	//	store password protection status into buffer
 	std::memcpy(buffer, &pwProtected, sizeof(bool));
@@ -61,18 +78,24 @@ char* Profile::_Serialize() {
 	buffer += sizeof(int);
 	if (pwProtected) {
 		utility::_XOR(password);
-		for (int i = 0; i < passwordSize; i++)
-			*buffer++ = *password++;
+		std::memcpy(buffer, password, passwordSize);
+		buffer += passwordSize;
 	}
 
 	// store default currency ID into buffer
 	std::memcpy(buffer, &defCCYid, sizeof(int));
+	buffer += sizeof(int);
+
+	std::memcpy(buffer, &active, sizeof(bool));
 
 	return firstByte;
 }
 
 //	deserialize profile model
 void Profile::_Deserialize(char* page) {
+	this->ID = *(int*)page;
+	page += sizeof(int);
+
 	this->usernameSize = *(int*)page;
 	page += sizeof(int);
 
@@ -93,4 +116,19 @@ void Profile::_Deserialize(char* page) {
 	}		
 
 	this->defCCYid = *(int*)page;
+	page += sizeof(int);
+	
+	this->active = *(bool*)page;
+}
+
+bool Profile::_VerifyPassword(char* password) {
+	utility::_XOR(this->password);
+	bool verify = utility::_CompareChar(this->password, password);
+	utility::_XOR(this->password);
+	return verify;
+}
+
+Profile::~Profile() {
+	delete[]username;
+	delete[]password;
 }

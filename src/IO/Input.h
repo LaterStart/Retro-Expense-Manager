@@ -80,11 +80,11 @@ protected:
 	bool filled = false;
 	bool dataField = true;
 
-	bool _InputControl();		
+	virtual bool _InputControl();		
 	void _SwitchField(int control);
 	
 public:		
-	FormField(const char* text, InputType type, Field field) : Label(text), type(type), dataType(field){}
+	FormField(const char* text, InputType type, Field field = Field::none) : Label(text), type(type), dataType(field){}
 	
 	UserInput* inputField = nullptr;
 	Field dataType = Field::none;
@@ -182,6 +182,16 @@ inline FormField* OptionField::_GetField(int pos) const {
 	return optionalFields[pos];
 }
 
+class ProfileController;
+class UsernameField : public FormField {
+private:
+	ProfileController& controller;
+
+public:
+	UsernameField(const char* text, ProfileController& controller) : FormField(text, InputType::text, Field::username), controller(controller){}
+	void _Show() override;
+};
+
 class PasswordField : public FormField {
 	bool master = false;
 	PasswordField* keyField = nullptr;
@@ -213,9 +223,8 @@ class Form : public Input, public FrameElement {
 	int activeFields = 0;
 	int fieldNum = 0;
 	FormField** fields = nullptr;
-	Display message;
-	
-	void _Show();
+	Display message;	
+
 	void _InitializeFields();
 
 	template <typename T>
@@ -247,6 +256,7 @@ public:
 	void _SetStatus(bool status);
 	void _Exit(FormField* currentField);
 	bool _GetStatus();
+	void _Show();
 	utility::LinkedList<Data*>* _GetData();
 
 	FormField* _GetNextField(FormField* currentField);
@@ -271,3 +281,16 @@ inline void Form::_SetStatus(bool status) {
 inline bool Form::_GetStatus() {
 	return status;
 }
+
+class InputField : public FormField{
+private:
+	bool initialized = false;
+	bool _InputControl() override;	
+public:
+	InputField(char* text, InputType type) : FormField(text, type) {}
+	void _Show() override;
+
+	~InputField() {
+		delete inputField;
+	}
+};

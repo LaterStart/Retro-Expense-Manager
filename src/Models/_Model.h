@@ -4,7 +4,6 @@
 
 class Model {	
 protected:
-
 	virtual char* _Serialize() = 0;
 	virtual void _Deserialize(char* page) = 0;
 };

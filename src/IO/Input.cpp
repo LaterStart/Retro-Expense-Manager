@@ -5,7 +5,7 @@ using namespace std;
 
 UserInput::UserInput(InputType type) : type(type) {}
 
-UserInput::~UserInput(){
+UserInput::~UserInput(){	
 	_ClearInput();
 }
 
@@ -266,4 +266,28 @@ void UserInput::_ClearInput() {
 
 void UserInput::_HideInput() {
 	dsp._WipeContent();
+}
+
+bool InputField::_InputControl() {
+	inputField->_ReadUserInput();
+
+	if (inputField->control == 1)
+		return false;
+	else if (inputField->control == 2)
+		return false;
+	else if (inputField->control == -1)
+		return false;
+	else if (mandatory && inputField->length < 1) 		
+		return false;
+	else return true;
+}
+
+void InputField::_Show() {
+	if(!initialized)
+		_CreateInputFrame();
+	Label::_Show();
+	if (_InputControl()) {
+		filled = true;
+	}
+	else this->_Show();
 }

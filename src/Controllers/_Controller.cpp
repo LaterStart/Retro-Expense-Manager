@@ -27,15 +27,10 @@ fstream* Controller::_OpenStream() {
 	}
 }
 
-//	wrap data into data block
-void DataBlock::_WrapData(char* &buffer, ModelName name) {
-	this->type = name;
-	this->bufferSize = *(int*)buffer;
-	buffer += sizeof(int);
-}
-
-void Controller::_DeleteBuffers(char* &buffer, char* &dblock) {
+void Controller::_DeleteBuffers(char* &buffer, char* &dblock, bool containsID) {
 	buffer -= sizeof(int);
+	if (containsID)
+		buffer -= sizeof(int);
 	delete[]buffer;
 	delete[]dblock;
 }
@@ -50,7 +45,7 @@ bool Controller::_CreateDatabase() {
 
 		//wrap data into data block
 		DataBlock block;
-		block._WrapData(buffer, ModelName::mainHeader);
+		block._WrapData(buffer, ModelName::mainHeader, false);
 
 		//write data block
 		char* dblock = block._Serialize();
@@ -60,7 +55,7 @@ bool Controller::_CreateDatabase() {
 		header._SetPosition(pos);
 		
 		stream.close();
-		_DeleteBuffers(buffer, dblock);
+		_DeleteBuffers(buffer, dblock, false);
 		return true;
 	}
 	return false;
@@ -68,10 +63,11 @@ bool Controller::_CreateDatabase() {
 
 //	finds requested block name on the given page buffer
 DataBlock Controller::_GetBlock(char* page, int offset,  ModelName name) {	
+	page += offset;
 	do {
 		DataBlock block;
 		block._Deserialize(page);
-		if (block._Type() == name) {
+		if (block._Model() == name) {
 			block._SetOffset(offset);
 			block.empty = false;
 			return block;
@@ -127,7 +123,7 @@ void Controller::_LoadHeader(ModelHeader& header) {
 					temporary._Deserialize(page+block._Offset());					
 
 					if (temporary._Name() == header._Name()) {
-						temporary._SetPosition(pos + block._Offset());
+						temporary._SetPosition(pageCount*clusterSize + block._PagePos());
 						header = temporary;
 						header._SetLoadStatus(true);
 						stream->close();
@@ -165,15 +161,10 @@ void Controller::_UpdateHeader(fstream* stream, Header& header) {
 	}
 	
 	if (buffer != nullptr) {
-		DataBlock block;
-		block._WrapData(buffer, header._Type());
-		char* dblock = block._Serialize();
-
-		stream->seekp(header._Position(), ios::beg);
-		stream->write(dblock, block._BlockSize());
-		stream->write(buffer, block._BufferSize());
-
-		_DeleteBuffers(buffer, dblock);
+		int bufferSize = *(int*)buffer;	
+		stream->seekp(header._Position() + DataBlock::_BlockSize(), ios::beg);
+		stream->write(buffer + sizeof(int), bufferSize);
+		delete[]buffer;
 	}
 }
 
@@ -183,7 +174,7 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 	char* buffer = header._Serialize();
 
 	DataBlock block;
-	block._WrapData(buffer, ModelName::modelHeader);
+	block._WrapData(buffer, ModelName::modelHeader, false);
 	char* dblock = block._Serialize();
 
 	streamoff pos = stream->tellp();
@@ -191,7 +182,7 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 	stream->write(buffer, block._BufferSize());
 	header._SetPosition(pos);
 
-	_DeleteBuffers(buffer, dblock);
+	_DeleteBuffers(buffer, dblock, false);
 	streamoff pageNum = pos / this->clusterSize;
 
 	// update last model header node
@@ -223,7 +214,8 @@ void Controller::_UpdateLastNode(fstream* stream, Header& header, ModelName name
 			update = true;
 			break;
 		}
-		readPos += block._NodeSize();
+		readPos = block._PagePos();
+		readPos += block._NodeSize() ;
 	} while (readPos < clusterSize);
 	delete[]page;
 	stream->clear();
@@ -275,12 +267,14 @@ char** Controller::_GetModels(fstream* stream, ModelHeader& header, Query query)
 		int pagePos = 0;
 
 		char**buffer = new char*[header._NodeCount()];
-		for (int i = 0; i < header._NodeCount(); i++) {
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
 			DataBlock block = _GetBlock(page, pagePos, header._Name());
 			pagePos = block._PagePos();
 			if (!block.empty) {
-				buffer[i] = new char[block._BufferSize()];
-				std::memcpy(buffer[i], (page + block._Offset()), block._BufferSize());
+				int ID = block._ID();
+				buffer[i] = new char[block._BufferSize() + sizeof(int)];
+				std::memcpy(buffer[i], &ID, sizeof(int));
+				std::memcpy(buffer[i]+sizeof(int), page + block._Offset(), block._BufferSize());
 
 				if (block._NextNode() > pageNum) {
 					pagePos = 0;
@@ -290,8 +284,89 @@ char** Controller::_GetModels(fstream* stream, ModelHeader& header, Query query)
 				else pagePos += block._NodeSize();
 			}
 		}
+
 		stream->clear();
+		delete[]page;
 		return buffer;
 	}
 	else return nullptr;
+}
+
+//	returns model with the given ID from database
+char* Controller::_GetModel(fstream* stream, ModelHeader& header, int ID) {
+	if (header._NodeCount() > 0) {
+		char* page = new char[clusterSize];
+		stream->seekg(header._FirstNode()*clusterSize, ios::beg);
+		streamoff pos = stream->tellg();
+		stream->read(page, clusterSize);
+		streamoff pageNum = pos / clusterSize;
+		int pagePos = 0;
+		char* buffer = nullptr;
+
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
+			DataBlock block = _GetBlock(page, pagePos, header._Name());
+			pagePos = block._PagePos();
+			if (!block.empty && block._ID() == ID) {
+				int ID = block._ID();
+				buffer = new char[block._BufferSize() + sizeof(int)];
+				std::memcpy(buffer, &ID, sizeof(int));
+				std::memcpy(buffer+sizeof(int), (page + block._Offset()), block._BufferSize());
+				break;
+			}
+			else if (!block.empty && block._NextNode() > pageNum) {
+				pagePos = 0;
+				stream->seekg(block._NextNode() * clusterSize, ios::beg);
+				stream->read(page, clusterSize);
+			}
+			else pagePos += block._NodeSize();
+		}
+
+		stream->clear();
+		delete[]page;
+		return buffer;
+	}
+	else return nullptr;
+}
+
+void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char* buffer) {
+	if (header._NodeCount() > 0) {
+		char* page = new char[clusterSize];
+		stream->seekg(header._FirstNode()*clusterSize, ios::beg);
+		streamoff pos = stream->tellg();
+		stream->read(page, clusterSize);
+		streamoff pageNum = pos / clusterSize;
+		int pagePos = 0;
+
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
+			DataBlock originalBlock = _GetBlock(page, pagePos, header._Name());
+			pagePos = originalBlock._PagePos();
+			if (!originalBlock.empty && originalBlock._ID() == ID) {
+				DataBlock newBlock;
+				newBlock._WrapData(buffer, header._Name());
+
+				if (originalBlock._BufferSize() == newBlock._BufferSize()) {
+					stream->seekp(pageNum*clusterSize + originalBlock._Offset(), ios::beg);
+					stream->write(buffer, originalBlock._BufferSize());
+					buffer -= sizeof(int);
+					delete[]buffer;
+				}
+				else {
+
+
+
+				}
+
+				break;
+			}
+			else if (!originalBlock.empty && originalBlock._NextNode() > pageNum) {
+				pagePos = 0;
+				stream->seekg(originalBlock._NextNode() * clusterSize, ios::beg);
+				stream->read(page, clusterSize);
+			}
+			else pagePos += originalBlock._NodeSize();
+		}
+
+		stream->clear();
+		delete[]page;
+	}
 }
