@@ -28,19 +28,21 @@ void CreateUserProfile::_StartModule() {
 
 	//	Main menu
 	Menu mainMenu;
-	MenuItem esc("Back", previousModule);
-	esc._SetSpecialPrefix("[ESC] ");
-	esc._SetYpos(1);
+	MenuItem esc("Menu", previousModule);
+	esc._SetSpecialPrefix("[F1] ");
 	mainMenu._SetPadding(1);
 	mainMenu._AddItems(
 		MenuItem("Load Profile", "LoadUserProfile"),		
 		esc
 	);	
 	layout._Select("Menu")->_AddElements(mainMenu);	
+	layout._ShowElements();
+
+	Frame* content = layout._Select("Content");
 	
 	//	Input form
 	Form form;
-	form._SetParentFrame(layout._Select("Content"));
+	form._SetParentFrame(content);
 	form._AddFields(
 		UsernameField("Username:", this->controller),
 		OptionField("Password protected?:", Field::pwStatus,
@@ -52,16 +54,31 @@ void CreateUserProfile::_StartModule() {
 		ConfirmField("Save?:")
 	);
 	form._SetPadding(4);
-	layout._Select("Content")->_AddElements(form);
-	layout._ShowElements(); 
+	form._SetYpos(++content->nextYpos);
+	content->_AddElements(form);
 
-	//	Get form data and pass it to controller
+	do {
+		form._Show();
+		if (form._GetStatus()) {
+			//	Get form data and pass it to controller
+			utility::LinkedList<Data*>* data = form._GetData();
+			controller._AddNewProfile(data);
+			moduler->_SetNextModule("Login", this);
+			break;
+		}
+		else {
+			//	Menu selection
+			Cursor(1, ::height - 2);
+			UserInput select(InputType::menuSelect);
+			while (select.selection <  1 || select.selection > mainMenu.size) {
+				select._ReadUserInput();
+				select._ClearInput();
+			}
+			moduler->_SetNextModule(mainMenu._GetLink(select.selection), this);
+		}
+	} while (true);
+
+	
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
-	if (form._GetStatus()) {
-		utility::LinkedList<Data*>* data = form._GetData();
-		controller._AddNewProfile(data);
-		moduler->_SetNextModule("Login", this);
-	}	
-	else moduler->_SetNextModule("Login", this);
 }

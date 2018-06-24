@@ -34,6 +34,8 @@ private:
 
 	void _Initialize();
 	void _Conclude();
+	void _ContinueAccept(char& ch);
+	void _ContinueInsert(char& ch);
 	void _DisplayInput(char& ch);
 	void _LoadBuffer();
 
@@ -264,6 +266,7 @@ public:
 	void _ClearMessage();
 	void _SetStatus(bool status);
 	void _Exit(FormField* currentField);
+	void _SwitchToMenu();
 	bool _GetStatus();
 	void _Show();
 	utility::LinkedList<Data*>* _GetData();
@@ -298,8 +301,4 @@ private:
 public:
 	InputField(char* text, InputType type) : FormField(text, type) {}
 	void _Show() override;
-
-	~InputField() {
-		delete inputField;
-	}
 };

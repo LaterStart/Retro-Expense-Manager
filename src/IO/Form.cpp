@@ -78,6 +78,8 @@ bool FormField::_InputControl() {
 		return false;
 	else if (inputField->control == -1)
 		return false;
+	else if (inputField->control == 3)
+		return false;
 	else {
 		if (mandatory && inputField->length < 1) {
 			parentForm->_DisplayMessage("This field cannot be blank.");
@@ -100,6 +102,9 @@ void FormField::_SwitchField(int control) {
 		if(filled)
 			parentForm->_ShowNextField(this);
 		else this->_Show();
+		break;
+	case 3:
+		parentForm->_SwitchToMenu();
 		break;
 	default:
 		this->_Show();
@@ -410,6 +415,10 @@ void Form::_Exit(FormField* currentField) {
 	}
 }
 
+void Form::_SwitchToMenu() {
+	status = false;
+}
+
 utility::LinkedList<Data*>* Form::_GetData() {	
 	FormField* field = fields[0];
 	Data* data = new Data(fields[0]->dataType, fields[0]->inputField);
@@ -428,7 +437,7 @@ utility::LinkedList<Data*>* Form::_GetData() {
 
 Form::~Form() {
 	for (int i = 0; i < fieldNum; i++)
-		fields[i]->~FormField();
+		delete fields[i];
 }
 
 FormField::~FormField() {

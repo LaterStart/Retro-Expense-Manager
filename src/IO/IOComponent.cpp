@@ -150,7 +150,10 @@ void Display::_HideContent(int elementID) {
 }
 
 void Display::_Backspace() {
-	activePositions[--activePosNum]._ClearContent();
+	Cursor tmp;
+	tmp._ChangeX(-1);
+	_Display(tmp, " ");
+	tmp._SetCursorPosition();
 }
 
 void Display::_Show(const char* content) {

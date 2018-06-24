@@ -3,7 +3,6 @@
 #include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
-#include "../config.h"
 
 Module& Login::_GetInstance() {
 	return _LoadModule();
@@ -39,7 +38,7 @@ void Login::_StartModule() {
 		Menu mainMenu;
 		mainMenu._AddItems(
 			MenuItem("Create Profile", "CreateUserProfile"),
-			MenuItem("Load Profile", "LoadUserProfile")
+			MenuItem("Change User", "LoadUserProfile")
 		);
 		mainMenu._SetPadding(1);
 		layout._Select("Menu")->_AddElements(mainMenu);
@@ -73,7 +72,7 @@ void Login::_StartModule() {
 			layout._ShowElements();
 
 			//	Read user input - password field 
-			InputField pw("Enter password:", InputType::password);
+			InputField pw("Please enter password:", InputType::password);
 			pw._SetPadding(4);
 			pw._SetYpos(++content->nextYpos);
 			content->_AddElements(pw);
@@ -87,13 +86,14 @@ void Login::_StartModule() {
 				pw._Show();
 				if (profile->_VerifyPassword(pw.inputField->input))
 					break;
-				else 					
+				else {
+					pw.inputField->_ClearInput();
 					wrongPw._Show();
+				}
 			} while (true);
 
 			moduler->_SetNextModule("Dashboard");
-		}				
-
+		}	
 		//	Set module name (link) as the next one to be opened in main.cpp game loop.
 		//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 	}

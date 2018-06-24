@@ -124,6 +124,7 @@ void Profile::_Deserialize(char* page) {
 	this->active = *(bool*)page;
 }
 
+//	verify if the given password is correct
 bool Profile::_VerifyPassword(char* password) {
 	utility::_XOR(this->password);
 	bool verify = utility::_CompareChar(this->password, password);

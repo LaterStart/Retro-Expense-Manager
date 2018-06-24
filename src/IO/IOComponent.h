@@ -146,7 +146,7 @@ public:
 
 	template <typename T>
 	void _Display(Cursor& pos, T item) {
-		pos._GetCursorPosition();
+		pos._SetCursorPosition();
 		pos._SetCharacterNumber(utility::_CharLength(item));
 		_Display(item);
 		ActivePos apos(pos, -1);
@@ -154,8 +154,8 @@ public:
 	}
 	template<typename T, typename ... TT>
 	void _Display(Cursor& pos, T item, TT ... nextItems) {
-		pos._SetCursorPosition();
 		_Display(pos, item);
+		pos._GetCursorPosition();
 		_Display(pos, nextItems...);
 	}
 
