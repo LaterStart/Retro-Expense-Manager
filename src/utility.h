@@ -119,6 +119,8 @@ namespace utility {
 
 	template <class elementType>
 	class LinkedList {
+	private:
+		LinkedList* firstNode = this;
 	public:
 		elementType element;
 		LinkedList* nextNode;
@@ -126,10 +128,11 @@ namespace utility {
 
 		LinkedList(elementType element) { this->element = element; nextNode = nullptr; previousNode = nullptr; };
 		LinkedList() { element = nullptr; nextNode = nullptr; previousNode = nullptr; };
-		~LinkedList() {};
+		~LinkedList() = default;
 
 		void _AddNextLink(elementType element) {
 			nextNode = new LinkedList(element);
+			nextNode->firstNode = this->firstNode;
 			nextNode->previousNode = this;
 		}
 
@@ -144,6 +147,23 @@ namespace utility {
 				previousNode->nextNode = nextNode;
 				nextNode->previousNode = previousNode;
 			}
+		}
+
+		void _DeleteList() {
+			LinkedList* deleter = firstNode;
+
+			while (deleter != this) {
+				LinkedList* temp = deleter->nextNode;
+				delete deleter;
+				deleter = temp;
+			}
+			deleter = nextNode;
+			while (deleter != nullptr) {
+				LinkedList*temp = deleter->nextNode;
+				delete deleter;
+				deleter = temp;
+			}
+			this->~LinkedList();
 		}
 	};	
 

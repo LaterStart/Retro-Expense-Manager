@@ -40,6 +40,7 @@ void CreateUserProfile::_StartModule() {
 	
 	//	Input form
 	Form form;
+	form._SetParentFrame(layout._Select("Content"));
 	form._AddFields(
 		UsernameField("Username:", this->controller),
 		OptionField("Password protected?:", Field::pwStatus,

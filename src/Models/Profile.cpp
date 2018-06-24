@@ -3,11 +3,14 @@
 
 // construct profile model using form data
 Profile::Profile(utility::LinkedList<Data*>* data, int ID){
-	while (data != nullptr) {
+	while (true) {
 		_BindData(data->element);
-		data = data->nextNode;
+		if (data->nextNode == nullptr)
+			break;
+		else data = data->nextNode;
 	}
 	this->ID = ID;
+	data->_DeleteList();
 }
 
 // construct profile model using buffer

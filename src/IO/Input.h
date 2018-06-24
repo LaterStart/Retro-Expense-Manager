@@ -85,6 +85,7 @@ protected:
 	
 public:		
 	FormField(const char* text, InputType type, Field field = Field::none) : Label(text), type(type), dataType(field){}
+	FormField(const FormField& copy);
 	
 	UserInput* inputField = nullptr;
 	Field dataType = Field::none;
@@ -101,11 +102,13 @@ public:
 	virtual FormField* _GetNextField(FormField* currentField);
 	virtual FormField* _GetLastSubField();
 	virtual FormField* _GetPreviousField(FormField* currentField);
+	virtual FormField* _Store();
 
 	void _Show() override;
 	void _Hide() override;
 	void _Clear();
-	virtual ~FormField() = default;
+
+	virtual ~FormField();
 };
 
 inline void FormField::_SetParentForm(Form* parentForm) {
@@ -168,6 +171,8 @@ public:
 		_AddFields(fields ...);
 	}
 
+	OptionField(const OptionField& copy);
+
 	FormField* _GetField(int pos) const;
 	void _Show() override;
 	void _CreateInputFrame() override;
@@ -176,6 +181,9 @@ public:
 	FormField* _GetNextField(FormField* currentField) override;
 	FormField* _GetLastSubField() override;
 	FormField* _GetPreviousField(FormField* currentField) override;
+	FormField* _Store() override;
+
+	~OptionField() override;
 };
 
 inline FormField* OptionField::_GetField(int pos) const {
@@ -189,6 +197,9 @@ private:
 
 public:
 	UsernameField(const char* text, ProfileController& controller) : FormField(text, InputType::text, Field::username), controller(controller){}
+	UsernameField(const UsernameField& copy);
+
+	FormField* _Store() override;
 	void _Show() override;
 };
 
@@ -201,6 +212,9 @@ class PasswordField : public FormField {
 
 public:
 	PasswordField(const char* text, bool master = false) : FormField(text, InputType::password, Field::password), master(master){}
+	PasswordField(const PasswordField& copy);
+
+	FormField* _Store() override;
 	void _Show() override;
 };
 
@@ -209,12 +223,14 @@ inline void PasswordField::_SetKeyField(PasswordField* keyField) {
 }
 
 class ConfirmField : public FormField {
-
 public: 
 	ConfirmField(const char* text) : FormField(text, InputType::YN, Field::none) { 
 		this->mandatory = false; 
 		this->dataField = false; 
 	}
+	ConfirmField(const ConfirmField& copy);
+
+	FormField* _Store() override;
 	void _Show() override;
 };
 
@@ -226,14 +242,7 @@ class Form : public Input, public FrameElement {
 	Display message;	
 
 	void _InitializeFields();
-
-	template <typename T>
-	void _AddField(T& field) {
-		FormField** pp = new FormField*(nullptr);
-		utility::_AddElement(fields, *pp, fieldNum);
-		fields[fieldNum - 1] = &field;
-		delete pp;
-	}
+	void _AddField(FormField& field);
 
 public:
 	template <typename T>
@@ -262,7 +271,7 @@ public:
 	FormField* _GetNextField(FormField* currentField);
 
 	Form() = default;
-	~Form() = default;
+	~Form();
 };
 
 inline void Form::_UpdateActiveFields(int change) {

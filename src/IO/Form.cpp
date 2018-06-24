@@ -2,10 +2,17 @@
 #include "../Controllers/ProfileController.h"
 #include "../utility.h"
 
+void Form::_AddField(FormField& field) {
+	FormField** pp = new FormField*(nullptr);
+	utility::_AddElement(fields, *pp, fieldNum);
+	fields[fieldNum - 1] = field._Store();
+	delete pp;
+}
+
 void OptionField::_AddField(FormField& field) {
 	FormField** pp = new FormField*(nullptr);
 	utility::_AddElement(optionalFields, *pp, optFieldNum);
-	optionalFields[optFieldNum - 1] = &field;
+	optionalFields[optFieldNum - 1] = field._Store();
 	delete pp;
 }
 
@@ -417,4 +424,64 @@ utility::LinkedList<Data*>* Form::_GetData() {
 		}
 	}
 	return first;
+}
+
+Form::~Form() {
+	for (int i = 0; i < fieldNum; i++)
+		fields[i]->~FormField();
+}
+
+FormField::~FormField() {
+	delete inputField;
+}
+
+OptionField::~OptionField() {
+	for (int i = 0; i < optFieldNum; i++)
+		delete optionalFields[i]->inputField;
+}
+
+FormField::FormField(const FormField& copy) : Label(copy.text) {
+	this->type = copy.type;
+	this->parentForm = copy.parentForm;
+	this->mandatory = copy.mandatory;
+	this->activated = copy.activated;
+	this->filled = copy.filled;
+	this->dataField = copy.dataField;
+	this->inputField = copy.inputField;
+	this->dataType =copy.dataType;
+}
+
+FormField* FormField::_Store() {
+	return new FormField(*this);
+}
+
+UsernameField::UsernameField(const UsernameField& copy) : FormField(copy), controller(copy.controller){}
+
+FormField* UsernameField::_Store() {
+	return new UsernameField(*this);
+}
+
+OptionField::OptionField(const OptionField& copy) : FormField(copy) {
+	this->optionalFields = copy.optionalFields;
+	this->optFieldNum = copy.optFieldNum;
+	this->enabled = copy.enabled;
+}
+
+FormField* OptionField::_Store() {
+	return new OptionField(*this);
+}
+
+PasswordField::PasswordField(const PasswordField& copy) : FormField(copy) {
+	this->master = copy.master;
+	this->keyField = copy.keyField;
+}
+
+FormField* PasswordField::_Store() {
+	return new PasswordField(*this);
+}
+
+ConfirmField::ConfirmField(const ConfirmField& copy) : FormField(copy) {}
+
+FormField* ConfirmField::_Store() {
+	return new ConfirmField(*this);
 }

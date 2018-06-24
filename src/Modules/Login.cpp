@@ -43,13 +43,14 @@ void Login::_StartModule() {
 		);
 		mainMenu._SetPadding(1);
 		layout._Select("Menu")->_AddElements(mainMenu);
+		Frame* content = layout._Select("Content");
 
 		//	No user profile detected
 		if (profile == nullptr) {
 			Label text1("No recent user profile was detected.");
 			Label text2("Please create new one or load existing.");
 			text1._SetPadding(4); text2._SetPadding(4);
-			layout._Select("Content")->_AddElements(text1, text2);
+			content->_AddElements(text1, text2);
 			layout._ShowElements();
 
 			//	Read user input - menu selection only available 
@@ -68,18 +69,18 @@ void Login::_StartModule() {
 				Label(profile->_Username())
 			);
 			bar._SetPadding(4);
-			layout._Select("Content")->_AddElements(bar);
+			content->_AddElements(bar);
 			layout._ShowElements();
 
 			//	Read user input - password field 
 			InputField pw("Enter password:", InputType::password);
 			pw._SetPadding(4);
-			pw._SetYpos(++layout._Select("Content")->nextYpos);
-			layout._Select("Content")->_AddElements(pw);
+			pw._SetYpos(++content->nextYpos);
+			content->_AddElements(pw);
 
 			Label wrongPw("Incorrect password.");
-			wrongPw._SetParentFrame(layout._Select("Content"));
-			wrongPw._SetYpos(layout._Select("Content")->nextYpos + 2);
+			wrongPw._SetParentFrame(content);
+			wrongPw._SetYpos(content->nextYpos + 2);
 			wrongPw._SetPadding(4);
 
 			do {
