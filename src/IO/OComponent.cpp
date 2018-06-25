@@ -128,13 +128,15 @@ void Frame::_AddElement(FrameElement& newElement) {
 	utility::_AddElement(elements, *element, elNum);
 	elements[elNum - 1] = &newElement;
 	elements[elNum - 1]->_SetParentFrame(this);
+	elements[elNum - 1]->_SetX1(this->x1);
 	delete element;
 }
 
 //	Show all frame elements
 void Frame::_ShowElements() {
 	for (int i = 0; i < elNum; i++) {
-		elements[i]->_SetYpos(nextYpos++);
+		if(elements[i]->_YposSet() == false)
+			elements[i]->_SetYpos(nextYpos++);
 		elements[i]->_Show();
 	}
 }
@@ -144,6 +146,23 @@ void Frame::_AddPadding(unsigned short padding) {
 	x1 += padding;
 	x2 -= padding;
 	y1 += padding;
+	y2 -= padding;
+}
+
+void Frame::_AddLeftPadding(unsigned short padding) {
+	x1 += padding;
+	this->leftPadding = padding;
+}
+
+void Frame::_AddRightPadding(unsigned short padding) {
+	x2 -= padding;
+}
+
+void Frame::_AddTopPadding(unsigned short padding) {
+	y1 += padding;
+}
+
+void Frame::_AddBottomPadding(unsigned short padding) {
 	y2 -= padding;
 }
 
@@ -320,6 +339,11 @@ void Layout::_DefaultFrameTemplate(Display& dsp) {
 	frame->_Select("BodyHeader")->_Split(90,"vertical", "SelectionTitle", "Date");
 	frame->_Select("Center")->_Split(menuLine, "Menu", "Content");
 
+	frame->_Select("SelectionTitle")->_AddLeftPadding(4);
+	frame->_Select("Menu")->_AddLeftPadding(1);
+	frame->_Select("Content")->_AddLeftPadding(4);
+	frame->_Select("Footer")->_AddLeftPadding(1);
+
 	dsp._Display(menuLine);
 	dsp._Display(headerLine);
 	dsp._Display(footerLine);
@@ -384,8 +408,6 @@ void Menu::_Show() {
 		num[1] = i + 1 + '0';
 		items[i]->_SetParentFrame(parentFrame);			
 		items[i]->_SetOrderNumber(num);
-		if (items[i]->_PaddingSet() == false) 
-			items[i]->_SetPadding(padding);
 		if(items[i]->_YposSet() == false)
 			items[i]->_SetYpos(i);
 		items[i]->_Show();

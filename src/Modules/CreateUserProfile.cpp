@@ -23,11 +23,9 @@ void CreateUserProfile::_StartModule() {
 	layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
 	Label title("Create Profile ", ::headerSymbol, "left");
-	title._SetPadding(4);
 	layout._Select("SelectionTitle")->_AddElements(title);	
 
 	Label info("Please fill out the form:");
-	info._SetPadding(4);
 
 	//	Main menu
 	Menu mainMenu;
@@ -35,7 +33,6 @@ void CreateUserProfile::_StartModule() {
 		MenuItem("Create Profile", "CreateUserProfile"),
 		MenuItem("Load Database", "LoadDatabase")
 	);	
-	mainMenu._SetPadding(1);
 	layout._Select("Menu")->_AddElements(mainMenu);	
 	
 	//	Control menu
@@ -43,7 +40,6 @@ void CreateUserProfile::_StartModule() {
 	MenuItem F1("Menu", this);
 	MenuItem ESC("Cancel", previousModule);
 	F1._SetSpecialPrefix("[F1] ");
-	F1._SetPadding(1);
 	ESC._SetSpecialPrefix("[ESC] ");
 	ESC._SetPadding(F1._Length() + 2);
 	ESC._SetYpos(0);
@@ -67,7 +63,6 @@ void CreateUserProfile::_StartModule() {
 		FormField("Default currency:", InputType::text, Field::defCCYid),
 		ConfirmField("Save?:")
 	);
-	form._SetPadding(4);
 	form._SetYpos(++content->nextYpos);
 	content->_AddElements(form);
 

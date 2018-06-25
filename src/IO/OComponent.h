@@ -127,6 +127,7 @@ private:
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
 	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);	
 	void _UpdateContainer(Frame* newFrame);	
+	unsigned short leftPadding = 0;
 
 	void _AddElement(FrameElement& newElement);
 public:
@@ -156,7 +157,11 @@ public:
 	FrameElement** elements = nullptr;
 	int elNum = 0;		
 
-	void _AddPadding(unsigned short padding);	
+	void _AddPadding(unsigned short padding);
+	void _AddLeftPadding(unsigned short padding);
+	void _AddRightPadding(unsigned short padding);
+	void _AddTopPadding(unsigned short padding);
+	void _AddBottomPadding(unsigned short padding);
 	void _ShowElements();
 
 	//	Add more FrameElements using variadic template

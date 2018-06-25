@@ -31,7 +31,6 @@ void Login::_StartModule() {
 		layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
 		Label title("User Profile ", ::headerSymbol, "left");
-		title._SetPadding(4);
 		layout._Select("SelectionTitle")->_AddElements(title);
 
 		//	Main menu
@@ -40,7 +39,6 @@ void Login::_StartModule() {
 			MenuItem("Create Profile", "CreateUserProfile"),
 			MenuItem("Load Database", "LoadDatabase")
 		);
-		mainMenu._SetPadding(1);
 		layout._Select("Menu")->_AddElements(mainMenu);
 
 		//	Control menu
@@ -49,9 +47,8 @@ void Login::_StartModule() {
 		MenuItem F2("Enter password", this);
 		F1._SetSpecialPrefix("[F1] ");
 		F2._SetSpecialPrefix("[F2] ");
-		F1._SetPadding(1);
 		F2._SetPadding(F1._Length() + 2);
-		F2._SetYpos(0);
+		F2._SetYpos(F1._Ypos());
 		controlMenu._AddItems(F1, F2);		
 
 		Frame* content = layout._Select("Content");
@@ -59,8 +56,7 @@ void Login::_StartModule() {
 		//	No user profile detected
 		if (profile == nullptr) {			
 			Label text1("No recent user profile was detected.");
-			Label text2("Please create new one or load existing.");
-			text1._SetPadding(4); text2._SetPadding(4);
+			Label text2("Please create new one or load existing.");			
 			content->_AddElements(text1, text2);
 			layout._ShowElements();			
 
@@ -80,34 +76,27 @@ void Login::_StartModule() {
 			TextBar bar(
 				Label("Welcome"),
 				Label(profile->_Username())
-			);
-			bar._SetPadding(4);
+			);			
 			content->_AddElements(bar);
 			layout._Select("Footer")->_AddElements(controlMenu);
 			mainMenu._ChangeItem("Load Database", "Change User", "LoadUserProfile");
 			layout._ShowElements();
 
 			//	Read user input - password field 
-			InputField pw("Please enter password:", InputType::password);
-			pw._SetPadding(4);
-			pw._SetYpos(++content->nextYpos);
-			content->_AddElements(pw);
-
-			Label message;
-			message._SetParentFrame(content);
-			message._SetYpos(content->nextYpos + 2);
-			message._SetPadding(4);
-
-			Label wrongPw(message);	
-			Label success(message);
-			wrongPw._SetText("Incorrect password");
-			success._SetText("Success");
+			InputField password("Please enter password:", InputType::password);
+			password._SetYpos(2);			
+			
+			Label wrongPw("Incorrect password.");
+			Label success("Success");
+			wrongPw._SetYpos(4);
+			success._SetYpos(2);
+			content->_AddElements(password, wrongPw, success);
 
 			do {
 			passwordField:
 				F2._Hide();
-				pw._Show();
-				if (pw.inputField->control == 3) {
+				password._Show();
+				if (password.inputField->control == 3) {
 					// Menu selection
 					F2._Show();
 					wrongPw._Hide();
@@ -122,19 +111,22 @@ void Login::_StartModule() {
 							goto passwordField;
 						select._ClearInput();
 					}
-					nextModule = mainMenu._GetLink(selection);	
+					nextModule = mainMenu._GetLink(selection);
 					moduler->_SetNextModule(nextModule, this);
 					break;
 				}
-				else if (profile->_VerifyPassword(pw.inputField->input)) {
+				else if (password.inputField->_ControlKey())
+					continue;
+				else if (profile->_VerifyPassword(password.inputField->input)) {
 					wrongPw._Hide();
+					password._Hide();
 					success._Show();
 					display._Loading();
 					moduler->_SetNextModule("Dashboard");
 					break;
 				}
 				else {
-					pw.inputField->_ClearInput();
+					password.inputField->_ClearInput();
 					wrongPw._Show();
 				}
 			} while (true);

@@ -55,6 +55,26 @@ bool ProfileController::_Exists(char* username) {
 	return result;
 }
 
+//	loads profile with the given username
+Profile* ProfileController::_GetProfile(char* username) {
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char** buffer = _GetModels(stream, this->header, Query(Range::all));
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
+			Profile temporary(buffer[i]);
+			delete[]buffer[i];
+			if (utility::_CompareChar(temporary._Username(), username)) {
+				Profile* profile = new Profile(temporary);
+				return profile;
+			}
+		}
+		delete[]buffer;
+		stream->close();
+	}
+	delete stream;
+	return nullptr;
+}
+
 //	Add new user profile
 void ProfileController::_AddNewProfile(utility::LinkedList<Data*>*data) {
 	Profile* newProfile = new Profile(data, header._GiveID());

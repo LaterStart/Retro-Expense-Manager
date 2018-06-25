@@ -41,8 +41,9 @@ void Profile::_BindData(Data* data) {
 		pwProtected = data->input->check;
 		break;
 	case Field::password:
-		password = data->input->input;
+		password =  data->input->input;
 		passwordSize = data->input->length + 1;
+		utility::_XOR(password);
 		break;
 	case Field::defCCYid:
 		defCCYid = data->input->selection;
@@ -79,8 +80,7 @@ char* Profile::_Serialize() {
 	//	store password into buffer
 	std::memcpy(buffer, &passwordSize, sizeof(int));
 	buffer += sizeof(int);
-	if (pwProtected) {
-		utility::_XOR(password);
+	if (pwProtected) {		
 		std::memcpy(buffer, password, passwordSize);
 		buffer += passwordSize;
 	}

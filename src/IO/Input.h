@@ -48,10 +48,11 @@ private:
 	
 public:
 	int length = 0;
-	int selection;
-	int control;
+	int selection = -1;
+	int control = 0;
 	bool check = false;
 	char* input = nullptr;
+	bool controlKey = false;
 
 	UserInput() = default;
 	UserInput(InputType type);
@@ -62,6 +63,7 @@ public:
 	void _ReadUserInput();
 	void _ClearInput();
 	void _HideInput();
+	bool _ControlKey() const;
 };
 
 inline void UserInput::_SetType(InputType type) {
@@ -70,6 +72,10 @@ inline void UserInput::_SetType(InputType type) {
 
 inline void UserInput::_SetParentFrame(Frame* parentFrame) {
 	this->parentFrame = parentFrame;
+}
+
+inline bool UserInput::_ControlKey() const {
+	return this->controlKey;
 }
 
 class Form;
@@ -81,6 +87,7 @@ protected:
 	bool activated = false;
 	bool filled = false;
 	bool dataField = true;
+	bool hidden = false;
 
 	virtual bool _InputControl();		
 	void _SwitchField(int control);
@@ -177,6 +184,7 @@ public:
 
 	FormField* _GetField(int pos) const;
 	void _Show() override;
+	void _Hide() override;
 	void _CreateInputFrame() override;
 	void _ShiftInputFrame(int num) override;
 	FormField* _GetNextField() override;
@@ -239,6 +247,7 @@ public:
 class Form : public Input, public FrameElement {
 	bool status = false;
 	int activeFields = 0;
+	int hiddenFields = 0;
 	int fieldNum = 0;
 	FormField** fields = nullptr;
 	Display message;	
@@ -265,6 +274,7 @@ public:
 	void _DisableOptional(int optFieldNum, FormField* currentField);
 	void _DisplayMessage(const char* message);
 	void _UpdateActiveFields(int change);
+	void _UpdateHiddenFields(int change);
 	void _ClearMessage();
 	void _SetStatus(bool status);
 	void _Exit(FormField* currentField);
@@ -273,6 +283,7 @@ public:
 	bool _GetStatus() const;
 	bool _IsPaused()const ;
 	void _Show();
+	void _Hide() override;
 	utility::LinkedList<Data*>* _GetData();
 
 	FormField* _GetNextField(FormField* currentField);
@@ -300,6 +311,10 @@ inline bool Form::_GetStatus() const {
 
 inline bool Form::_IsPaused() const {
 	return this->paused;
+}
+
+inline void Form::_UpdateHiddenFields(int change) {
+	this->hiddenFields += change;
 }
 
 class InputField : public FormField{

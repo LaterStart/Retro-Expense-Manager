@@ -14,4 +14,5 @@ public:
 	Profile* _GetLastUsedProfile();
 	bool _Exists(char* username);
 	void _AddNewProfile(utility::LinkedList<Data*>*data);	
+	Profile* _GetProfile(char* username);
 };

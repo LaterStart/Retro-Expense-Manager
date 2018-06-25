@@ -234,7 +234,8 @@ void ConfirmField::_Show() {
 		this->_Clear();
 		activated = false;
 		parentForm->_UpdateActiveFields(-1);
-		if (inputField->check == true) {			
+		if (inputField->check == true) {		
+			parentForm->_Hide();
 			parentForm->_DisplayMessage("Saved successfully.");
 			parentForm->_SetStatus(true);
 			Display* dsp = _GetDisplay();		
@@ -264,7 +265,8 @@ void Form::_DisplayMessage(const char* message) {
 	_ClearMessage();
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
 	coord.x1 += padding;
-	coord.y1 += activeFields + 1 + this->Ypos;
+	int difference = (hiddenFields > activeFields) ? activeFields+1 : hiddenFields;
+	coord.y1 += activeFields - difference + 1 + this->Ypos;
 	Cursor mssgPos(coord.x1, coord.y1);
 	this->message._Display(mssgPos, message);
 }
@@ -515,4 +517,20 @@ ConfirmField::ConfirmField(const ConfirmField& copy) : FormField(copy) {}
 
 FormField* ConfirmField::_Store() {
 	return new ConfirmField(*this);
+}
+
+void Form::_Hide() {
+	for (int i = 0; i < fieldNum; i++) {
+		fields[i]->_Hide();
+		hiddenFields++;
+	}
+}
+
+void OptionField::_Hide() {
+	FormField::_Hide();
+	for (int i = 0; i < optFieldNum; i++) {
+		optionalFields[i]->_Hide();
+		parentForm->_UpdateHiddenFields(1);
+	}
+	parentForm->_UpdateHiddenFields(1);
 }

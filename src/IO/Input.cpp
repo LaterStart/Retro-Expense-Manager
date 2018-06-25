@@ -30,9 +30,8 @@ void UserInput::_Initialize() {
 	}
 	else pos._GetCursorPosition();
 
-	selection = 0;
 	control = 0;
-	check = 0;
+	controlKey = false;
 	first = node;
 
 	delete[]input;
@@ -82,7 +81,8 @@ int UserInput::_VerifyInput(char& ch) {
 	// esc key
 	if (ch == 27) {
 		ch = _getch();
-		control = -1;
+		this->control = -1;
+		controlKey = true;
 		return -1;
 	}
 	// backspace
@@ -96,11 +96,13 @@ int UserInput::_VerifyInput(char& ch) {
 		switch (ch) {
 			// up arrow
 		case 72:
-			control = 1;
+			this->control = 1;
+			controlKey = true;
 			return 6;
 			// down arrow
 		case 80:
-			control = 2;
+			this->control = 2;
+			controlKey = true;
 			return 6;
 		case 75:
 			// left arrow
@@ -280,10 +282,12 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 	case 10:
 		//	F1 key
 		this->control = 3;
+		controlKey = true;
 		goto del;
 	case 11:
 		//	F2 key
 		this->control = 4;
+		controlKey = true;
 		goto del;
 	default: 
 		return 0;
@@ -373,6 +377,7 @@ void UserInput::_ClearInput() {
 		delete deleter;
 	}	
 	node = nullptr;
+	controlKey = false;
 }
 
 void UserInput::_HideInput() {
@@ -403,6 +408,10 @@ void InputField::_Show() {
 		filled = true;
 	}
 	else {
+		if (inputField->control == -1)
+			return;
+		if (inputField->control == 1)
+			return;
 		if (inputField->control == 3)
 			return;
 		else this->_Show();
