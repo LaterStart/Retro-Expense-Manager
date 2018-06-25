@@ -3,7 +3,7 @@
 #include <memory>
 #include <functional>
 
-class Console;
+class Console; class ProfileController;
 //	abstract class - main definition for each new module
 class Module {
 	template<class T>
@@ -18,6 +18,8 @@ protected:
 	Console* console;
 	Module* previousModule;	
 
+	static ProfileController profileController;
+
 public:
 	const char* name;
 	operator const char*() {
@@ -31,8 +33,8 @@ public:
 	std::string name;
 	Module* module;
 
-	ModuleList();
-	~ModuleList();
+	ModuleList() = default;
+	~ModuleList() = default;
 };
 
 //	class provides module management, instance initialization
@@ -53,6 +55,7 @@ public:
 	void _OpenModule(const char* name);
 	void _OpenNextModule();
 	void _SetNextModule(const char* name, Module* previousModule = nullptr);
+	void _SetNextModule(Module* nextModule, Module* previousModule = nullptr);
 
 	ModuleManagement(Console* myConsole);
 	~ModuleManagement();
@@ -73,6 +76,11 @@ inline void ModuleManagement::_OpenNextModule() {
 
 inline void ModuleManagement::_SetNextModule(const char* name, Module* previousModule) {	
 	this->nextModule = name;
+	this->previousModule = previousModule;
+}
+
+inline void ModuleManagement::_SetNextModule(Module* nextModule, Module* previousModule) {
+	this->nextModule = nextModule->name;
 	this->previousModule = previousModule;
 }
 

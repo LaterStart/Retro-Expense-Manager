@@ -31,6 +31,7 @@
     <ClInclude Include="src\Models\Profile.h" />
     <ClInclude Include="src\Models\_Model.h" />
     <ClInclude Include="src\Modules\CreateUserProfile.h" />
+    <ClInclude Include="src\Modules\Dashboard.h" />
     <ClInclude Include="src\Modules\LoadUserProfile.h" />
     <ClInclude Include="src\Modules\Login.h" />
     <ClInclude Include="src\Modules\ModuleManagement.h" />
@@ -50,6 +51,7 @@
     <ClCompile Include="src\Models\Header.cpp" />
     <ClCompile Include="src\Models\Profile.cpp" />
     <ClCompile Include="src\Modules\CreateUserProfile.cpp" />
+    <ClCompile Include="src\Modules\Dashboard.cpp" />
     <ClCompile Include="src\Modules\LoadUserProfile.cpp" />
     <ClCompile Include="src\Modules\Login.cpp" />
     <ClCompile Include="src\Modules\ModuleManagement.cpp" />

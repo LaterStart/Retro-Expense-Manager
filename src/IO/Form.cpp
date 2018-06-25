@@ -104,7 +104,7 @@ void FormField::_SwitchField(int control) {
 		else this->_Show();
 		break;
 	case 3:
-		parentForm->_SwitchToMenu();
+		parentForm->_SwitchToMenu(this);
 		break;
 	default:
 		this->_Show();
@@ -242,10 +242,11 @@ void ConfirmField::_Show() {
 		}
 	}
 	else {
+		int control = inputField->control;
 		this->_Clear();
 		activated = false;
 		parentForm->_UpdateActiveFields(-1);
-		_SwitchField(inputField->control);
+		_SwitchField(control);
 	}
 }
 
@@ -263,7 +264,7 @@ void Form::_DisplayMessage(const char* message) {
 	_ClearMessage();
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
 	coord.x1 += padding;
-	coord.y1 += activeFields+2;
+	coord.y1 += activeFields + 1 + this->Ypos;
 	Cursor mssgPos(coord.x1, coord.y1);
 	this->message._Display(mssgPos, message);
 }
@@ -293,8 +294,14 @@ void Form::_DisableOptional(int optFieldNum, FormField* currentField) {
 }
 
 void Form::_Show() {
-	_InitializeFields();		
-	_ShowNextField(nullptr);
+	if (paused) {
+		paused = false;
+		lastField->_Show();
+	}
+	else {
+		_InitializeFields();
+		_ShowNextField(nullptr);		
+	}
 }
 
 FormField* Form::_GetNextField(FormField* currentField) {
@@ -415,8 +422,23 @@ void Form::_Exit(FormField* currentField) {
 	}
 }
 
-void Form::_SwitchToMenu() {
+bool Form::_Exit() {
+	_DisplayMessage("Are you sure you want to cancel ? Y/N : ");
+	UserInput confirm(InputType::YN);
+	confirm._ReadUserInput();
+	if (confirm.check == true)
+		return true;
+	else {
+		_ClearMessage();
+		confirm._ClearInput();
+		return false;
+	}
+}
+
+void Form::_SwitchToMenu(FormField* currentField) {
 	status = false;
+	paused = true;
+	lastField = currentField;
 }
 
 utility::LinkedList<Data*>* Form::_GetData() {	

@@ -89,6 +89,7 @@ char* Profile::_Serialize() {
 	std::memcpy(buffer, &defCCYid, sizeof(int));
 	buffer += sizeof(int);
 
+	// store active status 
 	std::memcpy(buffer, &active, sizeof(bool));
 
 	return firstByte;

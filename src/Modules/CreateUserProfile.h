@@ -9,7 +9,6 @@ class CreateUserProfile : public Module {
 	friend class ModuleManagement;
 
 private:
-	ProfileController controller;
 
 	CreateUserProfile() = default;
 	~CreateUserProfile() = default;

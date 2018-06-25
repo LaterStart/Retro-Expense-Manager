@@ -15,7 +15,7 @@ Login& Login::_LoadModule() {
 
 void Login::_StartModule() {
 	//	Check for last used user profile in database binary file
-	Profile* profile = controller._GetLastUsedProfile();
+	Profile* profile = profileController._GetLastUsedProfile();
 
 	//	if profile contoller has found last used user and is not password protected
 	if (profile != nullptr && !profile->_PwStatus())		
@@ -30,36 +30,50 @@ void Login::_StartModule() {
 		layout._Select("MenuHeader")->_AddElements(Label("Main Menu ", ::headerSymbol, "center"));		
 		layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
-		Label userProfile("User Profile ", ::headerSymbol, "left");
-		userProfile._SetPadding(4);
-		layout._Select("SelectionTitle")->_AddElements(userProfile);
+		Label title("User Profile ", ::headerSymbol, "left");
+		title._SetPadding(4);
+		layout._Select("SelectionTitle")->_AddElements(title);
 
 		//	Main menu
 		Menu mainMenu;
 		mainMenu._AddItems(
 			MenuItem("Create Profile", "CreateUserProfile"),
-			MenuItem("Change User", "LoadUserProfile")
+			MenuItem("Load Database", "LoadDatabase")
 		);
 		mainMenu._SetPadding(1);
 		layout._Select("Menu")->_AddElements(mainMenu);
+
+		//	Control menu
+		Menu controlMenu;
+		MenuItem F1("Menu", this);
+		MenuItem F2("Enter password", this);
+		F1._SetSpecialPrefix("[F1] ");
+		F2._SetSpecialPrefix("[F2] ");
+		F1._SetPadding(1);
+		F2._SetPadding(F1._Length() + 2);
+		F2._SetYpos(0);
+		controlMenu._AddItems(F1, F2);		
+
 		Frame* content = layout._Select("Content");
 
 		//	No user profile detected
-		if (profile == nullptr) {
+		if (profile == nullptr) {			
 			Label text1("No recent user profile was detected.");
 			Label text2("Please create new one or load existing.");
 			text1._SetPadding(4); text2._SetPadding(4);
 			content->_AddElements(text1, text2);
-			layout._ShowElements();
+			layout._ShowElements();			
 
 			//	Read user input - menu selection only available 
-			Cursor(1, ::height - 2);
+			Cursor(2, ::height - 4);
 			UserInput select(InputType::menuSelect);
-			while (select.selection <  1 || select.selection > mainMenu.size) {
+			int selection = 0;
+			while (selection <  1 || select.selection > mainMenu.size) {
 				select._ReadUserInput();
+				selection = select.selection;
 				select._ClearInput();
 			}			
-			moduler->_SetNextModule(mainMenu._GetLink(select.selection), this);
+			moduler->_SetNextModule(mainMenu._GetLink(selection), this);
 		}
 		//	Profile password protected
 		else if (profile->_PwStatus()) {
@@ -69,6 +83,8 @@ void Login::_StartModule() {
 			);
 			bar._SetPadding(4);
 			content->_AddElements(bar);
+			layout._Select("Footer")->_AddElements(controlMenu);
+			mainMenu._ChangeItem("Load Database", "Change User", "LoadUserProfile");
 			layout._ShowElements();
 
 			//	Read user input - password field 
@@ -77,22 +93,51 @@ void Login::_StartModule() {
 			pw._SetYpos(++content->nextYpos);
 			content->_AddElements(pw);
 
-			Label wrongPw("Incorrect password.");
-			wrongPw._SetParentFrame(content);
-			wrongPw._SetYpos(content->nextYpos + 2);
-			wrongPw._SetPadding(4);
+			Label message;
+			message._SetParentFrame(content);
+			message._SetYpos(content->nextYpos + 2);
+			message._SetPadding(4);
+
+			Label wrongPw(message);	
+			Label success(message);
+			wrongPw._SetText("Incorrect password");
+			success._SetText("Success");
 
 			do {
+			passwordField:
+				F2._Hide();
 				pw._Show();
-				if (profile->_VerifyPassword(pw.inputField->input))
+				if (pw.inputField->control == 3) {
+					// Menu selection
+					F2._Show();
+					wrongPw._Hide();
+					Cursor(2, ::height - 4);
+					UserInput select(InputType::menuSelect);
+					int selection = 0;
+					const char* nextModule = nullptr;
+					while (selection <  1 || selection > mainMenu.size) {
+						select._ReadUserInput();
+						selection = select.selection;
+						if (select.control == 4)
+							goto passwordField;
+						select._ClearInput();
+					}
+					nextModule = mainMenu._GetLink(selection);	
+					moduler->_SetNextModule(nextModule, this);
 					break;
+				}
+				else if (profile->_VerifyPassword(pw.inputField->input)) {
+					wrongPw._Hide();
+					success._Show();
+					display._Loading();
+					moduler->_SetNextModule("Dashboard");
+					break;
+				}
 				else {
 					pw.inputField->_ClearInput();
 					wrongPw._Show();
 				}
 			} while (true);
-
-			moduler->_SetNextModule("Dashboard");
 		}	
 		//	Set module name (link) as the next one to be opened in main.cpp game loop.
 		//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option

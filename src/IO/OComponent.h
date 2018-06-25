@@ -9,7 +9,7 @@ private:
 	void _SetInitialCoordinates();
 protected:
 	OComponent(const unsigned short min_x, const unsigned short max_x, const unsigned short min_y, const unsigned short max_y);
-	OComponent(OComponent& parentFrame);
+	OComponent(const OComponent& copy);
 	OComponent(OComponent* outOfFrame);
 
 	const unsigned short min_x;
@@ -43,6 +43,12 @@ public:
 	void _SetY2(unsigned short);
 	void _SetX(unsigned short, unsigned short);
 	void _SetY(unsigned short, unsigned short);	
+	unsigned short _X1() const;
+	unsigned short _X2() const;
+	unsigned short _Y1() const;
+	unsigned short _Y2() const;
+	unsigned short _Height() const;
+	unsigned short _Width() const;
 	short _GetArea();
 
 	Coordinates _GetCoordinates();
@@ -85,6 +91,30 @@ inline OComponent::Coordinates OComponent::_GetCoordinates()  {
 
 inline short OComponent::_GetArea() {
 	return (x2 - x1) * (y2 - y1);
+}
+
+inline unsigned short OComponent::_X1() const {
+	return this->x1;
+}
+
+inline unsigned short OComponent::_X2() const {
+	return this->x2;
+}
+
+inline unsigned short OComponent::_Y1() const {
+	return this->y1;
+}
+
+inline unsigned short OComponent::_Y2() const {
+	return this->y2;
+}
+
+inline unsigned short OComponent::_Height() const {
+	return y2 - y1;
+}
+
+inline unsigned short OComponent::_Width() const {
+	return x2 - x1;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -164,9 +194,11 @@ inline void Frame::_SetDisplay(Display& dsp) {
 
 class FrameElement : public OComponent {	
 protected:
+	bool paddingSet = false;
+	bool yposSet = false;
 	const char* align = "left";
 	unsigned short padding = 0;
-	short Ypos = 0;
+	unsigned short Ypos = 0;
 	Frame* parentFrame;
 	FrameElement();
 	FrameElement(Frame* parentFrame);	
@@ -175,14 +207,19 @@ protected:
 	virtual Cursor _Align();
 
 public:
+	FrameElement(const FrameElement& copy);
 	FrameElement(const FrameElement& copy, Frame* parentFrame);
 	void _SetParentFrame(Frame* parentFrame);
 	
 	virtual void _Show();
 	virtual void _Hide();
 	void _SetAlign(const char* align);
-	void _SetYpos(short y);
+	void _SetYpos(unsigned short y);
 	void _SetPadding(unsigned short padding);
+	bool _PaddingSet() const;
+	bool _YposSet() const;
+	unsigned short _Padding() const;
+	unsigned short _Ypos() const;
 };
 
 inline void FrameElement::_Show() {}
@@ -193,8 +230,13 @@ inline void FrameElement::_SetAlign(const char* align) {
 	this->align = align;
 }
 
+inline bool FrameElement::_YposSet() const {
+	return this->yposSet;
+}
+
 inline void FrameElement::_SetPadding(unsigned short padding) {
 	this->padding = padding;
+	this->paddingSet = true;
 }
 
 inline Cursor FrameElement::_Align() {
@@ -202,12 +244,25 @@ inline Cursor FrameElement::_Align() {
 	return pos;
 }
 
-inline void FrameElement::_SetYpos(short y) {
+inline void FrameElement::_SetYpos(unsigned short y) {
 	this->Ypos = y;
+	this->yposSet = true;
 }
 
 inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
 	this->parentFrame = parentFrame;
+}
+
+inline unsigned short FrameElement::_Ypos() const {
+	return this->Ypos;
+}
+
+inline unsigned short FrameElement::_Padding() const {
+	return this->padding;
+}
+
+inline bool FrameElement::_PaddingSet() const {
+	return this->paddingSet;
 }
 
 class Separator : public FrameElement {
@@ -237,14 +292,26 @@ public:
 	unsigned short cut = 0;
 
 	Label() = default;
-	Label(const Label& copy) : text(copy.text), length(copy.length) {}
+	Label(const Label& copy) : FrameElement(copy), text(copy.text), length(copy.length) {}
 	Label(const char* text) : text((char*)text) { length = utility::_CharLength(text); }
 	Label(const char* text, const char* align) : text((char*)text) { length = utility::_CharLength(text); this->align = align; }
 	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {length = utility::_CharLength(text) + 1; this->align = align;  }
 
+	void _SetText(const char* text);
+
+	virtual short _Length() const;
 	virtual void _Show() override;
 	virtual void _Hide() override;
 };
+
+inline short Label::_Length() const {
+	return this->length;
+}
+
+inline void Label::_SetText(const char* text) {
+	this->text = (char*)text;
+	this->length = utility::_CharLength(text);
+}
 
 class Layout {	
 private:
@@ -284,7 +351,9 @@ public:
 	}
 	const char* _GetLink(int selection);
 	void _ChangeItem(MenuItem& item, int pos);
+	void _ChangeItem(const char* text, const char* newText, const char* newLink);
 	void _Show() override;
+	void _Hide() override;
 
 	Menu() = default;
 	Menu(const Menu& copy){}
@@ -305,6 +374,8 @@ public:
 	MenuItem(const char* text, Module* previousModule);
 	void _SetOrderNumber(char* orderNum);
 	void _SetSpecialPrefix(const char* prefix);
+	void _SetLink(const char* moduleName);
+	short _Length() const override;
 	void _Show() override;
 };
 
@@ -313,9 +384,7 @@ inline void MenuItem::_SetOrderNumber(char* orderNum) {
 		this->orderNum = orderNum;
 	else {
 		this->orderNum = (char*)prefix;
-		Ypos++;
-	}
-	length += utility::_CharLength(orderNum);
+	}	
 }
 
 inline const char* Menu::_GetLink(int selection) {
@@ -324,6 +393,14 @@ inline const char* Menu::_GetLink(int selection) {
 
 inline void MenuItem::_SetSpecialPrefix(const char* prefix) {
 	this->prefix = prefix;
+}
+
+inline short MenuItem::_Length() const {
+	return utility::_CharLength(prefix) + this->length;
+}
+
+inline void MenuItem::_SetLink(const char* moduleName) {
+	this->link = moduleName;
 }
 
 class TextBar : public Label {

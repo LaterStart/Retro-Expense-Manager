@@ -7,8 +7,8 @@ OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, c
 	_SetInitialCoordinates();
 }
 
-//	OComponent copy constructor
-OComponent::OComponent(OComponent& parentFrame) :
+//	OComponent overloaded copy constructor
+OComponent::OComponent(const OComponent& parentFrame) :
 	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {
 	_SetInitialCoordinates();
 }
@@ -177,7 +177,17 @@ FrameElement::FrameElement(Frame* parentFrame) : OComponent(*parentFrame), paren
 //	FrameElement "out of frame" null constructor
 FrameElement::FrameElement() : OComponent(nullptr), parentFrame(nullptr) {}
 
-//	FrameElement copy constructor
+// FrameElement copy constructor
+FrameElement::FrameElement(const FrameElement& copy) : OComponent(copy){
+	this->paddingSet = copy.paddingSet;
+	this->yposSet = copy.yposSet;
+	this->align = copy.align;
+	this->padding = copy.padding;
+	this->Ypos = copy.Ypos;
+	this->parentFrame = copy.parentFrame;
+}
+
+//	FrameElement overloaded copy constructor
 FrameElement::FrameElement(const FrameElement& copy, Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
 
 //	Find corresponding display for this frame element
@@ -202,12 +212,12 @@ Cursor Label::_Align() {
 		break;
 	case 2:
 		//	 Right align
-		pos._SetXY(coord.x2 - length-padding, coord.y1+Ypos);
+		pos._SetXY(coord.x2 - _Length()-padding, coord.y1+Ypos);
 		break;
 	case 3:
 		//	Center align
 		short frameSize = coord.x2 - coord.x1;
-		short margin = (frameSize- length)/2;
+		short margin = (frameSize- _Length())/2;
 		pos._SetXY(coord.x1+margin, coord.y1+Ypos);
 	}
 	return pos;
@@ -218,7 +228,7 @@ void Label::_Show() {
 	short max_x = parentFrame->_GetCoordinates().x2;
 	Cursor pos = _Align();
 	Display* dsp = _GetDisplay();	
-	cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length)-max_x) : 0;
+	cut = ((pos._GetX() + _Length()) > max_x) ? ((pos._GetX() + _Length())-max_x) : 0;
 
 	dsp->_Display(this, pos);
 }
@@ -237,7 +247,7 @@ void MenuItem::_Show() {
 	short max_x = parentFrame->_GetCoordinates().x2;
 	Cursor pos = _Align();
 	Display* dsp = _GetDisplay();
-	cut = ((pos._GetX() + length) > max_x) ? ((pos._GetX() + length) - max_x) : 0;
+	cut = ((pos._GetX() + _Length()) > max_x) ? ((pos._GetX() + _Length()) - max_x) : 0;
 	
 	dsp->_Display(this, pos);
 }
@@ -300,16 +310,19 @@ void Layout::_DefaultFrameTemplate(Display& dsp) {
 	frame->_SetIDname("DefaultLayout");
 	frame->_SetDisplay(dsp);
 	
-	Separator menuLine(*this, 26, 1, 22, 0);
+	Separator menuLine(*this, 24, 1, 22, 0);
 	Separator headerLine(*this, ::width - 4, 0, 2, 2);
+	Separator footerLine(*this, ::width/1.5 , 0, 2, ::height - 3);
 
 	frame->_Split(headerLine, "Header", "Body");
+	frame->_Select("Body")->_Split(footerLine, "Center", "Footer");
 	frame->_Select("Header")->_Split(menuLine, "MenuHeader", "BodyHeader");
 	frame->_Select("BodyHeader")->_Split(90,"vertical", "SelectionTitle", "Date");
-	frame->_Select("Body")->_Split(menuLine, "Menu", "Content");
+	frame->_Select("Center")->_Split(menuLine, "Menu", "Content");
 
 	dsp._Display(menuLine);
 	dsp._Display(headerLine);
+	dsp._Display(footerLine);
 }
 
 Frame* Layout::_Select() {
@@ -354,17 +367,35 @@ void Menu::_ChangeItem(MenuItem& item, int pos) {
 	items[pos] = &item;
 }
 
+// Change menu item using label text
+void Menu::_ChangeItem(const char* text, const char* newText, const char* newLink) {
+	for (int i = 0; i < size; i++) {
+		if (utility::_CompareChar(items[i]->text, (char*)text)) {
+			items[i]->text = (char*)newText;
+			items[i]->_SetLink(newLink);
+		}
+	}
+}
+
 //	display menu items
 void Menu::_Show() {
 	char num[] = "[ ] ";
 	for (int i = 0; i < size; i++) {
 		num[1] = i + 1 + '0';
-		items[i]->_SetParentFrame(parentFrame);
-		items[i]->_SetYpos(i);
+		items[i]->_SetParentFrame(parentFrame);			
 		items[i]->_SetOrderNumber(num);
-		items[i]->_SetPadding(padding);
+		if (items[i]->_PaddingSet() == false) 
+			items[i]->_SetPadding(padding);
+		if(items[i]->_YposSet() == false)
+			items[i]->_SetYpos(i);
 		items[i]->_Show();
 	}
+}
+
+//	hide menu items
+void Menu::_Hide() {
+	for (int i = 0; i < size; i++)
+		items[i]->_Hide();
 }
 
 void TextBar::_AddItem(Label& item) {

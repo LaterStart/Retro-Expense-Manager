@@ -12,11 +12,6 @@ LoadUserProfile& LoadUserProfile::_LoadModule() {
 }
 
 void LoadUserProfile::_StartModule() {
-	//	Check for last used user profile in preconfigured "dataPath" binary file
-	ProfileController profCtrl;
-	profCtrl._GetLastUsedProfile();
 
-	//	if profile contoller has found last used user
-	
 
 }

@@ -22,29 +22,43 @@ void CreateUserProfile::_StartModule() {
 	layout._Select("MenuHeader")->_AddElements(Label("Main Menu ", ::headerSymbol, "center"));
 	layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
-	Label userProfile("Create Profile ", ::headerSymbol, "left");
-	userProfile._SetPadding(4);
-	layout._Select("SelectionTitle")->_AddElements(userProfile);
+	Label title("Create Profile ", ::headerSymbol, "left");
+	title._SetPadding(4);
+	layout._Select("SelectionTitle")->_AddElements(title);	
+
+	Label info("Please fill out the form:");
+	info._SetPadding(4);
 
 	//	Main menu
 	Menu mainMenu;
-	MenuItem esc("Menu", previousModule);
-	esc._SetSpecialPrefix("[F1] ");
-	mainMenu._SetPadding(1);
-	mainMenu._AddItems(
-		MenuItem("Load Profile", "LoadUserProfile"),		
-		esc
+	mainMenu._AddItems(	
+		MenuItem("Create Profile", "CreateUserProfile"),
+		MenuItem("Load Database", "LoadDatabase")
 	);	
+	mainMenu._SetPadding(1);
 	layout._Select("Menu")->_AddElements(mainMenu);	
-	layout._ShowElements();
+	
+	//	Control menu
+	Menu controlMenu;
+	MenuItem F1("Menu", this);
+	MenuItem ESC("Cancel", previousModule);
+	F1._SetSpecialPrefix("[F1] ");
+	F1._SetPadding(1);
+	ESC._SetSpecialPrefix("[ESC] ");
+	ESC._SetPadding(F1._Length() + 2);
+	ESC._SetYpos(0);
+	controlMenu._AddItems(F1, ESC);
+	layout._Select("Footer")->_AddElements(controlMenu);
 
 	Frame* content = layout._Select("Content");
+	content->_AddElements(info);
+	layout._ShowElements();	
 	
 	//	Input form
 	Form form;
 	form._SetParentFrame(content);
 	form._AddFields(
-		UsernameField("Username:", this->controller),
+		UsernameField("Username:", this->profileController),
 		OptionField("Password protected?:", Field::pwStatus,
 			// add optional fields 
 			// true marks as key password field
@@ -57,28 +71,47 @@ void CreateUserProfile::_StartModule() {
 	form._SetYpos(++content->nextYpos);
 	content->_AddElements(form);
 
-	do {
+	do {		
 		form._Show();
 		if (form._GetStatus()) {
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
-			controller._AddNewProfile(data);
-			moduler->_SetNextModule("Login", this);
+			profileController._AddNewProfile(data);
+			moduler->_SetNextModule("Dashboard", this);
 			break;
 		}
-		else {
-			//	Menu selection
-			Cursor(1, ::height - 2);
+		else if (form._IsPaused()) {			
+		menu: // Menu selection
+			Cursor(2, ::height - 4);
 			UserInput select(InputType::menuSelect);
-			while (select.selection <  1 || select.selection > mainMenu.size) {
+			int selection = 0;
+			const char* nextModule = nullptr;
+			while (selection <  1 || selection > mainMenu.size) {
 				select._ReadUserInput();
+				selection = select.selection;
+				if (select.control == -1)
+					goto exit;
 				select._ClearInput();
 			}
-			moduler->_SetNextModule(mainMenu._GetLink(select.selection), this);
+			nextModule = mainMenu._GetLink(selection);
+			if (utility::_CompareChar(nextModule,this->name))
+				continue;
+			else {
+				exit:
+				if (form._Exit()) {
+					if(nextModule == nullptr)
+						moduler->_SetNextModule(previousModule);
+					else moduler->_SetNextModule(nextModule, this);
+					break;
+				}
+				else goto menu;
+			}
 		}
-	} while (true);
-
-	
+		else {
+			moduler->_SetNextModule(previousModule);
+			break;
+		}
+	} while (true);	
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 }

@@ -9,7 +9,6 @@ class LoadUserProfile : public Module {
 	friend class ModuleManagement;
 
 private:
-	ProfileController controller;
 
 	LoadUserProfile() = default;
 	~LoadUserProfile() = default;

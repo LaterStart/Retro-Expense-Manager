@@ -1,10 +1,9 @@
 #include "ModuleManagement.h"
 #include "../Controllers/ModuleController.h"
+#include "../Controllers/ProfileController.h"
 using namespace std;
 
-ModuleList::ModuleList() {}
-
-ModuleList::~ModuleList() {}
+ProfileController Module::profileController;
 
 ModuleManagement::ModuleManagement(Console* myConsole) : moduleList(nullptr), moduleNum(0), initialized(false), console(myConsole){
 	_InitializeModules();

@@ -345,9 +345,10 @@ void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char
 				newBlock._WrapData(buffer, header._Name());
 
 				if (originalBlock._BufferSize() == newBlock._BufferSize()) {
+					stream->clear();
 					stream->seekp(pageNum*clusterSize + originalBlock._Offset(), ios::beg);
 					stream->write(buffer, originalBlock._BufferSize());
-					buffer -= sizeof(int);
+					buffer -= 2*sizeof(int);
 					delete[]buffer;
 				}
 				else {
@@ -365,8 +366,6 @@ void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char
 			}
 			else pagePos += originalBlock._NodeSize();
 		}
-
-		stream->clear();
 		delete[]page;
 	}
 }

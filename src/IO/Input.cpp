@@ -119,6 +119,9 @@ int UserInput::_VerifyInput(char& ch) {
 		case 59:
 			// F1 key
 			return 10;
+		case 60:
+			// F2 key
+			return 11;
 		default: 
 			return 0;
 		}
@@ -278,6 +281,10 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		//	F1 key
 		this->control = 3;
 		goto del;
+	case 11:
+		//	F2 key
+		this->control = 4;
+		goto del;
 	default: 
 		return 0;
 	}
@@ -352,6 +359,8 @@ void UserInput::_ClearInput() {
 	delete[]input;
 	delete[]buffer;
 	length = 0;
+	control = 0;
+	selection = 0;
 	input = nullptr;
 	buffer = nullptr;
 	first = nullptr;
@@ -385,11 +394,17 @@ bool InputField::_InputControl() {
 }
 
 void InputField::_Show() {
-	if(!initialized)
+	if (!initialized) {
 		_CreateInputFrame();
+		initialized = true;
+	}
 	Label::_Show();
 	if (_InputControl()) {
 		filled = true;
 	}
-	else this->_Show();
+	else {
+		if (inputField->control == 3)
+			return;
+		else this->_Show();
+	}
 }

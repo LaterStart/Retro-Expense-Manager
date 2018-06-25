@@ -242,6 +242,8 @@ class Form : public Input, public FrameElement {
 	int fieldNum = 0;
 	FormField** fields = nullptr;
 	Display message;	
+	bool paused = false;
+	FormField* lastField = nullptr;
 
 	void _InitializeFields();
 	void _AddField(FormField& field);
@@ -266,8 +268,10 @@ public:
 	void _ClearMessage();
 	void _SetStatus(bool status);
 	void _Exit(FormField* currentField);
-	void _SwitchToMenu();
-	bool _GetStatus();
+	bool _Exit();
+	void _SwitchToMenu(FormField* currentField);
+	bool _GetStatus() const;
+	bool _IsPaused()const ;
 	void _Show();
 	utility::LinkedList<Data*>* _GetData();
 
@@ -290,8 +294,12 @@ inline void Form::_SetStatus(bool status) {
 	this->status = status;
 }
 
-inline bool Form::_GetStatus() {
-	return status;
+inline bool Form::_GetStatus() const {
+	return this->status;
+}
+
+inline bool Form::_IsPaused() const {
+	return this->paused;
 }
 
 class InputField : public FormField{
