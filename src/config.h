@@ -15,3 +15,34 @@ extern const unsigned char horizontalLine;
 extern const unsigned char verticalLine;
 extern const unsigned char spaceKey;
 extern const unsigned char headerSymbol;
+
+const enum class ModelName {
+	none,
+	mainHeader,
+	modelHeader,
+	profile,
+	account,
+	transaction
+};
+
+const enum class Field {
+	none,
+	username,
+	pwStatus,
+	password,
+	currency,
+	transactionType,
+	account,
+	category,
+	amount,
+	date,
+	description
+};
+
+const enum class Range {
+	none,
+	all
+};
+
+extern const char* transactionType[];
+extern const int transactionType_num;

@@ -14,8 +14,11 @@ Login& Login::_LoadModule() {
 }
 
 void Login::_StartModule() {
+	Profile* profile;
 	//	Check for last used user profile in database binary file
-	Profile* profile = profileController._GetLastUsedProfile();
+	if(profileController._ActiveProfile() == nullptr)
+		profile = profileController._GetLastUsedProfile();
+	else profile = profileController._ActiveProfile();
 
 	//	if profile contoller has found last used user and is not password protected
 	if (profile != nullptr && !profile->_PwStatus())		
@@ -62,7 +65,7 @@ void Login::_StartModule() {
 
 			//	Read user input - menu selection only available 
 			Cursor(2, ::height - 4);
-			UserInput select(InputType::menuSelect);
+			UserInput select(InputType::select);
 			int selection = 0;
 			while (selection <  1 || select.selection > mainMenu.size) {
 				select._ReadUserInput();
@@ -72,7 +75,7 @@ void Login::_StartModule() {
 			moduler->_SetNextModule(mainMenu._GetLink(selection), this);
 		}
 		//	Profile password protected
-		else if (profile->_PwStatus()) {
+		else if (profile->_PwStatus() && profile->_Locked()) {
 			TextBar bar(
 				Label("Welcome"),
 				Label(profile->_Username())
@@ -88,10 +91,12 @@ void Login::_StartModule() {
 			
 			Label wrongPw("Incorrect password.");
 			Label success("Success");
+			Label locked("Please wait: ");
 			wrongPw._SetYpos(4);
 			success._SetYpos(2);
-			content->_AddElements(password, wrongPw, success);
-
+			locked._SetYpos(3);
+			content->_AddElements(password, wrongPw, success, locked);
+			int loginTries = 5;
 			do {
 			passwordField:
 				F2._Hide();
@@ -101,7 +106,7 @@ void Login::_StartModule() {
 					F2._Show();
 					wrongPw._Hide();
 					Cursor(2, ::height - 4);
-					UserInput select(InputType::menuSelect);
+					UserInput select(InputType::select);
 					int selection = 0;
 					const char* nextModule = nullptr;
 					while (selection <  1 || selection > mainMenu.size) {
@@ -126,11 +131,27 @@ void Login::_StartModule() {
 					break;
 				}
 				else {
+					loginTries--;
 					password.inputField->_ClearInput();
 					wrongPw._Show();
+					if (loginTries == 0) {
+						password._Hide();
+						wrongPw._Hide();
+						wrongPw._SetYpos(2);
+						wrongPw._Show();
+						locked._Show();
+						utility::_Countdown(10);
+						loginTries = 5;						
+						locked._Hide();
+						wrongPw._Hide();						
+						wrongPw._SetYpos(4);
+					}
 				}
 			} while (true);
 		}	
+		// Profile is already loeaded
+		else moduler->_SetNextModule("Dashboard");
+
 		//	Set module name (link) as the next one to be opened in main.cpp game loop.
 		//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 	}

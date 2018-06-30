@@ -21,6 +21,14 @@ public:
 	};
 };
 
+struct Date {
+	short day = 0;
+	short month = 0;
+	short year = 0;
+
+	Date(char* text);
+};
+
 namespace utility {
 
 	char* _ChopChar(char* arr, char* remove);
@@ -29,13 +37,15 @@ namespace utility {
 	char* _ConvertToChar(unsigned int number);
 	char* _ConcatenateChar(const char* myChar ...);
 	char* _CopyChar(char* char_in);
-	char* _CopyChar(const char* char_in);
+	char* _CopyChar(const char* char_in);	
 	char* _GetCurrentDate();
 
 	int _CharLength(char* arr);
 	int _CharLength(const char* arr);
 	int _CharSize(char* arr);
 	int _CharSize(const char* arr);
+	int _ConvertToInteger(char* text);
+	int _DigitNumber(int num);
 	int _Find(char* word, char* arr);
 	int _ReadAlign(const char* align);
 	int _ReadDirection(const char* direction);
@@ -43,7 +53,10 @@ namespace utility {
 	bool _CompareChar(char* first, char* second);
 	bool _CompareChar(const char* first, const char* second);	
 
+	void _Countdown(int seconds);
 	void _XOR(char* &password);
+
+	float _ConvertToFloat(char* text);
 
 	template <typename T>
 	void _AddElement(T* &ptr, T &element, int &arrSize) {

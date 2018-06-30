@@ -2,28 +2,6 @@
 #include <fstream>
 #include "../config.h"
 
-const enum class ModelName {
-	none,
-	mainHeader,
-	modelHeader,
-	profile,
-	account,
-	transaction
-};
-
-const enum class Field {
-	none,
-	username,
-	pwStatus,
-	password,
-	defCCYid
-};
-
-const enum class Range {
-	none,
-	all
-};
-
 class UserInput;
 struct Data {
 	Field field;
@@ -54,7 +32,7 @@ class Controller {
 private:
 	const char* filePath = ::database;
 	const int clusterSize = 4096;
-	static MainHeader header;
+	static MainHeader header;	
 	void _LoadHeader();	
 
 	DataBlock _GetBlock(char* page, int offset, ModelName name);
@@ -65,7 +43,7 @@ private:
 	Controller(bool& initialize);
 
 protected:		
-	ModelName model;
+	ModelName model = ModelName::none;
 	
 	std::fstream* _OpenStream();
 	bool _CreateDatabase();

@@ -237,6 +237,14 @@ void Display::_Display(Separator& separator) {
 	}
 }
 
+void Display::_Display(Cursor& pos, int num) {
+	pos._SetCursorPosition();
+	pos._SetCharacterNumber(utility::_DigitNumber(num));
+	cout << num;
+	ActivePos apos(pos, -1);
+	_AddActivePosition(apos);
+}
+
 void Display::_Loading() {
 	Cursor loadng;
 	const char* load = "...";

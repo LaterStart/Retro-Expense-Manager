@@ -1,5 +1,5 @@
 #include "Profile.h"
-#include "../IO/Input.h" //dbg
+#include "../IO/Input.h"
 
 // construct profile model using form data
 Profile::Profile(utility::LinkedList<Data*>* data, int ID){
@@ -13,7 +13,7 @@ Profile::Profile(utility::LinkedList<Data*>* data, int ID){
 	data->_DeleteList();
 }
 
-// construct profile model using buffer
+// construct profile model using buffered data
 Profile::Profile(char* buffer) {
 	this->_Deserialize(buffer);
 }
@@ -22,7 +22,7 @@ Profile::Profile(char* buffer) {
 Profile::Profile(const Profile& copy) {
 	this->ID = copy.ID;
 	this->active = copy.active;
-	this->defCCYid = copy.defCCYid;
+	this->defaultCurrencyID = copy.defaultCurrencyID;
 	this->pwProtected = copy.pwProtected;
 	this->usernameSize = copy.usernameSize;
 	this->passwordSize = copy.passwordSize;
@@ -45,8 +45,8 @@ void Profile::_BindData(Data* data) {
 		passwordSize = data->input->length + 1;
 		utility::_XOR(password);
 		break;
-	case Field::defCCYid:
-		defCCYid = data->input->selection;
+	case Field::currency:
+		defaultCurrencyID = data->input->selection;
 		break;
 	default:
 		break;
@@ -86,7 +86,7 @@ char* Profile::_Serialize() {
 	}
 
 	// store default currency ID into buffer
-	std::memcpy(buffer, &defCCYid, sizeof(int));
+	std::memcpy(buffer, &defaultCurrencyID, sizeof(int));
 	buffer += sizeof(int);
 
 	// store active status 
@@ -119,7 +119,7 @@ void Profile::_Deserialize(char* page) {
 		page += passwordSize;
 	}		
 
-	this->defCCYid = *(int*)page;
+	this->defaultCurrencyID = *(int*)page;
 	page += sizeof(int);
 	
 	this->active = *(bool*)page;

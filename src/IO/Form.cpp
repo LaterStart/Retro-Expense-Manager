@@ -1,6 +1,6 @@
 #include "Input.h"
 #include "../Controllers/ProfileController.h"
-#include "../utility.h"
+#include "../config.h"
 
 void Form::_AddField(FormField& field) {
 	FormField** pp = new FormField*(nullptr);
@@ -25,6 +25,7 @@ void FormField::_CreateInputFrame() {
 	fieldCoord.y1 = frameCoord.y1 + Ypos;
 	fieldCoord.y2 = fieldCoord.y1 + 1;
 	parentFrame->_CreateSubFrame(text, fieldCoord);
+	parentFrame->_Select(text)->_SetDisplay(*new Display);
 	inputField = new UserInput(type);
 	inputField->_SetParentFrame(parentFrame->_Select(text));
 }
@@ -81,7 +82,7 @@ bool FormField::_InputControl() {
 	else if (inputField->control == 3)
 		return false;
 	else {
-		if (mandatory && inputField->length < 1) {
+		if (mandatory && (inputField->selection < 0 && inputField->length < 1)) {
 			parentForm->_DisplayMessage("This field cannot be blank.");
 			return false;
 		}
@@ -91,6 +92,8 @@ bool FormField::_InputControl() {
 }
 
 void FormField::_SwitchField(int control) {
+	if(control >=0)
+		parentForm->_SetSpecialContentHeight(0);
 	switch (control) {
 	case -1:
 		parentForm->_Exit(this);
@@ -228,6 +231,49 @@ bool PasswordField::_VerifyPassword() {
 	}
 }
 
+void SelectionField::_Show() {
+	Label::_Show();
+	if (!activated) {
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+	}	
+	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
+	Display dsp;
+	Cursor pos(coord.x1, coord.y1);
+	char num[] = { "[ ] " };
+	for (int i = 0; i < options_num; i++) {
+		num[1] = i + 1 + '0';
+		dsp._Display(pos, num, options[i]);
+		pos._SetX(coord.x1);
+		pos._ChangeY(1);
+	}
+	parentForm->_SetSpecialContentHeight(transactionType_num);
+
+	if (_InputControl()) {
+		if (inputField->selection > 0 && inputField->selection <= options_num) {
+			dsp._WipeContent();
+			Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+			Cursor pos(coord.x1, coord.y1);
+			inputField->parentFrame->dsp->_WipeContent();
+			inputField->parentFrame->dsp->_Display(pos, options[inputField->selection - 1]);
+
+			filled = true;
+			parentForm->_SetSpecialContentHeight(0);
+			parentForm->_ShowNextField(this);
+		}
+		else {
+			if (inputField->control >= 0)
+				dsp._WipeContent();
+			_SwitchField(inputField->control);
+		}
+	}
+	else {
+		if(inputField->control >=0)
+			dsp._WipeContent();
+		_SwitchField(inputField->control);
+	}
+}
+
 void ConfirmField::_Show() {
 	Label::_Show();
 	if (_InputControl()) {
@@ -263,10 +309,7 @@ void FormField::_Hide() {
 
 void Form::_DisplayMessage(const char* message) {
 	_ClearMessage();
-	Frame::Coordinates coord = parentFrame->_GetCoordinates();
-	coord.x1 += padding;
-	int difference = (hiddenFields > activeFields) ? activeFields+1 : hiddenFields;
-	coord.y1 += activeFields - difference + 1 + this->Ypos;
+	Frame::Coordinates coord = _GetSpecialContentCoord();	
 	Cursor mssgPos(coord.x1, coord.y1);
 	this->message._Display(mssgPos, message);
 }
@@ -420,6 +463,7 @@ void Form::_Exit(FormField* currentField) {
 	else {
 		_ClearMessage();
 		confirm._ClearInput();
+		specialContentHeight = 0;
 		currentField->_Show();
 	}
 }
@@ -459,6 +503,16 @@ utility::LinkedList<Data*>* Form::_GetData() {
 	return first;
 }
 
+Frame::Coordinates Form::_GetSpecialContentCoord() {
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	coord.x1 += padding;
+	int difference = (hiddenFields > activeFields) ? activeFields + 1 : hiddenFields;
+	coord.y1 += activeFields - difference + 1 + this->Ypos;
+	coord.y1 += (specialContentHeight > 0) ? specialContentHeight+1 : specialContentHeight;
+
+	return coord;
+}
+
 Form::~Form() {
 	for (int i = 0; i < fieldNum; i++)
 		delete fields[i];
@@ -466,6 +520,8 @@ Form::~Form() {
 
 FormField::~FormField() {
 	delete inputField;
+	if(parentFrame!=nullptr)
+		delete parentFrame->dsp;
 }
 
 OptionField::~OptionField() {
@@ -511,6 +567,10 @@ PasswordField::PasswordField(const PasswordField& copy) : FormField(copy) {
 
 FormField* PasswordField::_Store() {
 	return new PasswordField(*this);
+}
+
+FormField* SelectionField::_Store() {
+	return new SelectionField(*this);
 }
 
 ConfirmField::ConfirmField(const ConfirmField& copy) : FormField(copy) {}

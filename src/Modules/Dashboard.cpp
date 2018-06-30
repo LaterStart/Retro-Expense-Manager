@@ -22,7 +22,6 @@ void Dashboard::_StartModule() {
 	layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
 	Label title("Dashboard ", ::headerSymbol, "left");
-	title._SetPadding(4);
 	layout._Select("SelectionTitle")->_AddElements(title);
 
 	//	Main menu
@@ -31,9 +30,16 @@ void Dashboard::_StartModule() {
 		MenuItem("Add Transaction", "AddTransaction"),
 		MenuItem("Another item", "LoadDatabase")
 	);
-	mainMenu._SetPadding(1);
 	layout._Select("Menu")->_AddElements(mainMenu);
 	layout._ShowElements();
 
-	while (true);
+	Cursor(2, ::height - 4);
+	UserInput select(InputType::select);
+	int selection = 0;
+	while (selection <  1 || selection > mainMenu.size) {
+		select._ReadUserInput();
+		selection = select.selection;
+		select._ClearInput();
+	}
+	moduler->_SetNextModule(mainMenu._GetLink(selection), this);
 }

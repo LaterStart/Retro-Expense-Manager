@@ -104,3 +104,19 @@ void ProfileController::_AddNewProfile(utility::LinkedList<Data*>*data) {
 	stream->close();
 	delete stream;
 }
+
+//	Change current user profile
+void ProfileController::_SwitchProfile(Profile* profile) {
+	fstream* stream = _OpenStream();
+	activeProfile->_Deactivate();
+	char*buffer = activeProfile->_Serialize();
+	_UpdateModel(stream, header, activeProfile->_ID(), buffer);
+
+	this->activeProfile = profile;
+	activeProfile->_Activate();
+	buffer = activeProfile->_Serialize();
+	_UpdateModel(stream, header, activeProfile->_ID(), buffer);
+
+	stream->close();
+	delete stream;
+}

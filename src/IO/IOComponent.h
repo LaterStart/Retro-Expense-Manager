@@ -168,6 +168,7 @@ public:
 	void _Display(Label* label, Cursor& pos = Cursor());
 	void _Display(MenuItem* item, Cursor& pos = Cursor());
 	void _Display(Separator& separator);
+	void _Display(Cursor& pos, int num);
 	void _LockContent(Cursor &pos);
 	void _Loading();
 };

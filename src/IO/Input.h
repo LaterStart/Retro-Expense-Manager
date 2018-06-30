@@ -4,10 +4,11 @@
 
 const enum class InputType { 
 	none, 
-	menuSelect,
+	select,
 	text,
 	YN,
 	password,
+	value,
 	scrollDown
 };
 
@@ -27,7 +28,6 @@ private:
 	List* first = nullptr;
 	List* node = nullptr;
 	InputType type = InputType::none;	
-	Frame* parentFrame = nullptr;
 	Cursor pos;
 	Display dsp;
 	char* buffer = nullptr;
@@ -41,10 +41,11 @@ private:
 
 	int _UpdateInput(int& control, char& ch);
 	int _VerifyInput(char& ch);
-	int _Verify_menuSelect(char& ch);
+	int _Verify_select(char& ch);
 	int _Verify_text(char& ch);
 	int _Verify_YN(char& ch);
 	int _Verify_password(char& ch);
+	int _Verify_value(char& ch);
 	
 public:
 	int length = 0;
@@ -53,6 +54,7 @@ public:
 	bool check = false;
 	char* input = nullptr;
 	bool controlKey = false;
+	Frame* parentFrame = nullptr;
 
 	UserInput() = default;
 	UserInput(InputType type);
@@ -200,6 +202,17 @@ inline FormField* OptionField::_GetField(int pos) const {
 	return optionalFields[pos];
 }
 
+class SelectionField : public FormField {
+	const char** options = nullptr;
+	const int options_num = 0;
+
+public:
+	SelectionField(const char* text, const char** options, const int num, Field field) : FormField(text, InputType::select, field), options(options), options_num(num){}
+
+	void _Show() override;
+	FormField* _Store() override;
+};
+
 class ProfileController;
 class UsernameField : public FormField {
 private:
@@ -253,6 +266,7 @@ class Form : public Input, public FrameElement {
 	Display message;	
 	bool paused = false;
 	FormField* lastField = nullptr;
+	int specialContentHeight = 0;
 
 	void _InitializeFields();
 	void _AddField(FormField& field);
@@ -284,7 +298,9 @@ public:
 	bool _IsPaused()const ;
 	void _Show();
 	void _Hide() override;
+	void _SetSpecialContentHeight(int height);
 	utility::LinkedList<Data*>* _GetData();
+	Frame::Coordinates _GetSpecialContentCoord();
 
 	FormField* _GetNextField(FormField* currentField);
 
@@ -315,6 +331,10 @@ inline bool Form::_IsPaused() const {
 
 inline void Form::_UpdateHiddenFields(int change) {
 	this->hiddenFields += change;
+}
+
+inline void Form::_SetSpecialContentHeight(int height) {
+	this->specialContentHeight = height;
 }
 
 class InputField : public FormField{

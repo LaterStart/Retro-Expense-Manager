@@ -1,18 +1,19 @@
-#include "CreateUserProfile.h"
+#include "AddTransaction.h"
+#include "../Controllers/ProfileController.h"
+#include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
-#include "../config.h"
 
-Module& CreateUserProfile::_GetInstance() {
+Module& AddTransaction::_GetInstance() {
 	return _LoadModule();
 }
 
-CreateUserProfile& CreateUserProfile::_LoadModule() {
-	static CreateUserProfile module;	
+AddTransaction& AddTransaction::_LoadModule() {
+	static AddTransaction module;
 	return module;
 }
 
-void CreateUserProfile::_StartModule() {
+void AddTransaction::_StartModule() {
 	//	Create default frame layout
 	Frame* mainFrame = console->_GetMainFrame();
 	Layout layout(mainFrame);
@@ -22,19 +23,19 @@ void CreateUserProfile::_StartModule() {
 	layout._Select("MenuHeader")->_AddElements(Label("Main Menu ", ::headerSymbol, "center"));
 	layout._Select("Date")->_AddElements(Label(utility::_GetCurrentDate(), "left"));
 
-	Label title("Create Profile ", ::headerSymbol, "left");
-	layout._Select("SelectionTitle")->_AddElements(title);	
+	Label title("Add Transaction ", ::headerSymbol, "left");
+	layout._Select("SelectionTitle")->_AddElements(title);
 
 	Label info("Please fill out the form:");
 
 	//	Main menu
 	Menu mainMenu;
-	mainMenu._AddItems(	
-		MenuItem("Create Profile", "CreateUserProfile"),
-		MenuItem("Load Database", "LoadDatabase")
-	);	
-	layout._Select("Menu")->_AddElements(mainMenu);	
-	
+	mainMenu._AddItems(
+		MenuItem("AddTransaction", this->name),
+		MenuItem("Another Item", "LoadDatabase")
+	);
+	layout._Select("Menu")->_AddElements(mainMenu);
+
 	//	Control menu
 	Menu controlMenu;
 	MenuItem F1("Menu", this);
@@ -48,34 +49,33 @@ void CreateUserProfile::_StartModule() {
 
 	Frame* content = layout._Select("Content");
 	content->_AddElements(info);
-	layout._ShowElements();	
-	
+	layout._ShowElements();
+
 	//	Input form
 	Form form;
 	form._SetParentFrame(content);
 	form._AddFields(
-		UsernameField("Username:", this->profileController),
-		OptionField("Password protected?:", Field::pwStatus,
-			// add optional fields 
-			// true marks as key password field
-			PasswordField("Password:", true),	
-			PasswordField("Repeat password:")),
-		FormField("Default currency:", InputType::text, Field::currency),
+		SelectionField("Type:", transactionType, transactionType_num, Field::transactionType),					
+		FormField("Category:", InputType::text, Field::category),
+		FormField("Amount", InputType::value, Field::amount),
+		FormField("Currency:", InputType::text, Field::currency),
+		FormField("Account:", InputType::text, Field::account),
+		FormField("Description:", InputType::text, Field::description),
 		ConfirmField("Save?:")
 	);
 	form._SetYpos(++content->nextYpos);
 	content->_AddElements(form);
 
-	do {		
+	do {
 		form._Show();
 		if (form._GetStatus()) {
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
-			profileController._AddNewProfile(data);
+			transactionController._AddNewTransaction(data, profileController._ActiveProfile()->_ID());
 			moduler->_SetNextModule("Dashboard", this);
 			break;
 		}
-		else if (form._IsPaused()) {			
+		else if (form._IsPaused()) {
 		menu: // Menu selection
 			Cursor(2, ::height - 4);
 			UserInput select(InputType::select);
@@ -89,12 +89,12 @@ void CreateUserProfile::_StartModule() {
 				select._ClearInput();
 			}
 			nextModule = mainMenu._GetLink(selection);
-			if (utility::_CompareChar(nextModule,this->name))
+			if (utility::_CompareChar(nextModule, this->name))
 				continue;
 			else {
-				exit:
+			exit:
 				if (form._Exit()) {
-					if(nextModule == nullptr)
+					if (nextModule == nullptr)
 						moduler->_SetNextModule(previousModule);
 					else moduler->_SetNextModule(nextModule, this);
 					break;
@@ -106,7 +106,7 @@ void CreateUserProfile::_StartModule() {
 			moduler->_SetNextModule(previousModule);
 			break;
 		}
-	} while (true);	
+	} while (true);
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 }

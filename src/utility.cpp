@@ -4,6 +4,7 @@
 #include "config.h"
 #include "IO/IOComponent.h"
 #include "Controllers/_Controller.h"
+#include "Windows.h"
 
 bool Initialize::consoleInit = false;
 bool Initialize::controllerInit = false;
@@ -30,6 +31,17 @@ Initialize::CtrlLoader::CtrlLoader() {
 }
 
 Initialize::CtrlLoader _load;
+
+Date::Date(char* text) {
+	short* ptr[] = { &day, &month, &year };
+	int n = utility:: _CharLength(text);
+	for (int i = 0; i < 2; i++) {
+		text[2] = '\0';		
+		*ptr[i] = utility::_ConvertToInteger(text);
+		text += 3;
+	}
+	*ptr[2] = utility::_ConvertToInteger(text);
+}
 
 namespace utility {
 
@@ -161,6 +173,54 @@ namespace utility {
 		return myChar;
 	}
 
+	float _ConvertToFloat(char* text) {
+		bool separatorFound = false;
+		int n = _CharLength(text);
+
+		int number = 0;
+		int decimal = 0;
+		int multiply = pow(10,n-1);
+
+		for (int i = 0; i < n; i++) {
+			if ((text[i] == 46 || text[i] == 44)) {
+				if (i == 0)
+					return 0.0;
+				else if (!separatorFound) {
+					separatorFound = true;
+					multiply = n - i;
+				}
+				else return 0.0;
+			}			
+			else if (text[i] < 48 || text[i] > 57)
+				return 0.0;
+
+			if (separatorFound)
+				decimal += multiply * (text[i] - '0');
+			else number += multiply * (text[i] - '0');
+
+			multiply /= 10;
+		}
+		
+		return number + (1.0 / decimal);
+	}
+
+	int _ConvertToInteger(char* text) {
+		int n = _CharLength(text);
+		int multiply = pow(10, n-1);
+
+		int number = 0;
+
+		for (int i = 0; i < n; i++) {
+			if (text[i] < 48 || text[i] > 57)
+				return 0;
+			else {
+				number += multiply * (text[i] - '0');
+				multiply /= 10;
+			}
+		}
+		return number;
+	}
+
 	char* _CopyChar(char* char_in) {
 		char* char_out = nullptr;
 		if (char_in != nullptr) {
@@ -177,6 +237,25 @@ namespace utility {
 
 	char* _CopyChar(const char* char_in) {
 		return _CopyChar((char*)char_in);
+	}
+
+	void _Countdown(int seconds) {
+		Cursor pos;
+		Display dsp;
+		int n = _DigitNumber(seconds);
+		short sx = pos._GetX();
+		for (int i = seconds; i > 0; i--) {
+			pos._SetX(sx);
+			int x = n - _DigitNumber(i);			
+			for (int i = 0; i < x; i++) {				
+				dsp._Display(pos, 0);
+				pos._ChangeX(1);
+			}
+			pos._SetX(sx + x);
+			dsp._Display(pos, i);
+			Sleep(1000);
+			dsp._WipeContent();
+		}
 	}
 
 	char* _GetCurrentDate() {
@@ -213,6 +292,17 @@ namespace utility {
 
 		return ::currentDate;
 	}	
+
+	int _DigitNumber(int num) {
+		if (num == 0)
+			return 1;
+		int count = 0;
+		while (num > 0) {
+			num /= 10;
+			count++;
+		}
+		return count;
+	}
 
 	int _Find(char* word, char* arr) {
 		int pos = 0;

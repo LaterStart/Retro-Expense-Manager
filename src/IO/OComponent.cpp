@@ -331,7 +331,7 @@ void Layout::_DefaultFrameTemplate(Display& dsp) {
 	
 	Separator menuLine(*this, 24, 1, 22, 0);
 	Separator headerLine(*this, ::width - 4, 0, 2, 2);
-	Separator footerLine(*this, ::width/1.5 , 0, 2, ::height - 3);
+	Separator footerLine(*this, 80 , 0, 2, ::height - 3);
 
 	frame->_Split(headerLine, "Header", "Body");
 	frame->_Select("Body")->_Split(footerLine, "Center", "Footer");

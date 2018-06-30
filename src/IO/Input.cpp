@@ -131,8 +131,8 @@ int UserInput::_VerifyInput(char& ch) {
 	else {		
 		_getch();
 		switch (type) {
-		case InputType::menuSelect:
-			return _Verify_menuSelect(ch);
+		case InputType::select:
+			return _Verify_select(ch);
 		case InputType::text:
 			return _Verify_text(ch);
 		case InputType::YN:
@@ -145,7 +145,7 @@ int UserInput::_VerifyInput(char& ch) {
 	}
 }
 
-int UserInput::_Verify_menuSelect(char& ch) {
+int UserInput::_Verify_select(char& ch) {
 	if (ch < 48 || ch > 58)
 		return 0;
 	else {		
@@ -180,6 +180,10 @@ int UserInput::_Verify_password(char& ch) {
 	else if (ch < 32 || ch > 126)
 		return 0;
 	else return 5;
+}
+
+int UserInput::_Verify_value(char& ch) {
+	return 0;
 }
 
 int UserInput::_UpdateInput(int& control, char& ch) {	

@@ -3,7 +3,7 @@
 #include <memory>
 #include <functional>
 
-class Console; class ProfileController;
+class Console; class ProfileController; class TransactionController;
 //	abstract class - main definition for each new module
 class Module {
 	template<class T>
@@ -19,6 +19,7 @@ protected:
 	Module* previousModule;	
 
 	static ProfileController profileController;
+	static TransactionController transactionController;
 
 public:
 	const char* name;

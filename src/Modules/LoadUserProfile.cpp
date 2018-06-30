@@ -52,9 +52,11 @@ void LoadUserProfile::_StartModule() {
 	Label wrongUs("User not found.");
 	Label wrongPw("Incorrect password.");
 	Label success("Success");
+	Label locked("Please wait: ");
 	wrongUs._SetYpos(4);
 	wrongPw._SetYpos(5);
 	success._SetYpos(2);
+	locked._SetYpos(5);
 
 	//	Input fields
 	InputField username("Username:", InputType::text);
@@ -62,7 +64,7 @@ void LoadUserProfile::_StartModule() {
 	username._SetYpos(2);
 	password._SetYpos(3);
 
-	content->_AddElements(info, wrongUs, wrongPw, success, username, password);
+	content->_AddElements(info, wrongUs, wrongPw, success, username, password, locked);
 	info._Show();
 
 	//	Loop
@@ -72,6 +74,7 @@ void LoadUserProfile::_StartModule() {
 	bool showMenu = false;
 	bool cancel = false;
 	bool OK = false;
+	int loginTries = 5;
 	do {
 		controlKey = (controlKey == 0) ? username.inputField->control : controlKey;
 		// verify if control key is pressed		
@@ -102,7 +105,7 @@ void LoadUserProfile::_StartModule() {
 		if (showMenu) {
 			showMenu = false;
 			Cursor(2, ::height - 4);
-			UserInput select(InputType::menuSelect);
+			UserInput select(InputType::select);
 			int selection = 0;
 			const char* nextModule = nullptr;
 			while (selection <  1 || selection > mainMenu.size) {
@@ -144,8 +147,21 @@ void LoadUserProfile::_StartModule() {
 				// verify password
 				else if (!profile->_VerifyPassword(password.inputField->input)) {
 					// wrong password
+					loginTries--;
 					password.inputField->_ClearInput();
 					wrongPw._Show();
+					if (loginTries == 0) {
+						password._Hide();
+						wrongPw._Hide();
+						wrongPw._SetYpos(4);
+						wrongPw._Show();
+						locked._Show();
+						utility::_Countdown(10);
+						loginTries = 5;
+						locked._Hide();
+						wrongPw._Hide();
+						wrongPw._SetYpos(5);
+					}
 				}
 				// correct password
 				else {
@@ -172,6 +188,9 @@ void LoadUserProfile::_StartModule() {
 		wrongUs._Hide();
 		wrongPw._Hide();
 		success._Show();
+		profile->_Unlock();
+		this->profileController._SwitchProfile(profile);
 		display._Loading();
+		moduler->_SetNextModule(previousModule);
 	}
 }

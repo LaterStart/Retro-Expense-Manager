@@ -15,4 +15,10 @@ public:
 	bool _Exists(char* username);
 	void _AddNewProfile(utility::LinkedList<Data*>*data);	
 	Profile* _GetProfile(char* username);
+	void _SwitchProfile(Profile* profile);
+	Profile* _ActiveProfile();
 };
+
+inline Profile* ProfileController::_ActiveProfile() {
+	return this->activeProfile;
+}

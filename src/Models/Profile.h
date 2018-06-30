@@ -4,17 +4,18 @@
 class Profile : public Model {
 private:	
 	int ID = -1;
-	int defCCYid = -1;
+	int defaultCurrencyID = -1;
 	int usernameSize = 0;
 	int passwordSize = 0;
 	char* username = nullptr;	
 	char* password = nullptr;
 	bool pwProtected = false;
 	bool active = true;
-
+	bool locked = true;
+	
 	void _BindData(Data* data);
 
-public:
+public:	
 	char* _Serialize();
 	void _Deserialize(char* buffer);
 
@@ -25,6 +26,8 @@ public:
 	void _Deactivate();
 	int _ID() const;
 	bool _VerifyPassword(char* password);
+	void _Unlock();
+	bool _Locked() const;
 
 	Profile(utility::LinkedList<Data*>* data, int ID);
 	Profile(char* buffer);
@@ -54,4 +57,12 @@ inline int Profile::_ID() const {
 
 inline bool Profile::_PwStatus() const {
 	return this->pwProtected;
+}
+
+inline void Profile::_Unlock() {
+	this->locked = false;
+}
+
+inline bool Profile::_Locked() const {
+	return this->locked;
 }

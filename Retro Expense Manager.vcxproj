@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\Controllers\TransactionController.h" />
     <ClInclude Include="src\Controllers\_Controller.h" />
     <ClInclude Include="src\Controllers\ModuleController.h" />
     <ClInclude Include="src\Controllers\ProfileController.h" />
@@ -29,7 +30,9 @@
     <ClInclude Include="src\Models\DataBlock.h" />
     <ClInclude Include="src\Models\Header.h" />
     <ClInclude Include="src\Models\Profile.h" />
+    <ClInclude Include="src\Models\Transaction.h" />
     <ClInclude Include="src\Models\_Model.h" />
+    <ClInclude Include="src\Modules\AddTransaction.h" />
     <ClInclude Include="src\Modules\CreateUserProfile.h" />
     <ClInclude Include="src\Modules\Dashboard.h" />
     <ClInclude Include="src\Modules\LoadUserProfile.h" />
@@ -39,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\Controllers\TransactionController.cpp" />
     <ClCompile Include="src\Controllers\_Controller.cpp" />
     <ClCompile Include="src\Controllers\ModuleController.cpp" />
     <ClCompile Include="src\Controllers\ProfileController.cpp" />
@@ -50,6 +54,8 @@
     <ClCompile Include="src\Models\DataBlock.cpp" />
     <ClCompile Include="src\Models\Header.cpp" />
     <ClCompile Include="src\Models\Profile.cpp" />
+    <ClCompile Include="src\Models\Transaction.cpp" />
+    <ClCompile Include="src\Modules\AddTransaction.cpp" />
     <ClCompile Include="src\Modules\CreateUserProfile.cpp" />
     <ClCompile Include="src\Modules\Dashboard.cpp" />
     <ClCompile Include="src\Modules\LoadUserProfile.cpp" />
