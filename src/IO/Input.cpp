@@ -15,7 +15,7 @@ void UserInput::_Initialize() {
 		initial = node;
 	}
 
-	if (parentFrame != nullptr) {
+	if (parentFrame != nullptr && type!= InputType::scrollDown) {
 		Frame::Coordinates coord = parentFrame->_GetCoordinates();
 		if (dsp._IsEmpty() && length > 0) {
 			pos._SetXY(coord.x1,coord.y1);
@@ -145,6 +145,8 @@ int UserInput::_VerifyInput(char& ch) {
 			return _Verify_YN(ch);
 		case InputType::password:
 			return _Verify_password(ch);
+		case InputType::scrollDown:
+			return _Verify_scrollDown(ch);
 		default:
 			return 0;
 		}
@@ -186,6 +188,12 @@ int UserInput::_Verify_password(char& ch) {
 	else if (ch < 32 || ch > 126)
 		return 0;
 	else return 5;
+}
+
+int UserInput::_Verify_scrollDown(char& ch) {
+	if (ch == 13)
+		return 3;
+	else return 0;
 }
 
 int UserInput::_Verify_value(char& ch) {

@@ -32,7 +32,7 @@ void AddTransaction::_StartModule() {
 	mainMenu._AddItems(
 		MenuItem("Add Transaction", this->name),
 		MenuItem("Add Account", "AddAccount"),
-		MenuItem("Add Category", "AddCategory")
+		MenuItem("Add Category", "AddCategoryExt")
 	);
 	layout._Select("Menu")->_AddElements(mainMenu);
 
@@ -65,31 +65,58 @@ void AddTransaction::_StartModule() {
 	);
 	form._SetYpos(++content->nextYpos);
 
-	//	Form event
-	const std::function<void(Form&)> event = [](Form& form) {
-		if (form._EventStatus() == false) {
+	//	Form events
+	//	Transfer event - If user selects transfer as transaction type, change account field
+	const std::function<void(Form&, FormField*)> transferEvent = [](Form& form, FormField* currentField) {
+		if (form._EventStatus(0) == false) {
 			FormField* cField = form._SelectField("Type:");
 			if (cField->inputField->selection == 3) {
+				// remove one field at position 4
 				form._RemoveFields(4, 1);
 				form._InsertFields(
+					//	Adds two new fields at position 4 and 5
 					std::tuple<FormField&, int>{ FormField("From Account:", InputType::text, Field::account), 4 },
 					std::tuple<FormField&, int>{ FormField("To Account:", InputType::text, Field::account), 5 }
 				);				
 				form._InitializeFields();
-				form._SetEventStatus(true);
+				form._SetEventStatus(0, true);
 			}
 		}
 		else {
+			//  If user changed his mind and wants not to select transfer as transaction type
 			FormField* cField = form._SelectField("Type:");
 			if (cField->inputField->selection != 3) {
+				// remove two fields starting at position 4 and insert one new field at position 4
 				form._RemoveFields(4, 2);
 				form._InsertFields(std::tuple<FormField&, int>{ FormField("Account:", InputType::text, Field::account), 4 });
 				form._InitializeFields();				
-				form._SetEventStatus(false);
+				form._SetEventStatus(0, false);
 			}
 		}
 	};
-	form._AddEvent(event);
+	form._AddEvent(transferEvent);
+
+	//	New category event - Provide option to add new category
+	const std::function<void(Form&, FormField*)> newCategoryEvent = [](Form& form, FormField* currentField) {
+		if (form._EventStatus(1) == false) {
+			ScrollDown<Category>* cField = dynamic_cast<ScrollDown<Category>*>(form._SelectField("Category:"));
+			std::vector<Category>& items = cField->_Items();
+			// insert new element at beggining of Category list vector			
+			items.insert(items.begin(), Category("Add new category->"));
+			form._SetEventStatus(1, true);
+		}
+		else if (form._EventStatus(1) == true) {
+			// if user selects option to add new category
+			if (utility::_CompareChar(currentField->text, (char*)"Category:")) {
+				if (currentField->inputField->selection == 0 && currentField->inputField->control == ControlKey::none) {
+					// open add new category extension form
+					form._SwitchToExtension("AddCategoryExt");
+				}
+			}
+		}
+	};
+	form._AddEvent(newCategoryEvent);
+	form._LinkModuler(this->moduler);
 	content->_AddElements(form);
 
 	do {

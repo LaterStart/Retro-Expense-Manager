@@ -34,6 +34,7 @@
     <ClInclude Include="src\Models\Profile.h" />
     <ClInclude Include="src\Models\Transaction.h" />
     <ClInclude Include="src\Models\_Model.h" />
+    <ClInclude Include="src\Modules\AddCategoryExt.h" />
     <ClInclude Include="src\Modules\AddTransaction.h" />
     <ClInclude Include="src\Modules\CreateUserProfile.h" />
     <ClInclude Include="src\Modules\Dashboard.h" />
@@ -59,6 +60,7 @@
     <ClCompile Include="src\Models\Header.cpp" />
     <ClCompile Include="src\Models\Profile.cpp" />
     <ClCompile Include="src\Models\Transaction.cpp" />
+    <ClCompile Include="src\Modules\AddCategoryExt.cpp" />
     <ClCompile Include="src\Modules\AddTransaction.cpp" />
     <ClCompile Include="src\Modules\CreateUserProfile.cpp" />
     <ClCompile Include="src\Modules\Dashboard.cpp" />

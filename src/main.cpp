@@ -23,3 +23,5 @@ int main() {
 	delete[]::currentDate;
 	return 0;
 }
+
+// 6147 lines - 01.07.2018.

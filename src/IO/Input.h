@@ -58,6 +58,7 @@ private:
 	int _Verify_text(char& ch);
 	int _Verify_YN(char& ch);
 	int _Verify_password(char& ch);
+	int _Verify_scrollDown(char& ch);
 	int _Verify_value(char& ch);
 	
 public:
@@ -79,6 +80,7 @@ public:
 	void _ClearInput();
 	void _HideInput();
 	bool _ControlKey() const;
+	InputType _Type() const;
 };
 
 inline void UserInput::_SetType(InputType type) {
@@ -91,6 +93,10 @@ inline void UserInput::_SetParentFrame(Frame* parentFrame) {
 
 inline bool UserInput::_ControlKey() const {
 	return this->controlKey;
+}
+
+inline InputType UserInput::_Type() const {
+	return this->type;
 }
 
 class Form;
@@ -272,6 +278,7 @@ public:
 	void _Show() override;
 };
 
+class ModuleManagement;
 class Form : public Input, public FrameElement {
 private:
 	bool status = false;
@@ -285,11 +292,14 @@ private:
 	int specialContentHeight = 0;
 	
 	void _AddField(FormField& field);
-	void _InsertField(std::tuple<FormField&, int>);	
+	void _InsertField(std::tuple<FormField&, int>);		
 
-	std::function<void(Form&)> event;
-	bool eventStatus = false;
+	std::function<void(Form&, FormField*)>* events = nullptr;
+	bool* eventStatus = nullptr;	
 	bool eventEnabled = false;
+	int eventNum = 0;
+
+	ModuleManagement* moduler = nullptr;
 
 public:
 	template <typename T>
@@ -311,7 +321,7 @@ public:
 		_InsertField(field);
 		_InsertFields(nextFields...);
 	}
-	
+
 	void _InitializeFields();
 	void _ShowNextField(FormField* currentField);
 	void _ShowPreviousField(FormField* currentField);
@@ -325,16 +335,19 @@ public:
 	void _Exit(FormField* currentField);
 	bool _Exit();
 	void _SwitchToMenu(FormField* currentField);
+	void _SwitchToExtension(const char* moduleName);
 	bool _GetStatus() const;
 	bool _IsPaused()const ;
 	void _Show();
 	void _Hide() override;
-	void _SetSpecialContentHeight(int height);
-	void _AddEvent(std::function<void(Form&)> const& lambda);
-	void _SetEventStatus(bool status);
-	bool _EventStatus() const;
+	void _SetSpecialContentHeight(int height);	
+	void _SetEventStatus(int eventID, bool status);
+	bool _EventStatus(int eventID) const;
 	bool _EventEnabled() const;	
 	void _RemoveFields(int index, int fieldNum);
+	void _AddEvent(std::function<void(Form&, FormField*)> const& lambda);
+	void _RunEvents(FormField* currentField);
+	void _LinkModuler(ModuleManagement* moduler);
 	utility::LinkedList<Data*>* _GetData();
 	Frame::Coordinates _GetSpecialContentCoord();
 
@@ -374,26 +387,20 @@ inline void Form::_SetSpecialContentHeight(int height) {
 	this->specialContentHeight = height;
 }
 
-inline void Form::_SetEventStatus(bool status) {
-	this->eventStatus = status;
+inline void Form::_SetEventStatus(int eventID, bool status) {
+	this->eventStatus[eventID] = status;
 }
 
-inline bool Form::_EventStatus() const {
-	return this->eventStatus;
+inline bool Form::_EventStatus(int eventID) const {
+	return this->eventStatus[eventID];
 }
 
 inline bool Form::_EventEnabled() const {
 	return this->eventEnabled;
 }
 
-inline void Form::_RemoveFields(int index, int fieldNum) {
-	for (int i = 0; i < fieldNum; i++) {
-		if (fields[index]->_GetActiveStatus())
-			activeFields--;
-		fields[index]->_Hide();
-		delete fields[index];
-		utility::_RemoveElement(fields, index, this->fieldNum);
-	}
+inline void Form::_LinkModuler(ModuleManagement* moduler) {
+	this->moduler = moduler;
 }
 
 class InputField : public FormField{
@@ -416,15 +423,21 @@ private:
 	int sMax = items.size();
 
 public:
-	ScrollDown(const char* text, std::vector<element>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items){}
+	ScrollDown(const char* text, std::vector<element>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items){		
+		sLast = (sLast >= sMax) ? sMax : sLast;
+	}
 
 	void _Show() override;
 	FormField* _Store() override;
+	std::vector<element>& _Items() const;
 };
 
 template <typename element>
 void ScrollDown<element>::_Show() {
 	Label::_Show();
+	if(items.size() == 0)
+		parentForm->_ShowNextField(this);
+
 	if (!activated) {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
@@ -450,6 +463,7 @@ void ScrollDown<element>::_Show() {
 	Cursor iPos(coord.x1, coord.y1);
 	inputField->parentFrame->dsp->_WipeContent();
 	inputField->parentFrame->dsp->_Display(items.at(sValue), iPos);
+	
 
 	if (_InputControl()) {
 		if (inputField->control == ControlKey::pageUp) {
@@ -467,12 +481,18 @@ void ScrollDown<element>::_Show() {
 			sValue = (sValue < sMax-1) ? sValue + 1 : sMax-1;
 			sFirst = (sValue - sFirst > 2) ? sFirst + 1 : sFirst;
 			sFirst = (sMax - sFirst < 5) ? sFirst - 1 : sFirst;
+			sFirst = (sFirst < sMin) ? sMin : sFirst;
 			sLast  = (sLast-sFirst < 5) ? sLast + 1 : sLast;
-			sLast = (sLast > sMax) ? sLast - 1 : sLast;
+			sLast = (sLast > sMax) ? sMax : sLast;
 			
 			parentForm->_SetSpecialContentHeight(0);
 			dsp._WipeContent();
 			this->_Show();
+		}
+		else {
+			inputField->selection = sValue;
+			dsp._WipeContent();
+			parentForm->_ShowNextField(this);
 		}
 	}
 	else {
@@ -484,4 +504,9 @@ void ScrollDown<element>::_Show() {
 template <typename element>
 FormField* ScrollDown<element>::_Store() {
 	return new ScrollDown<element>(*this);
+}
+
+template <typename element>
+std::vector<element>& ScrollDown<element>::_Items() const {
+	return this->items;
 }

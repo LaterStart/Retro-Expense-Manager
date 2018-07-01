@@ -1,5 +1,6 @@
 #include "Input.h"
 #include "../Controllers/ProfileController.h"
+#include "../Modules/ModuleManagement.h"
 #include "../config.h"
 
 void Form::_AddField(FormField& field) {
@@ -98,11 +99,15 @@ bool FormField::_InputControl() {
 	else if (inputField->control == ControlKey::F1)
 		return false;
 	else {
-		if (inputField->control == ControlKey::pageUp || inputField->control == ControlKey::pageDown)
-			return true;
-		if (mandatory && (inputField->selection < 0 && inputField->length < 1)) {
-			parentForm->_DisplayMessage("This field cannot be blank.");
-			return false;
+		bool condition;
+		if (inputField->_ControlKey())
+			condition = true;
+		else if (mandatory && (inputField->selection < 0 && inputField->length < 1)) {
+			if (inputField->_Type() != InputType::scrollDown) {
+				parentForm->_DisplayMessage("This field cannot be blank.");
+				return false;
+			}
+			else condition = true;
 		}
 		parentForm->_ClearMessage();
 		return true;
@@ -422,7 +427,7 @@ FormField* OptionField::_GetLastSubField() {
 
 void Form::_ShowNextField(FormField* currentField) {
 	if (eventEnabled)
-		event(*this);	
+		_RunEvents(currentField);
 
 	if (currentField == nullptr) 
 		fields[0]->_Show();
@@ -628,7 +633,39 @@ FormField* Form::_SelectField(const char* text) {
 	return nullptr;
 }
 
-void Form::_AddEvent(std::function<void(Form&)> const& lambda) {
-	this->event = lambda;
+void Form::_AddEvent(std::function<void(Form&, FormField*)> const& lambda) {
+	std::function<void(Form&, FormField*)>* temp1 = new std::function<void(Form&, FormField*)>[eventNum + 1];
+	bool* temp2 = new bool[eventNum + 1];
+	for (int i = 0; i < eventNum; i++) {
+		temp1[i] = events[i];
+		temp2[i] = eventStatus[i];
+	}
+	delete[]events;
+	delete[]eventStatus;
+	temp1[eventNum] = lambda;
+	temp2[eventNum] = false;
+	events = temp1;
+	eventStatus = temp2;
+
+	eventNum++;
 	eventEnabled = true;
+}
+
+void Form::_RemoveFields(int index, int fieldNum) {
+	for (int i = 0; i < fieldNum; i++) {
+		if (fields[index]->_GetActiveStatus())
+			activeFields--;
+		fields[index]->_Hide();
+		delete fields[index];
+		utility::_RemoveElement(fields, index, this->fieldNum);
+	}
+}
+
+void Form::_RunEvents(FormField* currentField) {
+	for (int i = 0; i < eventNum; i++) 
+		events[i](*this, currentField);
+}
+
+void Form::_SwitchToExtension(const char* moduleName) {
+	this->moduler->_OpenModule(moduleName);
 }

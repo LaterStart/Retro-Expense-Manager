@@ -336,12 +336,17 @@ void Layout::_DefaultFrameTemplate(Display& dsp) {
 	frame->_Split(headerLine, "Header", "Body");
 	frame->_Select("Body")->_Split(footerLine, "Center", "Footer");
 	frame->_Select("Header")->_Split(menuLine, "MenuHeader", "BodyHeader");
-	frame->_Select("BodyHeader")->_Split(90,"vertical", "SelectionTitle", "Date");
+	frame->_Select("BodyHeader")->_Split(90,"vertical", "Title", "Date");
+	frame->_Select("BodyHeader")->_Split(50, "vertical", "SelectionTitle", "ExtensionTitle");
 	frame->_Select("Center")->_Split(menuLine, "Menu", "Content");
+	frame->_Select("Content")->_Split(50, "vertical", "MainForm", "ExtensionForm");
 
 	frame->_Select("SelectionTitle")->_AddLeftPadding(4);
+	frame->_Select("ExtensionTitle")->_AddLeftPadding(4);
 	frame->_Select("Menu")->_AddLeftPadding(1);
 	frame->_Select("Content")->_AddLeftPadding(4);
+	frame->_Select("MainForm")->_AddLeftPadding(4);
+	frame->_Select("ExtensionForm")->_AddLeftPadding(4);
 	frame->_Select("Footer")->_AddLeftPadding(1);
 
 	dsp._Display(menuLine);

@@ -5,7 +5,7 @@
 using namespace std;
 
 //	Categories list vector
-vector<Category> categoryList = { Category("one"), Category("two"), Category("three"), Category("four"), Category("five"), Category("six"), Category("seven"), Category("eight") };
+vector<Category> categoryList;
 
 //	static category model header
 ModelHeader CategoryController::header(ModelName::transaction);
