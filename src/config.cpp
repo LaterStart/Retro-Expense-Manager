@@ -1,4 +1,5 @@
 #include "config.h"
+using std::vector;
 
 const char* const title = "Retro Expense Manager";
 const char* const version = "v2.1";
@@ -14,6 +15,3 @@ const unsigned char horizontalLine = 196;
 const unsigned char verticalLine = 179;
 const unsigned char spaceKey = 32;
 const unsigned char	headerSymbol = 170;
-
-const char* transactionType[] = { "Income", "Expense", "Transfer", "Refund" };
-const int transactionType_num = 4;

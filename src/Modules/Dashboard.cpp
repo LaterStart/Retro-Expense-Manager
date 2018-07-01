@@ -28,7 +28,8 @@ void Dashboard::_StartModule() {
 	Menu mainMenu;
 	mainMenu._AddItems(
 		MenuItem("Add Transaction", "AddTransaction"),
-		MenuItem("Another item", "LoadDatabase")
+		MenuItem("Add Account", "AddAccount"),
+		MenuItem("Add Category", "AddCategory")
 	);
 	layout._Select("Menu")->_AddElements(mainMenu);
 	layout._ShowElements();

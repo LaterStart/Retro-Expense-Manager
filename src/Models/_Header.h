@@ -1,7 +1,8 @@
 #pragma once
-#include "_Model.h"
+#include "../Controllers/_Controller.h"
+#include "../utility.h"
 
-class Header : public Model {
+class Header {
 protected:	
 	int ID = 0;
 	bool loaded = false;
@@ -27,6 +28,8 @@ public:
 	void _SetLoadStatus(bool status);
 	unsigned int _NodeCount() const;
 	unsigned int _GiveID();
+
+	virtual ~Header() = default;
 };
 
 inline void Header::_IncreaseNodeCount() {
@@ -86,7 +89,7 @@ public:
 	~MainHeader() = default;
 };
 
-class ModelHeader : public Header {
+class ModelHeader : public Header{
 private:
 	ModelName model = ModelName::none;
 	

@@ -1,5 +1,4 @@
 #include "LoadUserProfile.h"
-#include "../Controllers/ProfileController.h"
 #include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
@@ -70,25 +69,23 @@ void LoadUserProfile::_StartModule() {
 	//	Loop
 	Profile* profile = nullptr;
 	username._Show();
-	int controlKey = false;
+	ControlKey controlKey = ControlKey::none;
 	bool showMenu = false;
 	bool cancel = false;
 	bool OK = false;
 	int loginTries = 5;
 	do {
-		controlKey = (controlKey == 0) ? username.inputField->control : controlKey;
+		controlKey = (controlKey == ControlKey::none) ? username.inputField->control : controlKey;
 		// verify if control key is pressed		
-		if (controlKey) {	
-			int switcher = controlKey;
-			username.inputField->control = 0;
-			controlKey = 0;
+		if (controlKey > ControlKey::none) {
+			ControlKey switcher = controlKey;
+			username.inputField->control = ControlKey::none;
+			controlKey = ControlKey::none;
 			switch (switcher) {
-			case -1:
-				// ESC
+			case ControlKey::esc:
 				cancel = true;
 				break;
-			case 3:
-				// F1
+			case ControlKey::F1:
 				showMenu = true;
 				break;
 			default:
@@ -111,8 +108,7 @@ void LoadUserProfile::_StartModule() {
 			while (selection <  1 || selection > mainMenu.size) {
 				select._ReadUserInput();
 				selection = select.selection;
-				if (select.control == -1)
-					//esc
+				if (select.control == ControlKey::esc)
 					int test = 0;
 				select._ClearInput();
 			}

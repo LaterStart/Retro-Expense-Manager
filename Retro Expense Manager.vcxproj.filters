@@ -78,12 +78,6 @@
     <ClInclude Include="src\Models\_Model.h">
       <Filter>Header Files\Models</Filter>
     </ClInclude>
-    <ClInclude Include="src\Models\Header.h">
-      <Filter>Header Files\Models</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Models\DataBlock.h">
-      <Filter>Header Files\Models</Filter>
-    </ClInclude>
     <ClInclude Include="src\Modules\Dashboard.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
@@ -98,6 +92,18 @@
     </ClInclude>
     <ClInclude Include="src\utility.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Controllers\CategoryController.h">
+      <Filter>Header Files\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\Category.h">
+      <Filter>Header Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\_Header.h">
+      <Filter>Header Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\_DataBlock.h">
+      <Filter>Header Files\Models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +169,12 @@
     </ClCompile>
     <ClCompile Include="src\Controllers\TransactionController.cpp">
       <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Controllers\CategoryController.cpp">
+      <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Models\Category.cpp">
+      <Filter>Source Files\Models</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

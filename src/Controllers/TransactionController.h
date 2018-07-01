@@ -13,3 +13,5 @@ public:
 	
 	void _AddNewTransaction(utility::LinkedList<Data*>*data, int profileID);
 };
+
+extern std::vector<const char*> transactionType;

@@ -43,6 +43,15 @@ Date::Date(char* text) {
 	*ptr[2] = utility::_ConvertToInteger(text);
 }
 
+std::ostream& operator << (std::ostream& os, Date& date) {
+	os << date.day << "/" << date.month << "/" << date.year;
+	return os;
+}
+
+int Date::_DisplayLength() {
+	return 10;
+}
+
 namespace utility {
 
 	int _CharLength(char* text) {

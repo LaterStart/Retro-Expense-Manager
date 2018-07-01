@@ -1,7 +1,7 @@
 #include <fstream>
 #include "_Controller.h"
-#include "../Models/Header.h"
-#include "../Models/DataBlock.h"
+#include "../Models/_Header.h"
+#include "../Models/_DataBlock.h"
 using namespace std;
 
 //	static header class instance - stores frequently accessed database data

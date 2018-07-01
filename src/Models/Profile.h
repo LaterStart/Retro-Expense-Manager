@@ -14,6 +14,7 @@ private:
 	bool locked = true;
 	
 	void _BindData(Data* data);
+	std::ostream& _Show(std::ostream& os);
 
 public:	
 	char* _Serialize();
@@ -28,6 +29,7 @@ public:
 	bool _VerifyPassword(char* password);
 	void _Unlock();
 	bool _Locked() const;
+	int _DisplayLength();
 
 	Profile(utility::LinkedList<Data*>* data, int ID);
 	Profile(char* buffer);
@@ -65,4 +67,8 @@ inline void Profile::_Unlock() {
 
 inline bool Profile::_Locked() const {
 	return this->locked;
+}
+
+inline int Profile::_DisplayLength() {
+	return utility::_CharLength(username);
 }

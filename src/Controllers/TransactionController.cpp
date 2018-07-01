@@ -1,10 +1,13 @@
 #include <fstream>
 #include "TransactionController.h"
-#include "../Models/Header.h"
+#include "../Models/_Header.h"
 #include "../Models/Transaction.h"
 using namespace std;
 
-//	static profile model header
+//	transaction types
+vector<const char*> transactionType{ "Income", "Expense", "Transfer", "Refund" };
+
+//	static transaction model header
 ModelHeader TransactionController::header(ModelName::transaction);
 
 //	transaction controller constructor

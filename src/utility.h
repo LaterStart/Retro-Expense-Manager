@@ -1,6 +1,7 @@
 #pragma once
 #include <initializer_list>
 #include <cstdarg> 
+#include <ostream>
 
 class Console;
 class Initialize {
@@ -27,7 +28,12 @@ struct Date {
 	short year = 0;
 
 	Date(char* text);
+	Date() = default;
+
+	int _DisplayLength();
 };
+
+std::ostream& operator<<(std::ostream& os, Date& date);
 
 namespace utility {
 
@@ -68,9 +74,22 @@ namespace utility {
 		ptr = newArr;
 		arrSize++;
 	}
+
+	template <typename T>
+	void _InsertElement(T* &ptr, T &element, int index, int &arrSize) {
+		T* newArr = new T[arrSize + 1];
+		for (int i = 0; i < index; i++) 
+			newArr[i] = ptr[i];
+		newArr[index] = element;
+		for (int i = index + 1; i <= arrSize; i++) 
+			newArr[i] = ptr[i - 1];
+		delete[]ptr;
+		ptr = newArr;
+		arrSize++;
+	}
 	
 	template <typename T>
-	void _RemoveElement(T* &ptr, int pos, int arrSize) {
+	void _RemoveElement(T* &ptr, int pos, int &arrSize) {
 		T* newArr = new T[arrSize - 1]; int z = 0;
 		for (int i = 0; i < arrSize; i++) {
 			if (i != pos)
@@ -78,6 +97,7 @@ namespace utility {
 		}
 		delete[]ptr;
 		ptr = newArr;
+		arrSize--;
 	}	
 
 	template<typename T>

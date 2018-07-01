@@ -2,6 +2,20 @@
 #include <fstream>
 #include "../config.h"
 
+const enum class ModelName {
+	none,
+	mainHeader,
+	modelHeader,
+	profile,
+	account,
+	transaction
+};
+
+const enum class Range {
+	none,
+	all
+};
+
 class UserInput;
 struct Data {
 	Field field;

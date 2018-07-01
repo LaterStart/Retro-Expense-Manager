@@ -1,8 +1,9 @@
 #include <iostream>
 #include <Windows.h>
-#include "../config.h"
 #include "IOComponent.h"
 #include "OComponent.h"
+#include "../Models/_Model.h"
+#include "../config.h"
 using namespace std;
 
 int IOComponent::idCounter = 0;
@@ -241,6 +242,14 @@ void Display::_Display(Cursor& pos, int num) {
 	pos._SetCursorPosition();
 	pos._SetCharacterNumber(utility::_DigitNumber(num));
 	cout << num;
+	ActivePos apos(pos, -1);
+	_AddActivePosition(apos);
+}
+
+void Display::_Display(Model& model, Cursor& pos) {
+	pos._SetCursorPosition();
+	cout << model;	
+	pos._SetCharacterNumber(model._DisplayLength());
 	ActivePos apos(pos, -1);
 	_AddActivePosition(apos);
 }

@@ -1,8 +1,8 @@
-#include "Transaction.h"
+#include "Category.h"
 #include "../IO/Input.h"
 
-// construct transaction model using form data
-Transaction::Transaction(utility::LinkedList<Data*>* data, int ID, int profileID){
+// construct category model using form data
+Category::Category(utility::LinkedList<Data*>* data, int ID, int profileID){
 	while (true) {
 		_BindData(data->element);
 		if (data->nextNode == nullptr)
@@ -14,45 +14,45 @@ Transaction::Transaction(utility::LinkedList<Data*>* data, int ID, int profileID
 	data->_DeleteList();
 }
 
-// construct transacion model using bufferered data
-Transaction::Transaction(char* buffer) {
-	this->_Deserialize(buffer);
+// construct category model using bufferered data
+Category::Category(char* buffer) {
+	this->name = buffer;
 }
 
-// transaction copy constructor
-Transaction::Transaction(const Transaction& copy) {
-
+// category copy constructor
+Category::Category(const Category& copy) {
+	this->name = copy.name;
 }
 
 //	binds form data to object data
-void Transaction::_BindData(Data* data) {
+void Category::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::account:
-		accountID = data->input->selection;		
+		//accountID = data->input->selection;		
 		break;
 	case Field::transactionType:
-		typeID = data->input->selection;
+		//typeID = data->input->selection;
 		break;
 	case Field::category:
-		categoryID = data->input->selection;
+		//categoryID = data->input->selection;
 		break;
 	case Field::currency:
-		currencyID = data->input->selection;
+		//currencyID = data->input->selection;
 		break;
 	case Field::amount:
-		amount = utility::_ConvertToFloat(data->input->input);
+		//amount = utility::_ConvertToFloat(data->input->input);
 		break;
 	case Field::description:
-		description = data->input->input;
-		descriptionSize = data->input->length;
+		//description = data->input->input;
+		//descriptionSize = data->input->length;
 	default:
 		break;
 	}
 }
 
 //	serialize category model
-char* Transaction::_Serialize() {
-	//	Total object size					 
+char* Category::_Serialize() {
+	/*//	Total object size					 
 	int size = descriptionSize + 6*sizeof(int) + sizeof(float);
 
 	//	insert object size info and ID at buffer start
@@ -79,13 +79,13 @@ char* Transaction::_Serialize() {
 	std::memcpy(buffer, &descriptionSize, sizeof(int));
 	buffer += sizeof(int);
 	std::memcpy(buffer, description, descriptionSize);
-
-	return firstByte;
+	*/
+	return nullptr;
 }
 
 //	deserialize category model
-void Transaction::_Deserialize(char* page) {
-	this->ID = *(int*)page;
+void Category::_Deserialize(char* page) {
+	/*this->ID = *(int*)page;
 	page += sizeof(int);
 
 	//	deserialize IDs
@@ -102,14 +102,14 @@ void Transaction::_Deserialize(char* page) {
 	page += sizeof(int);
 
 	this->description = new char[descriptionSize];
-	std::memcpy(description, page, descriptionSize);
+	std::memcpy(description, page, descriptionSize);*/
 }
 
-std::ostream& Transaction::_Show(std::ostream& os) {
-	os << this->date<<'/'<<this->amount<<'/'<<this->description;
+std::ostream& Category::_Show(std::ostream& os) {
+	os << this->name;
 	return os;
 }
 
-Transaction::~Transaction() {
-	delete[]description;
+Category::~Category() {
+	//delete[]description;
 }

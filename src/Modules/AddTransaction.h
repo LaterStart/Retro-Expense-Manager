@@ -1,6 +1,5 @@
 #pragma once
 #include "ModuleManagement.h"
-#include "../Controllers/TransactionController.h"
 
 class AddTransaction : public Module {
 	template<class T>

@@ -1,6 +1,5 @@
 #pragma once
 #include "ModuleManagement.h"
-#include "../Controllers/ProfileController.h"
 
 class LoadUserProfile : public Module {
 	template<class T>

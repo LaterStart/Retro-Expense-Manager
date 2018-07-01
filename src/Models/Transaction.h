@@ -12,14 +12,17 @@ private:
 	int descriptionSize = 0;
 	float amount = 0.0;
 	char* description = nullptr;	
+	Date date;
 	
 	void _BindData(Data* data);
+	std::ostream& _Show(std::ostream& os);
 
 public:	
 	char* _Serialize();
 	void _Deserialize(char* buffer);
 	
 	int _ID() const;
+	int _DisplayLength();
 
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Transaction(char* buffer);
@@ -29,4 +32,8 @@ public:
 
 inline int Transaction::_ID() const {
 	return this->ID;
+}
+
+inline int Transaction::_DisplayLength() {
+	return date._DisplayLength() + utility::_DigitNumber(amount) + utility::_CharLength(description);
 }

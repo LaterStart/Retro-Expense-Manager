@@ -1,5 +1,4 @@
 #include "Login.h"
-#include "../Controllers/ProfileController.h"
 #include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
@@ -101,7 +100,7 @@ void Login::_StartModule() {
 			passwordField:
 				F2._Hide();
 				password._Show();
-				if (password.inputField->control == 3) {
+				if (password.inputField->control == ControlKey::F1) {
 					// Menu selection
 					F2._Show();
 					wrongPw._Hide();
@@ -112,7 +111,7 @@ void Login::_StartModule() {
 					while (selection <  1 || selection > mainMenu.size) {
 						select._ReadUserInput();
 						selection = select.selection;
-						if (select.control == 4)
+						if (select.control == ControlKey::F2)
 							goto passwordField;
 						select._ClearInput();
 					}

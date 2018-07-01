@@ -1,11 +1,9 @@
 #include "ModuleManagement.h"
-#include "../Controllers/ModuleController.h"
-#include "../Controllers/ProfileController.h"
-#include "../Controllers/TransactionController.h"
 using namespace std;
 
 ProfileController Module::profileController;
 TransactionController Module::transactionController;
+CategoryController Module::categoryController;
 
 ModuleManagement::ModuleManagement(Console* myConsole) : moduleList(nullptr), moduleNum(0), initialized(false), console(myConsole){
 	_InitializeModules();

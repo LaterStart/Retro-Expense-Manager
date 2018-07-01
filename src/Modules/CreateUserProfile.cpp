@@ -84,7 +84,7 @@ void CreateUserProfile::_StartModule() {
 			while (selection <  1 || selection > mainMenu.size) {
 				select._ReadUserInput();
 				selection = select.selection;
-				if (select.control == -1)
+				if (select.control == ControlKey::esc)
 					goto exit;
 				select._ClearInput();
 			}

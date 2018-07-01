@@ -2,8 +2,12 @@
 #include <map>
 #include <memory>
 #include <functional>
+#include "../Controllers/ProfileController.h"
+#include "../Controllers/TransactionController.h"
+#include "../Controllers/CategoryController.h"
+#include "../Controllers/ModuleController.h"
 
-class Console; class ProfileController; class TransactionController;
+class Console; class ProfileController; class TransactionController; class CategoryController;
 //	abstract class - main definition for each new module
 class Module {
 	template<class T>
@@ -20,6 +24,7 @@ protected:
 
 	static ProfileController profileController;
 	static TransactionController transactionController;
+	static CategoryController categoryController;
 
 public:
 	const char* name;

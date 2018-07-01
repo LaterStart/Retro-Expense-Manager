@@ -110,7 +110,7 @@ public:
 
 };
 
-class Separator; class Label; class MenuItem;
+class Separator; class Label; class MenuItem; class Model;
 class Display : public IOComponent {
 private:
 	struct ActivePos {
@@ -167,6 +167,7 @@ public:
 	void _Display(const char* text);
 	void _Display(Label* label, Cursor& pos = Cursor());
 	void _Display(MenuItem* item, Cursor& pos = Cursor());
+	void _Display(Model& item, Cursor& pos = Cursor());
 	void _Display(Separator& separator);
 	void _Display(Cursor& pos, int num);
 	void _LockContent(Cursor &pos);

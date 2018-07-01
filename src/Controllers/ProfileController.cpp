@@ -1,6 +1,6 @@
 #include <fstream>
 #include "ProfileController.h"
-#include "../Models/Header.h"
+#include "../Models/_Header.h"
 #include "../Models/Profile.h"
 using namespace std;
 

@@ -30,7 +30,7 @@ void UserInput::_Initialize() {
 	}
 	else pos._GetCursorPosition();
 
-	control = 0;
+	control = ControlKey::none;
 	controlKey = false;
 	first = node;
 
@@ -81,7 +81,7 @@ int UserInput::_VerifyInput(char& ch) {
 	// esc key
 	if (ch == 27) {
 		ch = _getch();
-		this->control = -1;
+		this->control = ControlKey::esc;
 		controlKey = true;
 		return -1;
 	}
@@ -96,12 +96,12 @@ int UserInput::_VerifyInput(char& ch) {
 		switch (ch) {
 			// up arrow
 		case 72:
-			this->control = 1;
+			this->control = ControlKey::upArrow;
 			controlKey = true;
 			return 6;
 			// down arrow
 		case 80:
-			this->control = 2;
+			this->control = ControlKey::downArrow;
 			controlKey = true;
 			return 6;
 		case 75:
@@ -110,6 +110,12 @@ int UserInput::_VerifyInput(char& ch) {
 		case 77:
 			// right arrow
 			return 9;
+		case 73:
+			// page up
+			return 12;
+		case 81:
+			// page down
+			return 13;
 		default:
 			return 0;
 		}
@@ -285,12 +291,22 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		return 2;
 	case 10:
 		//	F1 key
-		this->control = 3;
+		this->control = ControlKey::F1;
 		controlKey = true;
 		goto del;
 	case 11:
 		//	F2 key
-		this->control = 4;
+		this->control = ControlKey::F2;
+		controlKey = true;
+		goto del;
+	case 12:
+		//	page up
+		this->control = ControlKey::pageUp;
+		controlKey = true;
+		goto del;
+	case 13:
+		//	page down
+		this->control = ControlKey::pageDown;
 		controlKey = true;
 		goto del;
 	default: 
@@ -366,8 +382,7 @@ void UserInput::_LoadBuffer() {
 void UserInput::_ClearInput() {
 	delete[]input;
 	delete[]buffer;
-	length = 0;
-	control = 0;
+	length = 0;	
 	selection = 0;
 	input = nullptr;
 	buffer = nullptr;
@@ -382,6 +397,7 @@ void UserInput::_ClearInput() {
 	}	
 	node = nullptr;
 	controlKey = false;
+	control = ControlKey::none;
 }
 
 void UserInput::_HideInput() {
@@ -391,11 +407,11 @@ void UserInput::_HideInput() {
 bool InputField::_InputControl() {
 	inputField->_ReadUserInput();
 
-	if (inputField->control == 1)
+	if (inputField->control == ControlKey::upArrow)
 		return false;
-	else if (inputField->control == 2)
+	else if (inputField->control == ControlKey::downArrow)
 		return false;
-	else if (inputField->control == -1)
+	else if (inputField->control == ControlKey::esc)
 		return false;
 	else if (mandatory && inputField->length < 1) 		
 		return false;
@@ -412,11 +428,11 @@ void InputField::_Show() {
 		filled = true;
 	}
 	else {
-		if (inputField->control == -1)
+		if (inputField->control == ControlKey::esc)
 			return;
-		if (inputField->control == 1)
+		if (inputField->control == ControlKey::upArrow)
 			return;
-		if (inputField->control == 3)
+		if (inputField->control == ControlKey::F1)
 			return;
 		else this->_Show();
 	}

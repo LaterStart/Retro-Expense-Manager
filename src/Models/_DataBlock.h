@@ -1,7 +1,8 @@
 #pragma once
-#include "_Model.h"
+#include "../Controllers/_Controller.h"
+#include "../utility.h"
 
-class DataBlock : public Model {
+class DataBlock {
 private:
 	static int blockSize;
 

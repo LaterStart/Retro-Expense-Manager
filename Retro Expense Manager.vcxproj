@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\Controllers\CategoryController.h" />
     <ClInclude Include="src\Controllers\TransactionController.h" />
     <ClInclude Include="src\Controllers\_Controller.h" />
     <ClInclude Include="src\Controllers\ModuleController.h" />
@@ -27,8 +28,9 @@
     <ClInclude Include="src\IO\Input.h" />
     <ClInclude Include="src\IO\IOComponent.h" />
     <ClInclude Include="src\IO\OComponent.h" />
-    <ClInclude Include="src\Models\DataBlock.h" />
-    <ClInclude Include="src\Models\Header.h" />
+    <ClInclude Include="src\Models\Category.h" />
+    <ClInclude Include="src\Models\_DataBlock.h" />
+    <ClInclude Include="src\Models\_Header.h" />
     <ClInclude Include="src\Models\Profile.h" />
     <ClInclude Include="src\Models\Transaction.h" />
     <ClInclude Include="src\Models\_Model.h" />
@@ -42,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\Controllers\CategoryController.cpp" />
     <ClCompile Include="src\Controllers\TransactionController.cpp" />
     <ClCompile Include="src\Controllers\_Controller.cpp" />
     <ClCompile Include="src\Controllers\ModuleController.cpp" />
@@ -51,6 +54,7 @@
     <ClCompile Include="src\IO\IOComponent.cpp" />
     <ClCompile Include="src\IO\OComponent.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Models\Category.cpp" />
     <ClCompile Include="src\Models\DataBlock.cpp" />
     <ClCompile Include="src\Models\Header.cpp" />
     <ClCompile Include="src\Models\Profile.cpp" />

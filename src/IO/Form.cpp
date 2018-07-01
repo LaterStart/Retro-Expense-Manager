@@ -9,6 +9,13 @@ void Form::_AddField(FormField& field) {
 	delete pp;
 }
 
+void Form::_InsertField(std::tuple<FormField&, int> tuple) {
+	FormField** pp = new FormField*(nullptr);	
+	utility::_InsertElement(fields, *pp, std::get<1>(tuple), fieldNum);
+	fields[std::get<1>(tuple)] = std::get<0>(tuple)._Store();
+	delete pp;
+}
+
 void OptionField::_AddField(FormField& field) {
 	FormField** pp = new FormField*(nullptr);
 	utility::_AddElement(optionalFields, *pp, optFieldNum);
@@ -35,14 +42,14 @@ void OptionField::_CreateInputFrame() {
 	for (int i = 0; i < optFieldNum; i++) {
 		optionalFields[i]->_SetParentFrame(parentFrame);
 		optionalFields[i]->_SetPadding(padding);
-		optionalFields[i]->_SetYpos(parentFrame->nextYpos++);		
+		optionalFields[i]->_SetYpos(this->Ypos+i+1);		
 		optionalFields[i]->_CreateInputFrame();	
 		optionalFields[i]->_SetParentForm(parentForm);
+		parentForm->_SetYpos(parentForm->_Ypos() + 1);
 	}
 }
 
-void FormField::_ShiftInputFrame(int num) {
-	Ypos += num;
+void FormField::_ShiftInputFrame(int num) {	
 	Frame::Coordinates coord = parentFrame->_Select(text)->_GetCoordinates();
 	coord.y1 += num;
 	coord.y2 += num;
@@ -57,12 +64,21 @@ void OptionField::_ShiftInputFrame(int num) {
 }
 
 void Form::_InitializeFields() {
+	Ypos = parentFrame->nextYpos;
 	for (int i = 0; i < fieldNum; i++) {
-		fields[i]->_SetParentFrame(parentFrame);
-		fields[i]->_SetPadding(padding);
-		fields[i]->_SetYpos(parentFrame->nextYpos++);
-		fields[i]->_SetParentForm(this);
-		fields[i]->_CreateInputFrame();
+		int memPos = fields[i]->_Ypos();
+		fields[i]->_SetYpos(Ypos++);
+		if (fields[i]->inputField == nullptr) {
+			fields[i]->_SetParentFrame(parentFrame);
+			fields[i]->_SetPadding(padding);
+			fields[i]->_SetParentForm(this);
+			fields[i]->_CreateInputFrame();			
+		}
+		else {
+			int diff = fields[i]->_Ypos() - memPos;
+			if (diff != 0)
+				fields[i]->_ShiftInputFrame(diff);
+		}
 	}
 }
 
@@ -73,15 +89,17 @@ bool FormField::_InputControl() {
 	}
 	inputField->_ReadUserInput();
 
-	if (inputField->control == 1)
+	if (inputField->control == ControlKey::upArrow)
 		return false;
-	else if (inputField->control == 2)
+	else if (inputField->control == ControlKey::downArrow)
 		return false;
-	else if (inputField->control == -1)
+	else if (inputField->control == ControlKey::esc)
 		return false;
-	else if (inputField->control == 3)
+	else if (inputField->control == ControlKey::F1)
 		return false;
 	else {
+		if (inputField->control == ControlKey::pageUp || inputField->control == ControlKey::pageDown)
+			return true;
 		if (mandatory && (inputField->selection < 0 && inputField->length < 1)) {
 			parentForm->_DisplayMessage("This field cannot be blank.");
 			return false;
@@ -91,22 +109,22 @@ bool FormField::_InputControl() {
 	}
 }
 
-void FormField::_SwitchField(int control) {
-	if(control >=0)
+void FormField::_SwitchField(ControlKey control) {
+	if(control >= ControlKey::none)
 		parentForm->_SetSpecialContentHeight(0);
 	switch (control) {
-	case -1:
+	case ControlKey::esc:
 		parentForm->_Exit(this);
 		break;
-	case 1:
+	case ControlKey::upArrow:
 		parentForm->_ShowPreviousField(this);
 		break;
-	case 2:
+	case ControlKey::downArrow:
 		if(filled)
 			parentForm->_ShowNextField(this);
 		else this->_Show();
 		break;
-	case 3:
+	case ControlKey::F1:
 		parentForm->_SwitchToMenu(this);
 		break;
 	default:
@@ -137,7 +155,7 @@ void UsernameField::_Show() {
 		}		
 	}
 	else {
-		if (inputField->control == 2 && controller._Exists(inputField->input)) {
+		if (inputField->control == ControlKey::downArrow && controller._Exists(inputField->input)) {
 			parentForm->_DisplayMessage("Username already exists.");
 			this->_Show();
 		}
@@ -201,7 +219,7 @@ void PasswordField::_Show() {
 		}
 	}
 	else {
-		if (inputField->control == 2 && keyField != nullptr) {
+		if (inputField->control == ControlKey::downArrow && keyField != nullptr) {
 			if (utility::_CompareChar(inputField->input, keyField->inputField->input))
 				_SwitchField(inputField->control);
 			else {
@@ -241,16 +259,16 @@ void SelectionField::_Show() {
 	Display dsp;
 	Cursor pos(coord.x1, coord.y1);
 	char num[] = { "[ ] " };
-	for (int i = 0; i < options_num; i++) {
+	for (unsigned int i = 0; i < options.size(); i++) {
 		num[1] = i + 1 + '0';
 		dsp._Display(pos, num, options[i]);
 		pos._SetX(coord.x1);
 		pos._ChangeY(1);
 	}
-	parentForm->_SetSpecialContentHeight(transactionType_num);
+	parentForm->_SetSpecialContentHeight(options.size());
 
 	if (_InputControl()) {
-		if (inputField->selection > 0 && inputField->selection <= options_num) {
+		if (inputField->selection > 0 && inputField->selection <= (int)options.size()) {
 			dsp._WipeContent();
 			Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
 			Cursor pos(coord.x1, coord.y1);
@@ -262,13 +280,13 @@ void SelectionField::_Show() {
 			parentForm->_ShowNextField(this);
 		}
 		else {
-			if (inputField->control >= 0)
+			if (inputField->control >= ControlKey::none)
 				dsp._WipeContent();
 			_SwitchField(inputField->control);
 		}
 	}
 	else {
-		if(inputField->control >=0)
+		if(inputField->control >= ControlKey::none)
 			dsp._WipeContent();
 		_SwitchField(inputField->control);
 	}
@@ -289,7 +307,7 @@ void ConfirmField::_Show() {
 		}
 	}
 	else {
-		int control = inputField->control;
+		ControlKey control = inputField->control;
 		this->_Clear();
 		activated = false;
 		parentForm->_UpdateActiveFields(-1);
@@ -321,6 +339,7 @@ void Form::_EnableOptional(int optFieldNum, FormField* currentField) {
 			nextField->_SetActiveStatus(false);
 			_UpdateActiveFields(-1);
 		}
+		nextField->_SetYpos(nextField->_Ypos() + optFieldNum);
 		nextField->_ShiftInputFrame(optFieldNum);
 		nextField = _GetNextField(nextField);	
 	}
@@ -333,6 +352,7 @@ void Form::_DisableOptional(int optFieldNum, FormField* currentField) {
 			nextField->_SetActiveStatus(false);
 			_UpdateActiveFields(-1);
 		}
+		nextField->_SetYpos(nextField->_Ypos() - optFieldNum);
 		nextField->_ShiftInputFrame(optFieldNum*-1);
 		nextField = _GetNextField(nextField);		
 	}
@@ -401,6 +421,9 @@ FormField* OptionField::_GetLastSubField() {
 }
 
 void Form::_ShowNextField(FormField* currentField) {
+	if (eventEnabled)
+		event(*this);	
+
 	if (currentField == nullptr) 
 		fields[0]->_Show();
 	else {
@@ -507,7 +530,7 @@ Frame::Coordinates Form::_GetSpecialContentCoord() {
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
 	coord.x1 += padding;
 	int difference = (hiddenFields > activeFields) ? activeFields + 1 : hiddenFields;
-	coord.y1 += activeFields - difference + 1 + this->Ypos;
+	coord.y1 += activeFields - difference + 1 + parentFrame->nextYpos;
 	coord.y1 += (specialContentHeight > 0) ? specialContentHeight+1 : specialContentHeight;
 
 	return coord;
@@ -593,4 +616,19 @@ void OptionField::_Hide() {
 		parentForm->_UpdateHiddenFields(1);
 	}
 	parentForm->_UpdateHiddenFields(1);
+}
+
+FormField* Form::_SelectField(const char* text) {
+	FormField* field = fields[0];
+	do {
+		if (utility::_CompareChar(field->text,text))
+			return field;
+		field = _GetNextField(field);		
+	} while (field != nullptr);
+	return nullptr;
+}
+
+void Form::_AddEvent(std::function<void(Form&)> const& lambda) {
+	this->event = lambda;
+	eventEnabled = true;
 }

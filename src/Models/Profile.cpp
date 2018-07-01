@@ -133,6 +133,11 @@ bool Profile::_VerifyPassword(char* password) {
 	return verify;
 }
 
+std::ostream& Profile::_Show(std::ostream& os) {
+	os << this->username;
+	return os;
+}
+
 Profile::~Profile() {
 	delete[]username;
 	delete[]password;

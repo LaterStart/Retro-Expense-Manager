@@ -1,5 +1,7 @@
 #pragma once
 #include "utility.h"
+#include <vector>
+#include <tuple>
 
 extern const char* const title;
 extern const char* const version;
@@ -16,15 +18,6 @@ extern const unsigned char verticalLine;
 extern const unsigned char spaceKey;
 extern const unsigned char headerSymbol;
 
-const enum class ModelName {
-	none,
-	mainHeader,
-	modelHeader,
-	profile,
-	account,
-	transaction
-};
-
 const enum class Field {
 	none,
 	username,
@@ -38,11 +31,3 @@ const enum class Field {
 	date,
 	description
 };
-
-const enum class Range {
-	none,
-	all
-};
-
-extern const char* transactionType[];
-extern const int transactionType_num;

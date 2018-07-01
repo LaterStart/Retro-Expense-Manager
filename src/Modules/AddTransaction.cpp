@@ -1,5 +1,4 @@
 #include "AddTransaction.h"
-#include "../Controllers/ProfileController.h"
 #include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
@@ -31,8 +30,9 @@ void AddTransaction::_StartModule() {
 	//	Main menu
 	Menu mainMenu;
 	mainMenu._AddItems(
-		MenuItem("AddTransaction", this->name),
-		MenuItem("Another Item", "LoadDatabase")
+		MenuItem("Add Transaction", this->name),
+		MenuItem("Add Account", "AddAccount"),
+		MenuItem("Add Category", "AddCategory")
 	);
 	layout._Select("Menu")->_AddElements(mainMenu);
 
@@ -55,15 +55,41 @@ void AddTransaction::_StartModule() {
 	Form form;
 	form._SetParentFrame(content);
 	form._AddFields(
-		SelectionField("Type:", transactionType, transactionType_num, Field::transactionType),					
-		FormField("Category:", InputType::text, Field::category),
-		FormField("Amount", InputType::value, Field::amount),
+		SelectionField("Type:", transactionType, Field::transactionType),
+		ScrollDown<Category>("Category:", categoryList, Field::category),
+		FormField("Amount:", InputType::text, Field::amount),
 		FormField("Currency:", InputType::text, Field::currency),
-		FormField("Account:", InputType::text, Field::account),
+		FormField("Account:", InputType::text, Field::account),		
 		FormField("Description:", InputType::text, Field::description),
 		ConfirmField("Save?:")
 	);
 	form._SetYpos(++content->nextYpos);
+
+	//	Form event
+	const std::function<void(Form&)> event = [](Form& form) {
+		if (form._EventStatus() == false) {
+			FormField* cField = form._SelectField("Type:");
+			if (cField->inputField->selection == 3) {
+				form._RemoveFields(4, 1);
+				form._InsertFields(
+					std::tuple<FormField&, int>{ FormField("From Account:", InputType::text, Field::account), 4 },
+					std::tuple<FormField&, int>{ FormField("To Account:", InputType::text, Field::account), 5 }
+				);				
+				form._InitializeFields();
+				form._SetEventStatus(true);
+			}
+		}
+		else {
+			FormField* cField = form._SelectField("Type:");
+			if (cField->inputField->selection != 3) {
+				form._RemoveFields(4, 2);
+				form._InsertFields(std::tuple<FormField&, int>{ FormField("Account:", InputType::text, Field::account), 4 });
+				form._InitializeFields();				
+				form._SetEventStatus(false);
+			}
+		}
+	};
+	form._AddEvent(event);
 	content->_AddElements(form);
 
 	do {
@@ -84,7 +110,7 @@ void AddTransaction::_StartModule() {
 			while (selection <  1 || selection > mainMenu.size) {
 				select._ReadUserInput();
 				selection = select.selection;
-				if (select.control == -1)
+				if (select.control == ControlKey::esc)
 					goto exit;
 				select._ClearInput();
 			}
