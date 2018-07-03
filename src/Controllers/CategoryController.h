@@ -4,14 +4,14 @@
 class Category; class ModelHeader;
 class CategoryController : public Controller {
 private:
-	static ModelHeader header;
-	
+	static ModelHeader header;	
 
 public:
 	CategoryController();
 	~CategoryController() = default;
+
+	static std::vector<const char*> categoryType;
+	static std::vector<std::vector<Category>> categoryList;
 	
 	void _AddNewCategory(utility::LinkedList<Data*>*data, int profileID);
 };
-
-extern std::vector<Category> categoryList;

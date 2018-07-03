@@ -2,6 +2,7 @@
 #include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
+using namespace std;
 
 Module& AddTransaction::_GetInstance() {
 	return _LoadModule();
@@ -55,8 +56,8 @@ void AddTransaction::_StartModule() {
 	Form form;
 	form._SetParentFrame(content);
 	form._AddFields(
-		SelectionField("Type:", transactionType, Field::transactionType),
-		ScrollDown<Category>("Category:", categoryList, Field::category),
+		SelectionField("Type:", transactionController.transactionType, Field::transactionType),
+		ScrollDown_2D<Category>("Category:", categoryController.categoryList, Field::category),
 		FormField("Amount:", InputType::text, Field::amount),
 		FormField("Currency:", InputType::text, Field::currency),
 		FormField("Account:", InputType::text, Field::account),		
@@ -67,7 +68,7 @@ void AddTransaction::_StartModule() {
 
 	//	Form events
 	//	Transfer event - If user selects transfer as transaction type, change account field
-	const std::function<void(Form&, FormField*)> transferEvent = [](Form& form, FormField* currentField) {
+	const function<void(Form&, FormField*)> transferEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(0) == false) {
 			FormField* cField = form._SelectField("Type:");
 			if (cField->inputField->selection == 3) {
@@ -75,8 +76,8 @@ void AddTransaction::_StartModule() {
 				form._RemoveFields(4, 1);
 				form._InsertFields(
 					//	Adds two new fields at position 4 and 5
-					std::tuple<FormField&, int>{ FormField("From Account:", InputType::text, Field::account), 4 },
-					std::tuple<FormField&, int>{ FormField("To Account:", InputType::text, Field::account), 5 }
+					tuple<FormField&, int>{ FormField("From Account:", InputType::text, Field::account), 4 },
+					tuple<FormField&, int>{ FormField("To Account:", InputType::text, Field::account), 5 }
 				);				
 				form._InitializeFields();
 				form._SetEventStatus(0, true);
@@ -88,7 +89,7 @@ void AddTransaction::_StartModule() {
 			if (cField->inputField->selection != 3) {
 				// remove two fields starting at position 4 and insert one new field at position 4
 				form._RemoveFields(4, 2);
-				form._InsertFields(std::tuple<FormField&, int>{ FormField("Account:", InputType::text, Field::account), 4 });
+				form._InsertFields(tuple<FormField&, int>{ FormField("Account:", InputType::text, Field::account), 4 });
 				form._InitializeFields();				
 				form._SetEventStatus(0, false);
 			}
@@ -97,12 +98,13 @@ void AddTransaction::_StartModule() {
 	form._AddEvent(transferEvent);
 
 	//	New category event - Provide option to add new category
-	const std::function<void(Form&, FormField*)> newCategoryEvent = [](Form& form, FormField* currentField) {
+	const function<void(Form&, FormField*)> newCategoryEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(1) == false) {
-			ScrollDown<Category>* cField = dynamic_cast<ScrollDown<Category>*>(form._SelectField("Category:"));
-			std::vector<Category>& items = cField->_Items();
-			// insert new element at beggining of Category list vector			
-			items.insert(items.begin(), Category("Add new category->"));
+			ScrollDown_2D<Category>* cField = dynamic_cast<ScrollDown_2D<Category>*>(form._SelectField("Category:"));
+			vector<vector<Category>>& items = cField->_Items();
+			// insert new element at beggining of Category list 2D vector		
+			//items.insert(items.begin(), vector<Category>(1));
+			//items[0].insert(items[0].begin(), Category("Add new category->"));
 			form._SetEventStatus(1, true);
 		}
 		else if (form._EventStatus(1) == true) {

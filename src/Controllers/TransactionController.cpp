@@ -5,7 +5,7 @@
 using namespace std;
 
 //	transaction types
-vector<const char*> transactionType{ "Income", "Expense", "Transfer", "Refund" };
+vector<const char*> TransactionController::transactionType{ "Income", "Expense", "Transfer", "Refund" };
 
 //	static transaction model header
 ModelHeader TransactionController::header(ModelName::transaction);

@@ -106,9 +106,19 @@ int UserInput::_VerifyInput(char& ch) {
 			return 6;
 		case 75:
 			// left arrow
+			if (type == InputType::scrollDown) {
+				this->control = ControlKey::leftArrow;
+				controlKey = true;
+				return 6;
+			}
 			return 8;
 		case 77:
 			// right arrow
+			if (type == InputType::scrollDown) {
+				this->control = ControlKey::rightArrow;
+				controlKey = true;
+				return 6;
+			}
 			return 9;
 		case 73:
 			// page up
@@ -249,7 +259,7 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 			// insert character
 			_ContinueInsert(ch);
 		return 2;
-	case 6: goto del; // up & down arrow
+	case 6: goto del; // up, down, left, right - arrow
 	case 7: 
 		//	backspace - delete input
 		if (node->previousNode != nullptr) {

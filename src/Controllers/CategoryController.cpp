@@ -4,8 +4,18 @@
 #include "../Models/Category.h"
 using namespace std;
 
-//	Categories list vector
-vector<Category> categoryList;
+//	category types
+vector<const char*> CategoryController::categoryType{ "Main Category", "Sub Category" };
+
+//	category list 2D vector
+std::vector<std::vector<Category>> CategoryController::categoryList =
+{ std::vector<Category>{Category("glavna 01"), Category("sub 01-01"), Category("sub 01-02"), Category("sub 01-03"), Category("sub 01-04"), Category("sub 01-05"), Category("sub 01-06")},
+  std::vector<Category>{Category("glavna 02"), Category("sub 02-01"), Category("sub 02-02"), Category("sub 02-03"), Category("sub 02-04"), Category("sub 02-05"), Category("sub 02-06")},
+  std::vector<Category>{Category("glavna 03"), Category("sub 03-01"), Category("sub 03-02"), Category("sub 03-03"), Category("sub 03-04"), Category("sub 03-05"), Category("sub 03-06")},
+  std::vector<Category>{Category("glavna 04"), Category("sub 04-01"), Category("sub 04-02"), Category("sub 04-03"), Category("sub 04-04"), Category("sub 04-05"), Category("sub 04-06")},
+  std::vector<Category>{Category("glavna 05"), Category("sub 05-01"), Category("sub 05-02"), Category("sub 05-03"), Category("sub 05-04"), Category("sub 05-05"), Category("sub 05-06")},
+  std::vector<Category>{Category("glavna 06"), Category("sub 06-01"), Category("sub 06-02"), Category("sub 06-03"), Category("sub 06-04"), Category("sub 06-05"), Category("sub 06-06")},
+};
 
 //	static category model header
 ModelHeader CategoryController::header(ModelName::transaction);

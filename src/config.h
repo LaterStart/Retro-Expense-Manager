@@ -17,17 +17,3 @@ extern const unsigned char horizontalLine;
 extern const unsigned char verticalLine;
 extern const unsigned char spaceKey;
 extern const unsigned char headerSymbol;
-
-const enum class Field {
-	none,
-	username,
-	pwStatus,
-	password,
-	currency,
-	transactionType,
-	account,
-	category,
-	amount,
-	date,
-	description
-};

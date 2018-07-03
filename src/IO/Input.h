@@ -19,10 +19,12 @@ const enum class ControlKey {
 	none = 0,
 	upArrow = 1,
 	downArrow = 2,
-	F1 = 3,
-	F2 = 4,
-	pageUp = 6,
-	pageDown = 7
+	leftArrow = 3,
+	rightArrow = 4,
+	F1 = 5,
+	F2 = 6,
+	pageUp = 7,
+	pageDown = 8
 };
 
 class Input : public IOComponent {};
@@ -424,7 +426,7 @@ private:
 
 public:
 	ScrollDown(const char* text, std::vector<element>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items){		
-		sLast = (sLast >= sMax) ? sMax : sLast;
+		sLast = (sLast > sMax) ? sMax : sLast;
 	}
 
 	void _Show() override;
@@ -508,5 +510,187 @@ FormField* ScrollDown<element>::_Store() {
 
 template <typename element>
 std::vector<element>& ScrollDown<element>::_Items() const {
+	return this->items;
+}
+
+template <class element>
+class ScrollDown_2D : public FormField {
+private:
+	std::vector<std::vector<element>>& items;
+	int** scrollControl = nullptr;
+	int* sCurr = nullptr;
+	int* sValue = nullptr;
+	int* sFirst = nullptr;
+	int* sLast = nullptr;
+	int* sMin = nullptr;
+	int* sMax = nullptr;
+	bool subSelect = false;
+	int sHeight = 5;
+
+public:
+	ScrollDown_2D(const char* text, std::vector<std::vector<element>>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items) {
+		scrollControl = new int*[items.size()+1];
+		scrollControl[items.size()] = new int[5];
+		// main scroll down controll
+		scrollControl[items.size()][0] = 0;
+		scrollControl[items.size()][1] = 0;
+		scrollControl[items.size()][2] = 5;
+		scrollControl[items.size()][3] = 0;
+		scrollControl[items.size()][4] = items.size();
+
+		// sub scroll controll
+		for (int i = 0; i < items.size(); i++) {
+			scrollControl[i] = new int[5];
+			scrollControl[i][0] = 1;
+			scrollControl[i][1] = 1;
+			scrollControl[i][2] = 5;
+			scrollControl[i][3] = 1;
+			scrollControl[i][4] = items[i].size();
+		}
+
+		// set last displayed scroll position
+		for (int i = 0; i <= items.size(); i++) 
+			scrollControl[i][2] = (scrollControl[i][2] > scrollControl[i][4]) ? scrollControl[i][4] : scrollControl[i][2];		
+		
+		// scroll selector
+		sCurr = new int;
+		*sCurr = 0;
+	}
+
+	void _Show() override;
+	FormField* _Store() override;
+	std::vector<std::vector<element>>& _Items() const;
+};
+
+template <typename element>
+void ScrollDown_2D<element>::_Show() {
+	Label::_Show();
+	if (items.size() == 0)
+		parentForm->_ShowNextField(this);
+
+	if (!activated) {
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+	}
+	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
+	Display dsp;
+	Cursor pos(coord.x1, coord.y1);
+	Cursor sPos(pos);
+	pos._ChangeX(1);
+
+	for (int i = scrollControl[items.size()][1]; i < scrollControl[items.size()][2]; i++) {
+		if (i == scrollControl[items.size()][0] && !subSelect) {
+			sPos._ChangeY(scrollControl[items.size()][0] - scrollControl[items.size()][1]);
+			sPos._SetCursorPosition();
+			dsp._Display('>');
+		}
+		dsp._Display(items[i].at(0), pos);
+		if (i == scrollControl[items.size()][0]) {
+			Cursor subPos;
+			Cursor subSpos(subPos);
+			subPos._ChangeX(3);		
+			subSpos._ChangeX(2);
+			for (int j = scrollControl[*sCurr][1]; j < scrollControl[*sCurr][2]; j++) {
+				if (j == scrollControl[*sCurr][0] && subSelect) {
+					subSpos._ChangeY(scrollControl[*sCurr][0] - scrollControl[*sCurr][1]);
+					subSpos._SetCursorPosition();
+					dsp._Display('>');
+				}
+				dsp._Display(items[*sCurr].at(j), subPos);
+				subPos._ChangeY(1);
+			}
+		}
+		pos._ChangeY(1);
+	}
+	parentForm->_SetSpecialContentHeight(5);
+
+	coord = inputField->parentFrame->_GetCoordinates();
+	Cursor iPos(coord.x1, coord.y1);
+	inputField->parentFrame->dsp->_WipeContent();
+
+	if(subSelect)
+		 inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(scrollControl[scrollControl[items.size()][0]][0]), iPos);
+	else inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(0), iPos);
+
+	if (_InputControl()) {
+		if (!subSelect) {
+			// main scroll control
+			sValue = &scrollControl[items.size()][0];
+			sFirst = &scrollControl[items.size()][1];
+			sLast = &scrollControl[items.size()][2];
+			sMin = &scrollControl[items.size()][3];
+			sMax = &scrollControl[items.size()][4];
+		}
+		else {
+			// sub scroll control
+			sValue = &scrollControl[*sCurr][0];
+			sFirst = &scrollControl[*sCurr][1];
+			sLast = &scrollControl[*sCurr][2];
+			sMin = &scrollControl[*sCurr][3];
+			sMax = &scrollControl[*sCurr][4];
+		}
+
+		if (inputField->control == ControlKey::pageUp) {
+			*sValue = (*sValue > *sMin) ? *sValue - 1 : *sMin;
+			*sFirst = (*sValue - *sFirst < 2) ? *sFirst - 1 : *sFirst;
+			*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+			*sLast = (*sLast - *sFirst > sHeight) ? *sLast - 1 : *sLast;
+			*sLast = (*sLast > *sMax) ? *sLast - 1 : *sLast;
+
+			if (!subSelect)
+				*sCurr = *sValue;
+
+			parentForm->_SetSpecialContentHeight(0);
+			dsp._WipeContent();
+			this->_Show();
+		}
+		else if (inputField->control == ControlKey::pageDown) {
+			*sValue = (*sValue < *sMax - 1) ? *sValue + 1 : *sMax - 1;
+			*sFirst = (*sValue - *sFirst > 2) ? *sFirst + 1 : *sFirst;
+			*sFirst = (*sMax - *sFirst < sHeight) ? *sFirst - 1 : *sFirst;
+			*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+			*sLast = (*sLast - *sFirst < sHeight) ? *sLast + 1 : *sLast;
+			*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+
+			if(!subSelect)
+				*sCurr = *sValue;
+
+			parentForm->_SetSpecialContentHeight(0);
+			dsp._WipeContent();
+			this->_Show();
+		}
+		else if (inputField->control == ControlKey::rightArrow) {
+			subSelect = true;
+			sHeight = 4;
+			parentForm->_SetSpecialContentHeight(0);
+			dsp._WipeContent();
+			this->_Show();
+		}
+		else if (inputField->control == ControlKey::leftArrow) {
+			subSelect = false;
+			sHeight = 5;
+			parentForm->_SetSpecialContentHeight(0);
+			dsp._WipeContent();
+			this->_Show();
+		}
+		else {			
+			inputField->selection = *sValue;
+			dsp._WipeContent();
+			parentForm->_ShowNextField(this);
+		}
+	}
+	else {
+		dsp._WipeContent();
+		_SwitchField(inputField->control);
+	}
+}
+
+template <typename element>
+FormField* ScrollDown_2D<element>::_Store() {
+	return new ScrollDown_2D<element>(*this);
+}
+
+template <typename element>
+std::vector<std::vector<element>>& ScrollDown_2D<element>::_Items() const {
 	return this->items;
 }

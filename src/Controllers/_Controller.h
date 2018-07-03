@@ -11,6 +11,22 @@ const enum class ModelName {
 	transaction
 };
 
+const enum class Field {
+	none,
+	username,
+	pwStatus,
+	password,
+	currency,
+	transactionType,
+	categoryType,
+	account,
+	category,
+	amount,
+	date,
+	description,
+	categoryName
+};
+
 const enum class Range {
 	none,
 	all

@@ -10,8 +10,8 @@ private:
 public:
 	TransactionController();
 	~TransactionController() = default;
+
+	static std::vector<const char*> transactionType;
 	
 	void _AddNewTransaction(utility::LinkedList<Data*>*data, int profileID);
 };
-
-extern std::vector<const char*> transactionType;

@@ -18,6 +18,7 @@ public:
 	char* _Name() const;
 	int _DisplayLength();
 
+	Category() = default;
 	Category(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Category(char* buffer);
 	Category(const Category& copy);

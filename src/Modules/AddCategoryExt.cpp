@@ -16,9 +16,9 @@ void AddCategoryExt::_StartModule() {
 	//	Create default frame layout
 	Frame* mainFrame = console->_GetMainFrame();
 	Layout layout(mainFrame);
-	Display* display = new Display; // -change
+	Display display; // -change
 
-	layout._DefaultFrameTemplate(*display);
+	layout._DefaultFrameTemplate(display);
 	Label title("Add Category ", ::headerSymbol, "left");
 	layout._Select("ExtensionTitle")->_AddElements(title);
 	Frame* content = layout._Select("ExtensionForm");
@@ -29,15 +29,17 @@ void AddCategoryExt::_StartModule() {
 	Form form;
 	form._SetParentFrame(content);
 	form._AddFields(
-		SelectionField("Type:", transactionType, Field::transactionType),
-		ScrollDown<Category>("Category:", categoryList, Field::category),
-		FormField("Amount:", InputType::text, Field::amount),
-		FormField("Currency:", InputType::text, Field::currency),
-		FormField("Account:", InputType::text, Field::account),		
-		FormField("Description:", InputType::text, Field::description),
+		SelectionField("Type:", categoryController.categoryType, Field::categoryType),
+		FormField("Name:", InputType::text, Field::categoryName),
 		ConfirmField("Save?:")
 	);
 	content->_AddElements(info, form);
+
+	//	Form events
+	//	
+	const std::function<void(Form&, FormField*)> newCategoryEvent = [](Form& form, FormField* currentField) {
+
+	};
 
 	layout._ShowElements();
 	
