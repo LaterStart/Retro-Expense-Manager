@@ -64,7 +64,7 @@ void AddTransaction::_StartModule() {
 		FormField("Description:", InputType::text, Field::description),
 		ConfirmField("Save?:")
 	);
-	form._SetYpos(++content->nextYpos);
+	form._SetYpos(2);
 
 	//	Form events
 	//	Transfer event - If user selects transfer as transaction type, change account field
@@ -101,18 +101,21 @@ void AddTransaction::_StartModule() {
 	const function<void(Form&, FormField*)> newCategoryEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(1) == false) {
 			ScrollDown_2D<Category>* cField = dynamic_cast<ScrollDown_2D<Category>*>(form._SelectField("Category:"));
-			vector<vector<Category>>& items = cField->_Items();
-			// insert new element at beggining of Category list 2D vector		
-			//items.insert(items.begin(), vector<Category>(1));
-			//items[0].insert(items[0].begin(), Category("Add new category->"));
+			// insert new element at beggining of Category list 2D vector
+			vector<Category> newItem{ Category("Add new category->") };
+			cField->_InsertItem(newItem);
 			form._SetEventStatus(1, true);
 		}
-		else if (form._EventStatus(1) == true) {
+		else {
 			// if user selects option to add new category
-			if (utility::_CompareChar(currentField->text, (char*)"Category:")) {
+			if (currentField != nullptr && utility::_CompareChar(currentField->text, (char*)"Category:")) {
 				if (currentField->inputField->selection == 0 && currentField->inputField->control == ControlKey::none) {
 					// open add new category extension form
 					form._SwitchToExtension("AddCategoryExt");
+				}
+				else if (currentField->inputField->selection == 0 && currentField->inputField->control == ControlKey::downArrow) {
+					currentField->_SetFilledStatus(false);
+					currentField->_Show();
 				}
 			}
 		}
@@ -120,10 +123,12 @@ void AddTransaction::_StartModule() {
 	form._AddEvent(newCategoryEvent);
 	form._LinkModuler(this->moduler);
 	content->_AddElements(form);
+	Module* extension = moduler->_SelectModule("AddCategoryExt");
+	extension->_LinkLayout(layout);	
 
 	do {
 		form._Show();
-		if (form._GetStatus()) {
+		if (form._Status()) {
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
 			transactionController._AddNewTransaction(data, profileController._ActiveProfile()->_ID());

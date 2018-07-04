@@ -17,11 +17,21 @@ std::vector<std::vector<Category>> CategoryController::categoryList =
   std::vector<Category>{Category("glavna 06"), Category("sub 06-01"), Category("sub 06-02"), Category("sub 06-03"), Category("sub 06-04"), Category("sub 06-05"), Category("sub 06-06")},
 };
 
+//	main category list 1D vector
+std::vector<Category> CategoryController::mainCategoryList;
+
 //	static category model header
 ModelHeader CategoryController::header(ModelName::transaction);
 
 //	category controller constructor
 CategoryController::CategoryController() {}
+
+//	updates main category list using category list vector content
+void CategoryController::_UpdateMainCategoryList() {
+	mainCategoryList.clear();
+	for (int i = 1; i < categoryList.size(); i++)
+		mainCategoryList.push_back(categoryList[i].at(0));
+}
 
 //	Add new transaction
 void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int profileID) {

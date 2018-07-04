@@ -15,7 +15,7 @@ void UserInput::_Initialize() {
 		initial = node;
 	}
 
-	if (parentFrame != nullptr && type!= InputType::scrollDown) {
+	if (parentFrame != nullptr && type!= InputType::scrollDown && type!= InputType::select) {
 		Frame::Coordinates coord = parentFrame->_GetCoordinates();
 		if (dsp._IsEmpty() && length > 0) {
 			pos._SetXY(coord.x1,coord.y1);

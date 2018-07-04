@@ -292,6 +292,7 @@ private:
 	bool paused = false;
 	FormField* lastField = nullptr;
 	int specialContentHeight = 0;
+	unsigned short initialYpos = 0;
 	
 	void _AddField(FormField& field);
 	void _InsertField(std::tuple<FormField&, int>);		
@@ -338,7 +339,7 @@ public:
 	bool _Exit();
 	void _SwitchToMenu(FormField* currentField);
 	void _SwitchToExtension(const char* moduleName);
-	bool _GetStatus() const;
+	bool _Status() const;
 	bool _IsPaused()const ;
 	void _Show();
 	void _Hide() override;
@@ -350,6 +351,7 @@ public:
 	void _AddEvent(std::function<void(Form&, FormField*)> const& lambda);
 	void _RunEvents(FormField* currentField);
 	void _LinkModuler(ModuleManagement* moduler);
+	void _SetYpos(unsigned short y) override;
 	utility::LinkedList<Data*>* _GetData();
 	Frame::Coordinates _GetSpecialContentCoord();
 
@@ -373,7 +375,7 @@ inline void Form::_SetStatus(bool status) {
 	this->status = status;
 }
 
-inline bool Form::_GetStatus() const {
+inline bool Form::_Status() const {
 	return this->status;
 }
 
@@ -405,6 +407,10 @@ inline void Form::_LinkModuler(ModuleManagement* moduler) {
 	this->moduler = moduler;
 }
 
+inline void Form::_SetYpos(unsigned short y) {
+	this->initialYpos = y;
+}
+
 class InputField : public FormField{
 private:
 	bool initialized = false;
@@ -426,6 +432,13 @@ private:
 
 public:
 	ScrollDown(const char* text, std::vector<element>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items){		
+		sLast = (sLast > sMax) ? sMax : sLast;
+	}
+	ScrollDown(const ScrollDown& copy) : FormField(copy.text, copy.type, copy.dataType), items(copy.items), sMax(copy.items.size()) {
+		int sValue = copy.sValue;
+		int sFirst = copy.sFirst;
+		int sLast = copy.sLast;
+		int sMin = copy.sMin;
 		sLast = (sLast > sMax) ? sMax : sLast;
 	}
 
@@ -492,13 +505,16 @@ void ScrollDown<element>::_Show() {
 			this->_Show();
 		}
 		else {
+			if (inputField->control != ControlKey::esc)
+				dsp._WipeContent();
 			inputField->selection = sValue;
-			dsp._WipeContent();
+			this->filled = true;
 			parentForm->_ShowNextField(this);
 		}
 	}
 	else {
-		dsp._WipeContent();
+		if (inputField->control != ControlKey::esc)
+			dsp._WipeContent();
 		_SwitchField(inputField->control);
 	}
 }
@@ -560,6 +576,7 @@ public:
 	void _Show() override;
 	FormField* _Store() override;
 	std::vector<std::vector<element>>& _Items() const;
+	void _InsertItem(std::vector<element>& newItem, int index = 0);
 };
 
 template <typename element>
@@ -590,19 +607,25 @@ void ScrollDown_2D<element>::_Show() {
 			Cursor subSpos(subPos);
 			subPos._ChangeX(3);		
 			subSpos._ChangeX(2);
-			for (int j = scrollControl[*sCurr][1]; j < scrollControl[*sCurr][2]; j++) {
-				if (j == scrollControl[*sCurr][0] && subSelect) {
-					subSpos._ChangeY(scrollControl[*sCurr][0] - scrollControl[*sCurr][1]);
-					subSpos._SetCursorPosition();
-					dsp._Display('>');
+			if (items[i].size() > 1) {
+				for (int j = scrollControl[*sCurr][1]; j < scrollControl[*sCurr][2]; j++) {
+					if (j == scrollControl[*sCurr][0] && subSelect) {
+						subSpos._ChangeY(scrollControl[*sCurr][0] - scrollControl[*sCurr][1]);
+						subSpos._SetCursorPosition();
+						dsp._Display('>');
+					}
+					dsp._Display(items[*sCurr].at(j), subPos);
+					subPos._ChangeY(1);
 				}
-				dsp._Display(items[*sCurr].at(j), subPos);
-				subPos._ChangeY(1);
 			}
 		}
 		pos._ChangeY(1);
 	}
-	parentForm->_SetSpecialContentHeight(5);
+	int mainHeight = (scrollControl[items.size()][4] > 5) ? 5 : scrollControl[items.size()][4];
+	int subHeight = (scrollControl[*sCurr][4] > 4) ? 4 : scrollControl[*sCurr][4];
+	subHeight =  (subHeight - mainHeight) + (scrollControl[items.size()][0] - scrollControl[items.size()][1]);	
+	subHeight = (subHeight < 0) ? 0 : subHeight;
+	parentForm->_SetSpecialContentHeight(mainHeight+subHeight);
 
 	coord = inputField->parentFrame->_GetCoordinates();
 	Cursor iPos(coord.x1, coord.y1);
@@ -673,14 +696,21 @@ void ScrollDown_2D<element>::_Show() {
 			dsp._WipeContent();
 			this->_Show();
 		}
-		else {			
+		else {	
+			if (inputField->control != ControlKey::esc) {
+				dsp._WipeContent();
+				parentForm->_SetSpecialContentHeight(0);
+			}
 			inputField->selection = *sValue;
-			dsp._WipeContent();
+			this->filled = true;
 			parentForm->_ShowNextField(this);
 		}
 	}
 	else {
-		dsp._WipeContent();
+		if (inputField->control != ControlKey::esc) {
+			dsp._WipeContent();
+			parentForm->_SetSpecialContentHeight(0);
+		}
 		_SwitchField(inputField->control);
 	}
 }
@@ -693,4 +723,27 @@ FormField* ScrollDown_2D<element>::_Store() {
 template <typename element>
 std::vector<std::vector<element>>& ScrollDown_2D<element>::_Items() const {
 	return this->items;
+}
+
+template <typename element>
+void ScrollDown_2D<element>::_InsertItem(std::vector<element>& newItem, int index) {
+	items.insert(items.begin() + index, newItem);
+	int** tempControl = new int*[items.size() + 1];
+	tempControl[index] = new int[5];
+
+	tempControl[index][0] = 1;
+	tempControl[index][1] = 1;
+	tempControl[index][2] = 5;
+	tempControl[index][3] = 1;
+	tempControl[index][4] = items[index].size();
+	
+	int j = 0;
+	for (int i = 0; i <= items.size(); i++) {
+		if (i != index) {
+			tempControl[i] = scrollControl[j];
+			j++;
+		}
+	}
+	delete[]scrollControl;
+	scrollControl = tempControl;
 }

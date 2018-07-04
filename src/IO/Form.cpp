@@ -65,7 +65,7 @@ void OptionField::_ShiftInputFrame(int num) {
 }
 
 void Form::_InitializeFields() {
-	Ypos = parentFrame->nextYpos;
+	Ypos = initialYpos;
 	for (int i = 0; i < fieldNum; i++) {
 		int memPos = fields[i]->_Ypos();
 		fields[i]->_SetYpos(Ypos++);
@@ -271,6 +271,10 @@ void SelectionField::_Show() {
 		pos._ChangeY(1);
 	}
 	parentForm->_SetSpecialContentHeight(options.size());
+	coord = inputField->parentFrame->_GetCoordinates();
+	if(inputField->selection > 0)
+		Cursor iPos(coord.x1 + utility::_CharLength(options[inputField->selection -1]), coord.y1);	
+	else Cursor iPos(coord.x1, coord.y1);
 
 	if (_InputControl()) {
 		if (inputField->selection > 0 && inputField->selection <= (int)options.size()) {
@@ -285,13 +289,13 @@ void SelectionField::_Show() {
 			parentForm->_ShowNextField(this);
 		}
 		else {
-			if (inputField->control >= ControlKey::none)
+			if (inputField->control != ControlKey::esc)
 				dsp._WipeContent();
 			_SwitchField(inputField->control);
 		}
 	}
 	else {
-		if(inputField->control >= ControlKey::none)
+		if(inputField->control != ControlKey::esc)
 			dsp._WipeContent();
 		_SwitchField(inputField->control);
 	}
@@ -535,7 +539,7 @@ Frame::Coordinates Form::_GetSpecialContentCoord() {
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
 	coord.x1 += padding;
 	int difference = (hiddenFields > activeFields) ? activeFields + 1 : hiddenFields;
-	coord.y1 += activeFields - difference + 1 + parentFrame->nextYpos;
+	coord.y1 += activeFields - difference + 1 + initialYpos;
 	coord.y1 += (specialContentHeight > 0) ? specialContentHeight+1 : specialContentHeight;
 
 	return coord;
@@ -546,10 +550,12 @@ Form::~Form() {
 		delete fields[i];
 }
 
-FormField::~FormField() {
-	delete inputField;
-	if(parentFrame!=nullptr)
-		delete parentFrame->dsp;
+FormField::~FormField() {	
+	if (inputField != nullptr) {
+		if (inputField->parentFrame != nullptr)
+			delete inputField->parentFrame->dsp;
+		delete inputField;
+	}
 }
 
 OptionField::~OptionField() {
@@ -659,6 +665,7 @@ void Form::_RemoveFields(int index, int fieldNum) {
 		delete fields[index];
 		utility::_RemoveElement(fields, index, this->fieldNum);
 	}
+	
 }
 
 void Form::_RunEvents(FormField* currentField) {
@@ -667,5 +674,5 @@ void Form::_RunEvents(FormField* currentField) {
 }
 
 void Form::_SwitchToExtension(const char* moduleName) {
-	this->moduler->_OpenModule(moduleName);
+	this->moduler->_OpenModule(moduleName, moduler->_CurrentModule());
 }

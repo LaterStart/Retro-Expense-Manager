@@ -6,6 +6,7 @@
 #include "../Controllers/TransactionController.h"
 #include "../Controllers/CategoryController.h"
 #include "../Controllers/ModuleController.h"
+#include "../IO/OComponent.h"
 
 class Console; class ProfileController; class TransactionController; class CategoryController;
 //	abstract class - main definition for each new module
@@ -18,9 +19,10 @@ protected:
 	virtual void _StartModule() = 0;
 	virtual Module& _GetInstance() = 0;
 
-	ModuleManagement* moduler;
-	Console* console;
-	Module* previousModule;	
+	ModuleManagement* moduler = nullptr;
+	Console* console = nullptr;
+	Module* previousModule = nullptr;
+	Layout* layout = nullptr;
 
 	static ProfileController profileController;
 	static TransactionController transactionController;
@@ -31,7 +33,13 @@ public:
 	operator const char*() {
 		return name;
 	}
+
+	void _LinkLayout(Layout& layout);
 };
+
+inline void Module::_LinkLayout(Layout& layout) {
+	this->layout = &layout;
+}
 
 //	container class - enables storage of active modules singleton references
 class ModuleList {
@@ -56,12 +64,15 @@ private:
 
 	const char* nextModule;
 	Module* previousModule;
+	Module* currentModule;
 
 public:
 	void _OpenModule(const char* name);
+	void _OpenModule(const char* name, Module* mainModule);
 	void _OpenNextModule();
 	void _SetNextModule(const char* name, Module* previousModule = nullptr);
 	void _SetNextModule(Module* nextModule, Module* previousModule = nullptr);
+	Module* _SelectModule(const char* name);
 
 	ModuleManagement(Console* myConsole);
 	~ModuleManagement();
@@ -74,6 +85,7 @@ public:
 		moduleList[moduleNum - 1].module = &newModule;
 		moduleList[moduleNum - 1].name = name;
 	}
+	Module* _CurrentModule() const;
 };
 
 inline void ModuleManagement::_OpenNextModule() {	
@@ -88,6 +100,10 @@ inline void ModuleManagement::_SetNextModule(const char* name, Module* previousM
 inline void ModuleManagement::_SetNextModule(Module* nextModule, Module* previousModule) {
 	this->nextModule = nextModule->name;
 	this->previousModule = previousModule;
+}
+
+inline Module* ModuleManagement::_CurrentModule() const {
+	return this->currentModule;
 }
 
 //	compile time class used to add each module into register

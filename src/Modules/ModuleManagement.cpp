@@ -67,6 +67,28 @@ void ModuleManagement::_OpenModule(const char* name) {
 			moduleList[i].module->console = this->console;
 			moduleList[i].module->previousModule = this->previousModule;
 			moduleList[i].module->name = name;
+			this->currentModule = moduleList[i].module;
 			moduleList[i].module->_StartModule();
 		}
+}
+
+//	Open module as extension module
+void ModuleManagement::_OpenModule(const char* name, Module* mainModule) {
+	for (int i = 0; i < moduleNum; i++)
+		if (moduleList[i].name == name) {
+			moduleList[i].module->moduler = this;
+			moduleList[i].module->console = this->console;
+			moduleList[i].module->previousModule = mainModule;
+			moduleList[i].module->name = name;
+			this->currentModule = moduleList[i].module;
+			moduleList[i].module->_StartModule();
+			this->currentModule = mainModule;
+		}
+}
+
+//	Returns pointer to selected module
+Module* ModuleManagement::_SelectModule(const char* name) {
+	for (int i = 0; i < moduleNum; i++)
+		if (moduleList[i].name == name)
+			return moduleList[i].module;
 }

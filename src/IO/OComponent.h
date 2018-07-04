@@ -4,6 +4,17 @@
 
 class IComponent : public IOComponent {}; 
 
+const enum class ElementType {
+	none,
+	frame,
+	container,
+	separator,
+	label,
+	menu,
+	menuItem,
+	textBar
+};
+
 class OComponent : public IOComponent {	
 private:
 	void _SetInitialCoordinates();
@@ -32,6 +43,8 @@ public:
 			y2 = equals.y2;
 		}
 	};
+
+	ElementType element_type = ElementType::none;
 
 protected:
 	Coordinates coord;
@@ -137,6 +150,7 @@ public:
 		Container() = default;
 		Container(const Container& copy);
 		~Container();
+		ElementType element_type = ElementType::container;
 	};
 
 	short nextYpos = 0;
@@ -163,6 +177,7 @@ public:
 	void _AddTopPadding(unsigned short padding);
 	void _AddBottomPadding(unsigned short padding);
 	void _ShowElements();
+	std::vector<FrameElement*> _SelectElements(ElementType type);
 
 	//	Add more FrameElements using variadic template
 	template <typename T>
@@ -218,13 +233,14 @@ public:
 	
 	virtual void _Show();
 	virtual void _Hide();
-	void _SetAlign(const char* align);
-	void _SetYpos(unsigned short y);
+	virtual void _SetYpos(unsigned short y);
+	void _SetAlign(const char* align);	
 	void _SetPadding(unsigned short padding);
 	bool _PaddingSet() const;
 	bool _YposSet() const;
 	unsigned short _Padding() const;
 	unsigned short _Ypos() const;
+	Frame* _ParentFrame() const;
 };
 
 inline void FrameElement::_Show() {}
@@ -270,6 +286,10 @@ inline bool FrameElement::_PaddingSet() const {
 	return this->paddingSet;
 }
 
+inline Frame* FrameElement::_ParentFrame() const {
+	return this->parentFrame;
+}
+
 class Separator : public FrameElement {
 private:
 	friend void Display::_Display(Separator& separator);
@@ -296,11 +316,26 @@ public:
 	unsigned char symbol = 0;
 	unsigned short cut = 0;
 
-	Label() = default;
-	Label(const Label& copy) : FrameElement(copy), text(copy.text), length(copy.length) {}
-	Label(const char* text) : text((char*)text) { length = utility::_CharLength(text); }
-	Label(const char* text, const char* align) : text((char*)text) { length = utility::_CharLength(text); this->align = align; }
-	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {length = utility::_CharLength(text) + 1; this->align = align;  }
+	Label() {
+		this->element_type = ElementType::label;
+	}
+	Label(const Label& copy) : FrameElement(copy), text(copy.text), length(copy.length) { 
+		this->element_type = ElementType::label;
+	}
+	Label(const char* text) : text((char*)text) { 
+		length = utility::_CharLength(text);
+		this->element_type = ElementType::label;
+	}
+	Label(const char* text, const char* align) : text((char*)text) { 
+		length = utility::_CharLength(text);
+		this->align = align;
+		this->element_type = ElementType::label;
+	}
+	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {
+		length = utility::_CharLength(text) + 1;
+		this->align = align;
+		this->element_type = ElementType::label;
+	}
 
 	void _SetText(const char* text);
 
@@ -318,7 +353,7 @@ inline void Label::_SetText(const char* text) {
 	this->length = utility::_CharLength(text);
 }
 
-class Layout {	
+class Layout : public FrameElement {	
 private:
 	Frame * parentFrame;
 	Frame * frame = nullptr;
@@ -330,6 +365,7 @@ public:
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
 	void _DefaultFrameTemplate(Display& dsp);
 	void _ShowElements();
+	std::vector<FrameElement*> _SelectElements(ElementType type);
 
 	~Layout();
 };
@@ -360,8 +396,12 @@ public:
 	void _Show() override;
 	void _Hide() override;
 
-	Menu() = default;
-	Menu(const Menu& copy){}
+	Menu() {
+		this->element_type = ElementType::menu;
+	};
+	Menu(const Menu& copy){
+		this->element_type = ElementType::menu;
+	}
 	~Menu();
 };
 
@@ -375,7 +415,9 @@ private:
 
 public:
 	char* orderNum = nullptr;
-	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName){}
+	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName){
+		this->element_type = ElementType::menuItem;
+	}
 	MenuItem(const char* text, Module* previousModule);
 	void _SetOrderNumber(char* orderNum);
 	void _SetSpecialPrefix(const char* prefix);
@@ -430,6 +472,7 @@ public:
 	template<typename ... TT>
 	TextBar(TT& ... items) {	
 		_AddItems(items ...);
+		this->element_type = ElementType::textBar;
 	}
 
 	void _SetSpacing(int spacing);

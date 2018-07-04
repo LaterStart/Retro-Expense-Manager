@@ -39,15 +39,21 @@ Frame::Container::~Container() {
 
 //	Main frame constructor
 Frame::Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
-	OComponent(max_x, min_x, max_y, min_y), parentFrame(nullptr){}
+	OComponent(max_x, min_x, max_y, min_y), parentFrame(nullptr){
+	this->element_type = ElementType::frame;
+}
 
 //	Frame copy constructor
 Frame::Frame(Frame& copy) :
-	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname){}
+	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname){
+	this->element_type = ElementType::frame;
+}
 
 //	Frame constructor Used within split method setting new values using splitters
 Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
-	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame) {}
+	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame) {
+	this->element_type = ElementType::frame;
+}
 
 //	Frame destructor
 Frame::~Frame() {
@@ -134,6 +140,7 @@ void Frame::_AddElement(FrameElement& newElement) {
 
 //	Show all frame elements
 void Frame::_ShowElements() {
+	nextYpos = 0;
 	for (int i = 0; i < elNum; i++) {
 		if(elements[i]->_YposSet() == false)
 			elements[i]->_SetYpos(nextYpos++);
@@ -259,6 +266,7 @@ void Label::_Hide() {
 
 MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
 	link = *previousModule;
+	this->element_type = ElementType::menuItem;
 }
 
 //	Display menu item
@@ -275,11 +283,13 @@ void MenuItem::_Show() {
 Separator::Separator(Layout& layout, short length, bool direction, unsigned short start_X, unsigned short start_Y) :
 	FrameElement(layout._Select()), length(length), direction(direction){
 	_SetValue(*layout._Select(), start_X, start_Y);
+	this->element_type = ElementType::separator;
 }
 
 Separator::Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y) : 
 	FrameElement(&parentFrame) , length(length), direction(direction)  {
 	_SetValue(parentFrame, start_X, start_Y);
+	this->element_type = ElementType::separator;
 }
 
 void Separator::_SetValue(Frame& parentFrame, unsigned short start_X, unsigned short start_Y) {
@@ -321,6 +331,7 @@ Separator::Separator(const Separator& copy) : FrameElement(copy.parentFrame) ,le
 	y1 = copy.y1;
 	y2 = copy.y2;
 	this->parentFrame = copy.parentFrame;
+	this->element_type = ElementType::separator;
 }
 
 void Layout::_DefaultFrameTemplate(Display& dsp) {
@@ -444,4 +455,24 @@ void TextBar::_Show() {
 
 TextBar::~TextBar() {
 	delete[]items;
+}
+
+std::vector<FrameElement*> Frame::_SelectElements(ElementType type) {
+	std::vector<FrameElement*> container;
+	for (int i = 0; i < elNum; i++) {
+		if (elements[i]->element_type == type)
+			container.push_back(elements[i]);
+	}
+	return container;
+}
+
+std::vector<FrameElement*> Layout::_SelectElements(ElementType type) {
+	std::vector<FrameElement*> container;
+	Frame::Container sub = frame->_GetSubFrames();
+	for (int i = 0; i < sub.frameNum; i++) {
+		std::vector<FrameElement*> subContainer = sub.frames[i]->_SelectElements(type);
+		for (int j = 0; j < subContainer.size(); j++)
+			container.push_back(subContainer.at(j));
+	}
+	return container;	
 }

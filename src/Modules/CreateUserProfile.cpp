@@ -68,7 +68,7 @@ void CreateUserProfile::_StartModule() {
 
 	do {		
 		form._Show();
-		if (form._GetStatus()) {
+		if (form._Status()) {
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
 			profileController._AddNewProfile(data);
