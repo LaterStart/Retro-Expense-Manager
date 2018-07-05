@@ -43,9 +43,9 @@ void AddCategoryExt::_StartModule() {
 		if (form._EventStatus(0) == false) {
 			FormField* cField = form._SelectField("Type:");
 			if (cField->inputField->selection == 2) {			
-				categoryController._UpdateMainCategoryList();
+				vector<Category>* mainCategories = new vector<Category>(categoryController._GetMainCategoryList());
 				form._InsertFields(tuple<ScrollDown<Category>&, int>{ 
-					ScrollDown<Category>("Main Category:", categoryController.mainCategoryList, Field::parentCategory), 1 
+					ScrollDown<Category>("Main Category:", *mainCategories, Field::parentCategory), 1 
 				});
 				form._InitializeFields();
 				form._SetEventStatus(0, true);
@@ -55,6 +55,8 @@ void AddCategoryExt::_StartModule() {
 			// If user changes his mind and wants to add new main category
 			FormField* cField = form._SelectField("Type:");
 			if (cField->inputField->selection == 1) {
+				ScrollDown<Category>* scroll = dynamic_cast<ScrollDown<Category>*>(cField);
+				scroll->_Items().~vector();
 				form._RemoveFields(1, 1);
 				form._InitializeFields();
 				form._SetEventStatus(0, false);

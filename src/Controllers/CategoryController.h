@@ -11,9 +11,9 @@ public:
 	~CategoryController() = default;
 
 	static std::vector<const char*> categoryType;
-	static std::vector<std::vector<Category>> categoryList;
-	static std::vector<Category> mainCategoryList;
+	std::vector<std::vector<Category>>* categoryList;
 	
 	void _AddNewCategory(utility::LinkedList<Data*>*data, int profileID);
-	void _UpdateMainCategoryList();
+	void _LoadCategoryList();
+	std::vector<Category> _GetMainCategoryList();
 };

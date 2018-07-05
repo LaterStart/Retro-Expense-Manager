@@ -7,49 +7,65 @@ using namespace std;
 //	category types
 vector<const char*> CategoryController::categoryType{ "Main Category", "Sub Category" };
 
-//	category list 2D vector
-std::vector<std::vector<Category>> CategoryController::categoryList =
-{ std::vector<Category>{Category("glavna 01"), Category("sub 01-01"), Category("sub 01-02"), Category("sub 01-03"), Category("sub 01-04"), Category("sub 01-05"), Category("sub 01-06")},
-  std::vector<Category>{Category("glavna 02"), Category("sub 02-01"), Category("sub 02-02"), Category("sub 02-03"), Category("sub 02-04"), Category("sub 02-05"), Category("sub 02-06")},
-  std::vector<Category>{Category("glavna 03"), Category("sub 03-01"), Category("sub 03-02"), Category("sub 03-03"), Category("sub 03-04"), Category("sub 03-05"), Category("sub 03-06")},
-  std::vector<Category>{Category("glavna 04"), Category("sub 04-01"), Category("sub 04-02"), Category("sub 04-03"), Category("sub 04-04"), Category("sub 04-05"), Category("sub 04-06")},
-  std::vector<Category>{Category("glavna 05"), Category("sub 05-01"), Category("sub 05-02"), Category("sub 05-03"), Category("sub 05-04"), Category("sub 05-05"), Category("sub 05-06")},
-  std::vector<Category>{Category("glavna 06"), Category("sub 06-01"), Category("sub 06-02"), Category("sub 06-03"), Category("sub 06-04"), Category("sub 06-05"), Category("sub 06-06")},
-};
-
-//	main category list 1D vector
-std::vector<Category> CategoryController::mainCategoryList;
-
 //	static category model header
 ModelHeader CategoryController::header(ModelName::category);
 
-//	category controller constructor
-CategoryController::CategoryController() {}
-
-//	updates main category list using category list vector content
-void CategoryController::_UpdateMainCategoryList() {
-	mainCategoryList.clear();
-	for (size_t i = 1; i < categoryList.size(); i++)
-		mainCategoryList.push_back(categoryList[i].at(0));
+//	category controller constructor - loads categories from database
+CategoryController::CategoryController() {
+	this->model = ModelName::profile;
+	if (this->header._Loaded() == false) {
+		_LoadHeader(this->header);
+	}
+	this->_LoadCategoryList();
 }
 
-//	Add new transaction
+//	Add new category
 void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int profileID) {
 	Category newCategory(data, header._GiveID(), profileID);
 	fstream* stream = _OpenStream();
+
+	// check if model header exists
+	if(this->header._Loaded() == false)
+		this->_WriteNewModelHeader(stream, this->header);
 
 	// write model		
 	char* buffer = newCategory._Serialize();
 	_WriteModel(stream, this->header, buffer);	
 
-	// update category list vector
-	if (newCategory._Type() == CategoryType::mainCategory) {
-		std::vector<Category> newMain{ newCategory };
-		categoryList.push_back(newMain);	
-	}
+	// update 2D category list vector
+	if (newCategory._Type() == CategoryType::mainCategory)
+		categoryList->push_back(std::vector<Category>{newCategory});
 	else if (newCategory._Type() == CategoryType::subCategory)
-		categoryList.at(newCategory._ParentID() + 1).push_back(newCategory);
+		categoryList->at(newCategory._ParentID()).push_back(newCategory);
 	
 	stream->close();
 	delete stream;
+}
+
+//	Load categories from database into 2D category list vector
+void CategoryController::_LoadCategoryList() {
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		categoryList = new std::vector<std::vector<Category>>;
+		char** buffer = _GetModels(stream, this->header, Query(Range::all));
+		for (unsigned int i = 0; i < header._NodeCount(); i++) {
+			Category category(buffer[i]);
+			if (category._Type() == CategoryType::mainCategory)
+				categoryList->insert(categoryList->begin() + category._ID(), std::vector<Category>{category});
+			else if (category._Type() == CategoryType::subCategory)
+				categoryList->at(category._ParentID()).push_back(category);
+			delete[]buffer[i];			
+		}
+		delete[]buffer;
+		stream->close();
+	}
+	delete stream;
+}
+
+//	Returns only main categories from 2D vector as 1D vector
+std::vector<Category> CategoryController::_GetMainCategoryList(){
+	std::vector<Category> mainCategories;
+	for (size_t i = 0; i < categoryList->size(); i++)
+		mainCategories.push_back(categoryList->at(i).at(0));
+	return mainCategories;
 }

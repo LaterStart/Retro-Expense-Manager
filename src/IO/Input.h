@@ -737,12 +737,14 @@ void ScrollDown_2D<element>::_Show() {
 			this->_Show();
 		}
 		else if (inputField->control == ControlKey::pageDown) {
-			*sValue = (*sValue < *sMax - 1) ? *sValue + 1 : *sMax - 1;
-			*sFirst = (*sValue - *sFirst > 2) ? *sFirst + 1 : *sFirst;
-			*sFirst = (*sMax - *sFirst < sHeight) ? *sFirst - 1 : *sFirst;
-			*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
-			*sLast = (*sLast - *sFirst < sHeight) ? *sLast + 1 : *sLast;
-			*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+			if (*sMax > 0) {
+				*sValue = (*sValue < *sMax - 1) ? *sValue + 1 : *sMax - 1;
+				*sFirst = (*sValue - *sFirst > 2) ? *sFirst + 1 : *sFirst;
+				*sFirst = (*sMax - *sFirst < sHeight) ? *sFirst - 1 : *sFirst;
+				*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+				*sLast = (*sLast - *sFirst < sHeight) ? *sLast + 1 : *sLast;
+				*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+			}
 
 			if(!subSelect)
 				*sCurr = *sValue;
@@ -752,8 +754,10 @@ void ScrollDown_2D<element>::_Show() {
 			this->_Show();
 		}
 		else if (inputField->control == ControlKey::rightArrow) {
-			subSelect = true;
-			sHeight = 4;
+			if (scrollControl[*sCurr][4] > 1) {
+				subSelect = true;
+				sHeight = 4;
+			}
 			parentForm->_SetSpecialContentHeight(0);
 			dsp._WipeContent();
 			this->_Show();

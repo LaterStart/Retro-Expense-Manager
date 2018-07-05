@@ -57,7 +57,7 @@ void AddTransaction::_StartModule() {
 	form._SetParentFrame(content);
 	form._AddFields(
 		SelectionField("Type:", transactionController.transactionType, Field::transactionType),
-		ScrollDown_2D<Category>("Category:", categoryController.categoryList, Field::category),
+		ScrollDown_2D<Category>("Category:", *categoryController.categoryList, Field::category),
 		FormField("Amount:", InputType::text, Field::amount),
 		FormField("Currency:", InputType::text, Field::currency),
 		FormField("Account:", InputType::text, Field::account),		

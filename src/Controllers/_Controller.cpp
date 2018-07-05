@@ -140,7 +140,7 @@ void Controller::_LoadHeader(ModelHeader& header) {
 				else break;
 			} while (readPos < clusterSize);			
 			pageCount++;
-		} while (!stream->eof());
+		} while (!stream->eof() && pageCount >= 0);
 		stream->close();
 		delete[]page;
 	}
