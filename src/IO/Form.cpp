@@ -46,7 +46,7 @@ void OptionField::_CreateInputFrame() {
 		optionalFields[i]->_SetYpos(this->Ypos+i+1);		
 		optionalFields[i]->_CreateInputFrame();	
 		optionalFields[i]->_SetParentForm(parentForm);
-		parentForm->_SetYpos(parentForm->_Ypos() + 1);
+		parentForm->_ChangeNextYpos(1);
 	}
 }
 
@@ -88,6 +88,10 @@ bool FormField::_InputControl() {
 		parentForm->_UpdateActiveFields(1);
 		activated = true;
 	}
+	else if (hidden) {
+		hidden = false;
+		parentForm->_UpdateHiddenFields(-1);
+	}
 	inputField->_ReadUserInput();
 
 	if (inputField->control == ControlKey::upArrow)
@@ -115,7 +119,7 @@ bool FormField::_InputControl() {
 }
 
 void FormField::_SwitchField(ControlKey control) {
-	if(control >= ControlKey::none)
+	if(control != ControlKey::esc && control != ControlKey::F1)
 		parentForm->_SetSpecialContentHeight(0);
 	switch (control) {
 	case ControlKey::esc:
@@ -199,6 +203,7 @@ void OptionField::_Show() {
 void PasswordField::_Show() {
 	Label::_Show();
 	bool control = true;
+
 	if (_InputControl()) {
 		if (inputField->length < 5) {
 			parentForm->_DisplayMessage("Password must be at least 5 characters long.");
@@ -260,8 +265,12 @@ void SelectionField::_Show() {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
 	}	
-	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
-	Display dsp;
+	else if (hidden) {
+		hidden = false;
+		parentForm->_UpdateHiddenFields(-1);
+	}
+
+	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();	
 	Cursor pos(coord.x1, coord.y1);
 	char num[] = { "[ ] " };
 	for (unsigned int i = 0; i < options.size(); i++) {
@@ -295,8 +304,9 @@ void SelectionField::_Show() {
 		}
 	}
 	else {
-		if(inputField->control != ControlKey::esc)
+		if (inputField->control != ControlKey::esc && inputField->control != ControlKey::F1)
 			dsp._WipeContent();
+
 		_SwitchField(inputField->control);
 	}
 }
@@ -327,11 +337,6 @@ void ConfirmField::_Show() {
 void FormField::_Clear() {
 	Label::_Hide();
 	this->inputField->_ClearInput();	
-}
-
-void FormField::_Hide() {
-	Label::_Hide();
-	this->inputField->_HideInput();
 }
 
 void Form::_DisplayMessage(const char* message) {
@@ -368,8 +373,10 @@ void Form::_DisableOptional(int optFieldNum, FormField* currentField) {
 }
 
 void Form::_Show() {
+	contentSpace = 1;
 	if (paused) {
 		paused = false;
+		_SetSpecialContentHeight(0);
 		lastField->_Show();
 	}
 	else {
@@ -432,6 +439,8 @@ FormField* OptionField::_GetLastSubField() {
 void Form::_ShowNextField(FormField* currentField) {
 	if (eventEnabled)
 		_RunEvents(currentField);
+	if (exit)
+		return;
 
 	if (currentField == nullptr) 
 		fields[0]->_Show();
@@ -490,8 +499,10 @@ void Form::_Exit(FormField* currentField) {
 	_DisplayMessage("Are you sure you want to cancel ? Y/N : ");
 	UserInput confirm(InputType::YN);
 	confirm._ReadUserInput();
-	if(confirm.check == true)
+	if (confirm.check == true) {
+		exit = true;
 		status = false;
+	}
 	else {
 		_ClearMessage();
 		confirm._ClearInput();
@@ -537,10 +548,9 @@ utility::LinkedList<Data*>* Form::_GetData() {
 
 Frame::Coordinates Form::_GetSpecialContentCoord() {
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
-	coord.x1 += padding;
-	int difference = (hiddenFields > activeFields) ? activeFields + 1 : hiddenFields;
-	coord.y1 += activeFields - difference + 1 + initialYpos;
-	coord.y1 += (specialContentHeight > 0) ? specialContentHeight+1 : specialContentHeight;
+	specialContentHeight = (specialContentHeight > 0) ? specialContentHeight + 1 : 0;
+	coord.x1 += padding;	
+	coord.y1 += initialYpos + activeFields - hiddenFields + contentSpace + specialContentHeight;
 
 	return coord;
 }
@@ -572,13 +582,16 @@ FormField::FormField(const FormField& copy) : Label(copy.text) {
 	this->dataField = copy.dataField;
 	this->inputField = copy.inputField;
 	this->dataType =copy.dataType;
+	this->OComponent::componentType = copy.OComponent::componentType;
 }
 
 FormField* FormField::_Store() {
 	return new FormField(*this);
 }
 
-UsernameField::UsernameField(const UsernameField& copy) : FormField(copy), controller(copy.controller){}
+UsernameField::UsernameField(const UsernameField& copy) : FormField(copy), controller(copy.controller){
+	this->OComponent::componentType = ComponentType::usernameField;
+}
 
 FormField* UsernameField::_Store() {
 	return new UsernameField(*this);
@@ -588,6 +601,7 @@ OptionField::OptionField(const OptionField& copy) : FormField(copy) {
 	this->optionalFields = copy.optionalFields;
 	this->optFieldNum = copy.optFieldNum;
 	this->enabled = copy.enabled;
+	this->OComponent::componentType = ComponentType::optionField;
 }
 
 FormField* OptionField::_Store() {
@@ -597,6 +611,7 @@ FormField* OptionField::_Store() {
 PasswordField::PasswordField(const PasswordField& copy) : FormField(copy) {
 	this->master = copy.master;
 	this->keyField = copy.keyField;
+	this->OComponent::componentType = ComponentType::passwordField;
 }
 
 FormField* PasswordField::_Store() {
@@ -607,26 +622,33 @@ FormField* SelectionField::_Store() {
 	return new SelectionField(*this);
 }
 
-ConfirmField::ConfirmField(const ConfirmField& copy) : FormField(copy) {}
+ConfirmField::ConfirmField(const ConfirmField& copy) : FormField(copy) {
+	this->OComponent::componentType = ComponentType::confirmField;
+}
 
 FormField* ConfirmField::_Store() {
 	return new ConfirmField(*this);
 }
 
 void Form::_Hide() {
-	for (int i = 0; i < fieldNum; i++) {
-		fields[i]->_Hide();
-		hiddenFields++;
+	for (int i = 0; i < fieldNum; i++)
+		fields[i]->_Hide();	
+	contentSpace = 0;
+}
+
+void FormField::_Hide() {
+	Label::_Hide();
+	this->inputField->_HideInput();
+	if (!hidden && activated) {
+		hidden = true;
+		parentForm->_UpdateHiddenFields(1);
 	}
 }
 
 void OptionField::_Hide() {
 	FormField::_Hide();
-	for (int i = 0; i < optFieldNum; i++) {
+	for (int i = 0; i < optFieldNum; i++) 
 		optionalFields[i]->_Hide();
-		parentForm->_UpdateHiddenFields(1);
-	}
-	parentForm->_UpdateHiddenFields(1);
 }
 
 FormField* Form::_SelectField(const char* text) {
@@ -663,16 +685,17 @@ void Form::_RemoveFields(int index, int fieldNum) {
 			activeFields--;
 		fields[index]->_Hide();
 		delete fields[index];
-		utility::_RemoveElement(fields, index, this->fieldNum);
-	}
-	
+		utility::_RemoveElement(fields, index, this->fieldNum);	
+		_UpdateHiddenFields(-1);
+	}	
 }
 
 void Form::_RunEvents(FormField* currentField) {
 	for (int i = 0; i < eventNum; i++) 
-		events[i](*this, currentField);
+		events[i](*this, currentField);		
 }
 
-void Form::_SwitchToExtension(const char* moduleName) {
+bool Form::_SwitchToExtension(const char* moduleName) {
 	this->moduler->_OpenModule(moduleName, moduler->_CurrentModule());
+	return moduler->_CurrentModule()->_ExtensionStatus();
 }

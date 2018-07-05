@@ -36,7 +36,7 @@ void LoadUserProfile::_StartModule() {
 
 	//	Control menu
 	Menu controlMenu;
-	MenuItem F1("Menu", this);
+	MenuItem F1("Menu");
 	MenuItem ESC("Cancel", previousModule);
 	F1._SetSpecialPrefix("[F1] ");
 	ESC._SetSpecialPrefix("[ESC] ");

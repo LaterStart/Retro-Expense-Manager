@@ -3,7 +3,9 @@
 #include "Input.h"
 using namespace std;
 
-UserInput::UserInput(InputType type) : type(type) {}
+UserInput::UserInput(InputType type) : type(type) {
+	this->componentType = ComponentType::userInput;
+}
 
 UserInput::~UserInput(){	
 	_ClearInput();

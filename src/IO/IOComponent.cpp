@@ -8,7 +8,9 @@ using namespace std;
 
 int IOComponent::idCounter = 0;
 
-Console::Console() : mainFrame(nullptr) {}
+Console::Console() : mainFrame(nullptr) {
+	this->componentType = ComponentType::console;
+}
 
 Console::~Console() {
 	delete mainFrame;
@@ -86,11 +88,15 @@ void Console::_DrawFrame() {
 
 Cursor::Cursor() : x(0), y(0), n(0) {
 	_GetCursorPosition();
+	this->componentType = ComponentType::cursor;
 }
-Cursor::Cursor(const Cursor &copy) : x(copy.x), y(copy.y), n(copy.n) {}
+Cursor::Cursor(const Cursor &copy) : x(copy.x), y(copy.y), n(copy.n) {
+	this->componentType = ComponentType::cursor;
+}
 
 Cursor::Cursor(short x, short y) : x(x), y(y) {
 	_SetCursorPosition();
+	this->componentType = ComponentType::cursor;
 }
 
 Cursor::~Cursor() {}
@@ -301,8 +307,12 @@ void Display::_WipeContent() {
 
 void Display::_LockContent(Cursor &pos) {
 	for (int i = 0; i < activePosNum; i++)
-		if (activePositions[i].pos == pos) {
+		if (activePositions[i].pos == pos) 
 			utility::_RemoveElement(activePositions, i, activePosNum);
-			activePosNum--;
-		}
+}
+
+void Display::_LockContent() {
+	delete[]activePositions;
+	activePositions = nullptr;
+	activePosNum = 0;
 }

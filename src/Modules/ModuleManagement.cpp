@@ -91,4 +91,5 @@ Module* ModuleManagement::_SelectModule(const char* name) {
 	for (int i = 0; i < moduleNum; i++)
 		if (moduleList[i].name == name)
 			return moduleList[i].module;
+	return nullptr;
 }

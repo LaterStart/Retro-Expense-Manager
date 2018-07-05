@@ -21,7 +21,7 @@ std::vector<std::vector<Category>> CategoryController::categoryList =
 std::vector<Category> CategoryController::mainCategoryList;
 
 //	static category model header
-ModelHeader CategoryController::header(ModelName::transaction);
+ModelHeader CategoryController::header(ModelName::category);
 
 //	category controller constructor
 CategoryController::CategoryController() {}
@@ -29,7 +29,7 @@ CategoryController::CategoryController() {}
 //	updates main category list using category list vector content
 void CategoryController::_UpdateMainCategoryList() {
 	mainCategoryList.clear();
-	for (int i = 1; i < categoryList.size(); i++)
+	for (size_t i = 1; i < categoryList.size(); i++)
 		mainCategoryList.push_back(categoryList[i].at(0));
 }
 
@@ -41,6 +41,14 @@ void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int pr
 	// write model		
 	char* buffer = newCategory._Serialize();
 	_WriteModel(stream, this->header, buffer);	
+
+	// update category list vector
+	if (newCategory._Type() == CategoryType::mainCategory) {
+		std::vector<Category> newMain{ newCategory };
+		categoryList.push_back(newMain);	
+	}
+	else if (newCategory._Type() == CategoryType::subCategory)
+		categoryList.at(newCategory._ParentID() + 1).push_back(newCategory);
 	
 	stream->close();
 	delete stream;

@@ -17,6 +17,7 @@ void AddCategoryExt::_StartModule() {
 	Display dsp;
 	Frame* extTitle = layout->_Select("ExtensionTitle");
 	Frame* content = layout->_Select("ExtensionForm");
+	// Set frames to have independend display from main frame
 	extTitle->dsp = &dsp;
 	content->dsp = &dsp;
 
@@ -44,7 +45,7 @@ void AddCategoryExt::_StartModule() {
 			if (cField->inputField->selection == 2) {			
 				categoryController._UpdateMainCategoryList();
 				form._InsertFields(tuple<ScrollDown<Category>&, int>{ 
-					ScrollDown<Category>("Main Category:", categoryController.mainCategoryList, Field::category), 1 
+					ScrollDown<Category>("Main Category:", categoryController.mainCategoryList, Field::parentCategory), 1 
 				});
 				form._InitializeFields();
 				form._SetEventStatus(0, true);
@@ -64,23 +65,35 @@ void AddCategoryExt::_StartModule() {
 	form._SetYpos(2);
 	info._Show();
 
+	// use main module menu elements
 	Menu* mainMenu = nullptr;
-	std::vector<FrameElement*> elements = layout->_SelectElements(ElementType::menu);
-	for (int i = 0; i < elements.size(); i++) {
+	Menu* controlMenu = nullptr;
+	std::vector<FrameElement*> elements = layout->_SelectElements(ComponentType::menu);
+	for (size_t i = 0; i < elements.size(); i++) {
 		if (elements.at(i)->_ParentFrame() == layout->_Select("Menu"))
 			mainMenu = dynamic_cast<Menu*>(elements.at(i));
+		else if (elements.at(i)->_ParentFrame() == layout->_Select("Footer") )
+			controlMenu = dynamic_cast<Menu*>(elements.at(i));
 	}
 
 	do {
+	form:
 		form._Show();
 		if (form._Status()) {
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
-			categoryController._AddNewCategory(data, profileController._ActiveProfile()->_ID());			
+			categoryController._AddNewCategory(data, profileController._ActiveProfile()->_ID());	
+
+			//  Update main form scroll control			
+			std::vector<FrameElement*>elements = layout->_Select("MainForm")->_SelectElements(ComponentType::form);
+			Form* mainForm = dynamic_cast<Form*>(elements.at(0));
+			ScrollDown_2D<Category>* scroll = dynamic_cast<ScrollDown_2D<Category>*>(mainForm->_SelectField("Category:"));
+			scroll->_UpdateScrollControl();
 			break;
 		}
 		else if (form._IsPaused()) {
 		menu: // Menu selection
+			controlMenu->_ChangeItem("Menu", "Back");
 			Cursor(2, ::height - 4);
 			UserInput select(InputType::select);
 			int selection = 0;
@@ -92,13 +105,19 @@ void AddCategoryExt::_StartModule() {
 				if (select.control == ControlKey::esc) {
 					if (form._Exit()) 
 						break;
-				}					
+				}
+				else if (select.control == ControlKey::F1) {
+					controlMenu->_ChangeItem("Back", "Menu");
+					goto form;
+				}
 				select._ClearInput();
 			}
+			if (select.control == ControlKey::esc)
+				break;
 			nextModule = mainMenu->_GetLink(selection);
 			if (utility::_CompareChar(nextModule, previousModule->name))
 				break;
-			else if (utility::_CompareChar(nextModule, "AddCategory"))
+			else if (utility::_CompareChar(nextModule, "AddCategoryExt"))
 				continue;
 			else {
 				if (form._Exit()) {
@@ -110,6 +129,11 @@ void AddCategoryExt::_StartModule() {
 		}
 		else break;
 	} while (true);
+
+	// frames on return will share display with main frame
 	extTitle->dsp = nullptr;
 	content->dsp = nullptr;
+
+	// sets form outcome status
+	this->previousModule->_SetExtensionStatus(false);
 }

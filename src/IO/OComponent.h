@@ -2,19 +2,6 @@
 #include "IOComponent.h"
 #include "../config.h"
 
-class IComponent : public IOComponent {}; 
-
-const enum class ElementType {
-	none,
-	frame,
-	container,
-	separator,
-	label,
-	menu,
-	menuItem,
-	textBar
-};
-
 class OComponent : public IOComponent {	
 private:
 	void _SetInitialCoordinates();
@@ -32,7 +19,7 @@ protected:
 	unsigned short y1, y2;	
 
 public:
-	struct Coordinates {
+	struct Coordinates : public IOComponent {
 		unsigned short x1, x2;
 		unsigned short y1, y2;
 
@@ -42,9 +29,10 @@ public:
 			y1 = equals.y1;
 			y2 = equals.y2;
 		}
-	};
-
-	ElementType element_type = ElementType::none;
+		Coordinates() {
+			this->componentType = ComponentType::coordinates;
+		}
+	};	
 
 protected:
 	Coordinates coord;
@@ -144,13 +132,14 @@ private:
 
 	void _AddElement(FrameElement& newElement);
 public:
-	struct Container {
+	struct Container : public IOComponent{
 		Frame** frames = nullptr;
 		int frameNum = 0;
-		Container() = default;
+		Container() {
+			this->componentType = ComponentType::container;
+		}
 		Container(const Container& copy);
-		~Container();
-		ElementType element_type = ElementType::container;
+		~Container();		
 	};
 
 	short nextYpos = 0;
@@ -177,7 +166,7 @@ public:
 	void _AddTopPadding(unsigned short padding);
 	void _AddBottomPadding(unsigned short padding);
 	void _ShowElements();
-	std::vector<FrameElement*> _SelectElements(ElementType type);
+	std::vector<FrameElement*> _SelectElements(ComponentType type);
 
 	//	Add more FrameElements using variadic template
 	template <typename T>
@@ -317,24 +306,24 @@ public:
 	unsigned short cut = 0;
 
 	Label() {
-		this->element_type = ElementType::label;
+		this->componentType = ComponentType::label;
 	}
 	Label(const Label& copy) : FrameElement(copy), text(copy.text), length(copy.length) { 
-		this->element_type = ElementType::label;
+		this->componentType = ComponentType::label;
 	}
 	Label(const char* text) : text((char*)text) { 
 		length = utility::_CharLength(text);
-		this->element_type = ElementType::label;
+		this->componentType = ComponentType::label;
 	}
 	Label(const char* text, const char* align) : text((char*)text) { 
 		length = utility::_CharLength(text);
 		this->align = align;
-		this->element_type = ElementType::label;
+		this->componentType = ComponentType::label;
 	}
 	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {
 		length = utility::_CharLength(text) + 1;
 		this->align = align;
-		this->element_type = ElementType::label;
+		this->componentType = ComponentType::label;
 	}
 
 	void _SetText(const char* text);
@@ -365,7 +354,7 @@ public:
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
 	void _DefaultFrameTemplate(Display& dsp);
 	void _ShowElements();
-	std::vector<FrameElement*> _SelectElements(ElementType type);
+	std::vector<FrameElement*> _SelectElements(ComponentType type);
 
 	~Layout();
 };
@@ -391,16 +380,15 @@ public:
 		_AddItems(nextItems...);
 	}
 	const char* _GetLink(int selection);
-	void _ChangeItem(MenuItem& item, int pos);
-	void _ChangeItem(const char* text, const char* newText, const char* newLink);
+	void _ChangeItem(const char* text, const char* newText, const char* newLink = nullptr);
 	void _Show() override;
 	void _Hide() override;
 
 	Menu() {
-		this->element_type = ElementType::menu;
+		this->componentType = ComponentType::menu;
 	};
 	Menu(const Menu& copy){
-		this->element_type = ElementType::menu;
+		this->componentType = ComponentType::menu;
 	}
 	~Menu();
 };
@@ -415,8 +403,8 @@ private:
 
 public:
 	char* orderNum = nullptr;
-	MenuItem(const char* text, const char* moduleName) : Label(text), link(moduleName){
-		this->element_type = ElementType::menuItem;
+	MenuItem(const char* text, const char* moduleName = nullptr) : Label(text), link(moduleName){
+		this->componentType = ComponentType::menuItem;
 	}
 	MenuItem(const char* text, Module* previousModule);
 	void _SetOrderNumber(char* orderNum);
@@ -472,7 +460,7 @@ public:
 	template<typename ... TT>
 	TextBar(TT& ... items) {	
 		_AddItems(items ...);
-		this->element_type = ElementType::textBar;
+		this->componentType = ComponentType::textBar;
 	}
 
 	void _SetSpacing(int spacing);

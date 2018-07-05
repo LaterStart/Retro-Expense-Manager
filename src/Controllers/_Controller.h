@@ -8,7 +8,8 @@ const enum class ModelName {
 	modelHeader,
 	profile,
 	account,
-	transaction
+	transaction,
+	category
 };
 
 const enum class Field {
@@ -24,7 +25,8 @@ const enum class Field {
 	amount,
 	date,
 	description,
-	categoryName
+	categoryName,
+	parentCategory
 };
 
 const enum class Range {

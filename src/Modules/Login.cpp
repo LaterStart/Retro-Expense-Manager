@@ -45,8 +45,8 @@ void Login::_StartModule() {
 
 		//	Control menu
 		Menu controlMenu;
-		MenuItem F1("Menu", this);
-		MenuItem F2("Enter password", this);
+		MenuItem F1("Menu");
+		MenuItem F2("Enter password");
 		F1._SetSpecialPrefix("[F1] ");
 		F2._SetSpecialPrefix("[F2] ");
 		F2._SetPadding(F1._Length() + 2);

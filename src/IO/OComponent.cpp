@@ -30,6 +30,7 @@ Frame::Container::Container(const Container& copy) {
 	for (int i = 0; i < copy.frameNum; i++)
 		frames[i] = copy.frames[i];
 	frameNum = copy.frameNum;
+	this->componentType = copy.componentType;
 }
 
 // Frame Container destructor
@@ -40,19 +41,19 @@ Frame::Container::~Container() {
 //	Main frame constructor
 Frame::Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
 	OComponent(max_x, min_x, max_y, min_y), parentFrame(nullptr){
-	this->element_type = ElementType::frame;
+	this->componentType = ComponentType::frame;
 }
 
 //	Frame copy constructor
 Frame::Frame(Frame& copy) :
 	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname){
-	this->element_type = ElementType::frame;
+	this->componentType = ComponentType::frame;
 }
 
 //	Frame constructor Used within split method setting new values using splitters
 Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y) :
 	OComponent(max_x, min_x, max_y, min_y), parentFrame(&parentFrame) {
-	this->element_type = ElementType::frame;
+	this->componentType = ComponentType::frame;
 }
 
 //	Frame destructor
@@ -266,7 +267,7 @@ void Label::_Hide() {
 
 MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
 	link = *previousModule;
-	this->element_type = ElementType::menuItem;
+	this->componentType = ComponentType::menuItem;
 }
 
 //	Display menu item
@@ -283,13 +284,13 @@ void MenuItem::_Show() {
 Separator::Separator(Layout& layout, short length, bool direction, unsigned short start_X, unsigned short start_Y) :
 	FrameElement(layout._Select()), length(length), direction(direction){
 	_SetValue(*layout._Select(), start_X, start_Y);
-	this->element_type = ElementType::separator;
+	this->componentType = ComponentType::separator;
 }
 
 Separator::Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y) : 
 	FrameElement(&parentFrame) , length(length), direction(direction)  {
 	_SetValue(parentFrame, start_X, start_Y);
-	this->element_type = ElementType::separator;
+	this->componentType = ComponentType::separator;
 }
 
 void Separator::_SetValue(Frame& parentFrame, unsigned short start_X, unsigned short start_Y) {
@@ -331,7 +332,7 @@ Separator::Separator(const Separator& copy) : FrameElement(copy.parentFrame) ,le
 	y1 = copy.y1;
 	y2 = copy.y2;
 	this->parentFrame = copy.parentFrame;
-	this->element_type = ElementType::separator;
+	this->componentType = ComponentType::separator;
 }
 
 void Layout::_DefaultFrameTemplate(Display& dsp) {
@@ -402,17 +403,14 @@ void Menu::_AddItem(MenuItem& item) {
 	delete pp;
 }
 
-// Change existing menu item with new item
-void Menu::_ChangeItem(MenuItem& item, int pos) {
-	items[pos] = &item;
-}
-
 // Change menu item using label text
 void Menu::_ChangeItem(const char* text, const char* newText, const char* newLink) {
 	for (int i = 0; i < size; i++) {
 		if (utility::_CompareChar(items[i]->text, (char*)text)) {
 			items[i]->text = (char*)newText;
 			items[i]->_SetLink(newLink);
+			if(items[i]->_ParentFrame() != nullptr)
+				items[i]->_Show();
 		}
 	}
 }
@@ -457,21 +455,21 @@ TextBar::~TextBar() {
 	delete[]items;
 }
 
-std::vector<FrameElement*> Frame::_SelectElements(ElementType type) {
+std::vector<FrameElement*> Frame::_SelectElements(ComponentType type) {
 	std::vector<FrameElement*> container;
 	for (int i = 0; i < elNum; i++) {
-		if (elements[i]->element_type == type)
+		if (elements[i]->componentType == type)
 			container.push_back(elements[i]);
 	}
 	return container;
 }
 
-std::vector<FrameElement*> Layout::_SelectElements(ElementType type) {
+std::vector<FrameElement*> Layout::_SelectElements(ComponentType type) {
 	std::vector<FrameElement*> container;
 	Frame::Container sub = frame->_GetSubFrames();
 	for (int i = 0; i < sub.frameNum; i++) {
 		std::vector<FrameElement*> subContainer = sub.frames[i]->_SelectElements(type);
-		for (int j = 0; j < subContainer.size(); j++)
+		for (unsigned int j = 0; j < subContainer.size(); j++)
 			container.push_back(subContainer.at(j));
 	}
 	return container;	

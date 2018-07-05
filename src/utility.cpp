@@ -188,7 +188,7 @@ namespace utility {
 
 		int number = 0;
 		int decimal = 0;
-		int multiply = pow(10,n-1);
+		int multiply = (int)pow(10,n-1);
 
 		for (int i = 0; i < n; i++) {
 			if ((text[i] == 46 || text[i] == 44)) {
@@ -210,12 +210,12 @@ namespace utility {
 			multiply /= 10;
 		}
 		
-		return number + (1.0 / decimal);
+		return number + (float(1.0) / decimal);
 	}
 
 	int _ConvertToInteger(char* text) {
 		int n = _CharLength(text);
-		int multiply = pow(10, n-1);
+		int multiply = (int)pow(10, n-1);
 
 		int number = 0;
 

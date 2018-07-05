@@ -39,7 +39,7 @@ void AddTransaction::_StartModule() {
 
 	//	Control menu
 	Menu controlMenu;
-	MenuItem F1("Menu", this);
+	MenuItem F1("Menu");
 	MenuItem ESC("Cancel", previousModule);
 	F1._SetSpecialPrefix("[F1] ");
 	ESC._SetSpecialPrefix("[ESC] ");
@@ -48,7 +48,7 @@ void AddTransaction::_StartModule() {
 	controlMenu._AddItems(F1, ESC);
 	layout._Select("Footer")->_AddElements(controlMenu);
 
-	Frame* content = layout._Select("Content");
+	Frame* content = layout._Select("MainForm");
 	content->_AddElements(info);
 	layout._ShowElements();
 
@@ -111,7 +111,9 @@ void AddTransaction::_StartModule() {
 			if (currentField != nullptr && utility::_CompareChar(currentField->text, (char*)"Category:")) {
 				if (currentField->inputField->selection == 0 && currentField->inputField->control == ControlKey::none) {
 					// open add new category extension form
-					form._SwitchToExtension("AddCategoryExt");
+					bool status = form._SwitchToExtension("AddCategoryExt");
+					if (!status)
+						currentField->_Show();					
 				}
 				else if (currentField->inputField->selection == 0 && currentField->inputField->control == ControlKey::downArrow) {
 					currentField->_SetFilledStatus(false);
@@ -127,6 +129,7 @@ void AddTransaction::_StartModule() {
 	extension->_LinkLayout(layout);	
 
 	do {
+	form:
 		form._Show();
 		if (form._Status()) {
 			//	Get form data and pass it to controller
@@ -137,6 +140,7 @@ void AddTransaction::_StartModule() {
 		}
 		else if (form._IsPaused()) {
 		menu: // Menu selection
+			controlMenu._ChangeItem("Menu", "Back");
 			Cursor(2, ::height - 4);
 			UserInput select(InputType::select);
 			int selection = 0;
@@ -146,6 +150,10 @@ void AddTransaction::_StartModule() {
 				selection = select.selection;
 				if (select.control == ControlKey::esc)
 					goto exit;
+				else if (select.control == ControlKey::F1) {
+					controlMenu._ChangeItem("Back", "Menu");
+					goto form;
+				}
 				select._ClearInput();
 			}
 			nextModule = mainMenu._GetLink(selection);

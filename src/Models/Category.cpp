@@ -21,30 +21,26 @@ Category::Category(char* buffer) {
 
 // category copy constructor
 Category::Category(const Category& copy) {
+	this->ID = copy.ID;
+	this->parentID = copy.parentID;
+	this->profileID = copy.profileID;
 	this->name = copy.name;
+	this->type = copy.type;	
 }
 
 //	binds form data to object data
 void Category::_BindData(Data* data) {
 	switch (data->field) {
-	case Field::account:
-		//accountID = data->input->selection;		
+	case Field::categoryName:
+		name = utility::_CopyChar(data->input->input);	
+		nameSize = utility::_CharLength(name);
 		break;
-	case Field::transactionType:
-		//typeID = data->input->selection;
+	case Field::categoryType:
+		type = static_cast<CategoryType>(data->input->selection - 1);
 		break;
-	case Field::category:
-		//categoryID = data->input->selection;
-		break;
-	case Field::currency:
-		//currencyID = data->input->selection;
-		break;
-	case Field::amount:
-		//amount = utility::_ConvertToFloat(data->input->input);
-		break;
-	case Field::description:
-		//description = data->input->input;
-		//descriptionSize = data->input->length;
+	case Field::parentCategory:
+		parentID = data->input->selection;
+		break;	
 	default:
 		break;
 	}
@@ -52,8 +48,8 @@ void Category::_BindData(Data* data) {
 
 //	serialize category model
 char* Category::_Serialize() {
-	/*//	Total object size					 
-	int size = descriptionSize + 6*sizeof(int) + sizeof(float);
+	//	Total object size					 
+	int size = nameSize + 3*sizeof(int);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -65,44 +61,37 @@ char* Category::_Serialize() {
 	buffer += sizeof(int);
 
 	//	store IDs into buffer
-	int* ptr[] = { &profileID, &accountID, &typeID, &categoryID, &currencyID };
-	for (int i = 0; i < 5; i++) {
+	int* ptr[] = { &profileID, &parentID };
+	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
 	}
 
-	//	store amount into buffer
-	std::memcpy(buffer, &amount, sizeof(float));
-	buffer += sizeof(float);
-
-	//	store description into buffer
-	std::memcpy(buffer, &descriptionSize, sizeof(int));
+	//	store name into buffer
+	std::memcpy(buffer, &nameSize, sizeof(int));
 	buffer += sizeof(int);
-	std::memcpy(buffer, description, descriptionSize);
-	*/
-	return nullptr;
+	std::memcpy(buffer, name, nameSize);
+
+	return firstByte;
 }
 
 //	deserialize category model
 void Category::_Deserialize(char* page) {
-	/*this->ID = *(int*)page;
+	this->ID = *(int*)page;
 	page += sizeof(int);
 
 	//	deserialize IDs
-	int* ptr[] = { &profileID, &accountID, &typeID, &categoryID, &currencyID };
-	for (int i = 0; i < 5; i++) {
+	int* ptr[] = { &profileID, &parentID};
+	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
 	}
-
-	this->amount = *(float*)page;
-	page += sizeof(float);
-
-	this->descriptionSize = *(int*)page;
+	
+	this->nameSize = *(int*)page;
 	page += sizeof(int);
 
-	this->description = new char[descriptionSize];
-	std::memcpy(description, page, descriptionSize);*/
+	this->name = new char[nameSize];
+	std::memcpy(name, page, nameSize);
 }
 
 std::ostream& Category::_Show(std::ostream& os) {
@@ -111,5 +100,5 @@ std::ostream& Category::_Show(std::ostream& os) {
 }
 
 Category::~Category() {
-	//delete[]description;
+	//delete[]name;
 }

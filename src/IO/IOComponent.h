@@ -1,7 +1,12 @@
 #pragma once
 #include "../utility.h"
 
-class IOComponent {
+const enum class ComponentType {
+	none, console, cursor, link, display, frame, coordinates, container, separator, label, menu, menuItem, textBar, form, formField, userInput,
+	optionField, selectionField, usernameField, passwordField, confirmField, inputField, scrollDown, scrollDown_2D
+};
+
+class IOComponent {	
 public:
 	static int idCounter;
 	int id;
@@ -9,6 +14,7 @@ public:
 		id = idCounter;
 		idCounter++;
 	}
+	ComponentType componentType = ComponentType::none;
 };
 
 class Frame;
@@ -105,8 +111,12 @@ public:
 	unsigned short selectValue;
 	const char* moduleName;
 
-	Link(unsigned short value, const char* name) : selectValue(value), moduleName(name){}
-	Link(const char* name) : moduleName(name){}
+	Link(unsigned short value, const char* name) : selectValue(value), moduleName(name){
+		this->componentType = ComponentType::link;
+	}
+	Link(const char* name) : moduleName(name){
+		this->componentType = ComponentType::link;
+	}
 
 };
 
@@ -141,7 +151,9 @@ private:
 	void _Show(const char* content, unsigned char symbol);
 
 public:
-	Display() = default;
+	Display() {
+		this->componentType = ComponentType::display;
+	}
 	~Display();
 
 	template <typename T>
@@ -171,6 +183,7 @@ public:
 	void _Display(Separator& separator);
 	void _Display(Cursor& pos, int num);
 	void _LockContent(Cursor &pos);
+	void _LockContent();
 	void _Loading();
 };
 

@@ -66,7 +66,7 @@ char* Transaction::_Serialize() {
 
 	//	store IDs into buffer
 	int* ptr[] = { &profileID, &accountID, &typeID, &categoryID, &currencyID };
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
 	}
@@ -90,7 +90,7 @@ void Transaction::_Deserialize(char* page) {
 
 	//	deserialize IDs
 	int* ptr[] = { &profileID, &accountID, &typeID, &categoryID, &currencyID };
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
 	}

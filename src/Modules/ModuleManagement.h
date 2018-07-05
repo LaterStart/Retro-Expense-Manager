@@ -28,6 +28,8 @@ protected:
 	static TransactionController transactionController;
 	static CategoryController categoryController;
 
+	bool extensionStatus = false;	
+
 public:
 	const char* name;
 	operator const char*() {
@@ -35,10 +37,20 @@ public:
 	}
 
 	void _LinkLayout(Layout& layout);
+	void _SetExtensionStatus(bool status);
+	bool _ExtensionStatus() const;
 };
 
 inline void Module::_LinkLayout(Layout& layout) {
 	this->layout = &layout;
+}
+
+inline void Module::_SetExtensionStatus(bool status) {
+	this->extensionStatus = status;
+}
+
+inline bool Module::_ExtensionStatus() const {
+	return this->extensionStatus;
 }
 
 //	container class - enables storage of active modules singleton references

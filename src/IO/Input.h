@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include "OComponent.h"
+#include "IOComponent.h"
 #include "../Controllers/_Controller.h"
 #include "../Models/Category.h"
 
@@ -29,7 +29,7 @@ const enum class ControlKey {
 
 class Input : public IOComponent {};
 
-class UserInput : public Input{
+class UserInput : public Input {
 private:
 	short min_x = 0;
 	short max_x = 0;
@@ -72,7 +72,9 @@ public:
 	Frame* parentFrame = nullptr;
 	ControlKey control = ControlKey::none;
 
-	UserInput() = default;
+	UserInput() {
+		this->componentType = ComponentType::userInput;
+	}
 	UserInput(InputType type);
 	~UserInput();
 
@@ -106,6 +108,7 @@ class FormField : public Input, public Label {
 protected:
 	InputType type = InputType::none;	
 	Form* parentForm = nullptr;	
+	Display dsp;
 	bool mandatory = true;
 	bool activated = false;
 	bool filled = false;
@@ -116,7 +119,9 @@ protected:
 	void _SwitchField(ControlKey control);
 	
 public:		
-	FormField(const char* text, InputType type, Field field = Field::none) : Label(text), type(type), dataType(field){}
+	FormField(const char* text, InputType type, Field field = Field::none) : Label(text), type(type), dataType(field){
+		this->IOComponent::componentType = ComponentType::formField;
+	}
 	FormField(const FormField& copy);
 	
 	UserInput* inputField = nullptr;
@@ -202,6 +207,7 @@ public:
 	OptionField(const char* text, Field field,  TT& ... fields) : FormField(text, InputType::YN, field) {
 		this->mandatory = false;
 		_AddFields(fields ...);
+		this->OComponent::componentType = ComponentType::optionField;
 	}
 
 	OptionField(const OptionField& copy);
@@ -229,7 +235,9 @@ private:
 	std::vector<const char*>& options;
 
 public:
-	SelectionField(const char* text, std::vector<const char*>& options, Field field) : FormField(text, InputType::select, field), options(options){}
+	SelectionField(const char* text, std::vector<const char*>& options, Field field) : FormField(text, InputType::select, field), options(options){
+		this->OComponent::componentType = ComponentType::selectionField;
+	}
 
 	void _Show() override;
 	FormField* _Store() override;
@@ -241,7 +249,9 @@ private:
 	ProfileController& controller;
 
 public:
-	UsernameField(const char* text, ProfileController& controller) : FormField(text, InputType::text, Field::username), controller(controller){}
+	UsernameField(const char* text, ProfileController& controller) : FormField(text, InputType::text, Field::username), controller(controller){
+		this->OComponent::componentType = ComponentType::usernameField;
+	}
 	UsernameField(const UsernameField& copy);
 
 	FormField* _Store() override;
@@ -257,7 +267,9 @@ private:
 	bool _VerifyPassword();
 
 public:
-	PasswordField(const char* text, bool master = false) : FormField(text, InputType::password, Field::password), master(master){}
+	PasswordField(const char* text, bool master = false) : FormField(text, InputType::password, Field::password), master(master){
+		this->OComponent::componentType = ComponentType::passwordField;
+	}
 	PasswordField(const PasswordField& copy);
 
 	FormField* _Store() override;
@@ -273,6 +285,7 @@ public:
 	ConfirmField(const char* text) : FormField(text, InputType::YN, Field::none) { 
 		this->mandatory = false; 
 		this->dataField = false; 
+		this->OComponent::componentType = ComponentType::confirmField;
 	}
 	ConfirmField(const ConfirmField& copy);
 
@@ -293,6 +306,9 @@ private:
 	FormField* lastField = nullptr;
 	int specialContentHeight = 0;
 	unsigned short initialYpos = 0;
+	unsigned short contentSpace = 1;
+
+	bool exit = false;
 	
 	void _AddField(FormField& field);
 	void _InsertField(std::tuple<FormField&, int>);		
@@ -338,7 +354,7 @@ public:
 	void _Exit(FormField* currentField);
 	bool _Exit();
 	void _SwitchToMenu(FormField* currentField);
-	void _SwitchToExtension(const char* moduleName);
+	bool _SwitchToExtension(const char* moduleName);
 	bool _Status() const;
 	bool _IsPaused()const ;
 	void _Show();
@@ -352,13 +368,17 @@ public:
 	void _RunEvents(FormField* currentField);
 	void _LinkModuler(ModuleManagement* moduler);
 	void _SetYpos(unsigned short y) override;
+	void _ChangeNextYpos(short y);
+	void _Break();
 	utility::LinkedList<Data*>* _GetData();
 	Frame::Coordinates _GetSpecialContentCoord();
 
 	FormField* _GetNextField(FormField* currentField);
 	FormField* _SelectField(const char* text);
 
-	Form() = default;
+	Form() {
+		this->OComponent::componentType = ComponentType::form;
+	}
 	~Form();
 };
 
@@ -385,6 +405,7 @@ inline bool Form::_IsPaused() const {
 
 inline void Form::_UpdateHiddenFields(int change) {
 	this->hiddenFields += change;
+	this->hiddenFields = (hiddenFields < 0) ? 0 : hiddenFields;
 }
 
 inline void Form::_SetSpecialContentHeight(int height) {
@@ -411,12 +432,22 @@ inline void Form::_SetYpos(unsigned short y) {
 	this->initialYpos = y;
 }
 
+inline void Form::_Break() {
+	this->exit = true;
+}
+
+inline void Form::_ChangeNextYpos(short y) {
+	this->Ypos += y;
+}
+
 class InputField : public FormField{
 private:
 	bool initialized = false;
 	bool _InputControl() override;	
 public:
-	InputField(char* text, InputType type) : FormField(text, type) {}
+	InputField(char* text, InputType type) : FormField(text, type) {
+		this->OComponent::componentType = ComponentType::inputField;
+	}
 	void _Show() override;
 };
 
@@ -433,6 +464,7 @@ private:
 public:
 	ScrollDown(const char* text, std::vector<element>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items){		
 		sLast = (sLast > sMax) ? sMax : sLast;
+		this->OComponent::componentType = ComponentType::scrollDown;
 	}
 	ScrollDown(const ScrollDown& copy) : FormField(copy.text, copy.type, copy.dataType), items(copy.items), sMax(copy.items.size()) {
 		int sValue = copy.sValue;
@@ -440,6 +472,7 @@ public:
 		int sLast = copy.sLast;
 		int sMin = copy.sMin;
 		sLast = (sLast > sMax) ? sMax : sLast;
+		this->OComponent::componentType = ComponentType::scrollDown;
 	}
 
 	void _Show() override;
@@ -457,6 +490,11 @@ void ScrollDown<element>::_Show() {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
 	}
+	else if (hidden) {
+		hidden = false;
+		parentForm->_UpdateHiddenFields(-1);
+	}
+
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
 	Display dsp;
 	Cursor pos(coord.x1, coord.y1);
@@ -545,6 +583,8 @@ private:
 
 public:
 	ScrollDown_2D(const char* text, std::vector<std::vector<element>>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items) {
+		this->OComponent::componentType = ComponentType::scrollDown_2D;
+
 		scrollControl = new int*[items.size()+1];
 		scrollControl[items.size()] = new int[5];
 		// main scroll down controll
@@ -555,7 +595,7 @@ public:
 		scrollControl[items.size()][4] = items.size();
 
 		// sub scroll controll
-		for (int i = 0; i < items.size(); i++) {
+		for (size_t i = 0; i < items.size(); i++) {
 			scrollControl[i] = new int[5];
 			scrollControl[i][0] = 1;
 			scrollControl[i][1] = 1;
@@ -565,7 +605,7 @@ public:
 		}
 
 		// set last displayed scroll position
-		for (int i = 0; i <= items.size(); i++) 
+		for (size_t i = 0; i <= items.size(); i++) 
 			scrollControl[i][2] = (scrollControl[i][2] > scrollControl[i][4]) ? scrollControl[i][4] : scrollControl[i][2];		
 		
 		// scroll selector
@@ -577,6 +617,7 @@ public:
 	FormField* _Store() override;
 	std::vector<std::vector<element>>& _Items() const;
 	void _InsertItem(std::vector<element>& newItem, int index = 0);
+	void _UpdateScrollControl();
 };
 
 template <typename element>
@@ -589,11 +630,25 @@ void ScrollDown_2D<element>::_Show() {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
 	}
+	else if (hidden) {
+		hidden = false;
+		parentForm->_UpdateHiddenFields(-1);
+	}
+
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
 	Display dsp;
 	Cursor pos(coord.x1, coord.y1);
 	Cursor sPos(pos);
 	pos._ChangeX(1);
+
+	int maxLength = 0;
+	int index;
+	for (int i = scrollControl[items.size()][1]+1; i < scrollControl[items.size()][2]; i++) {		
+		if (items[i].at(0)._DisplayLength() > maxLength) {
+			maxLength = items[i].at(0)._DisplayLength();
+			index = i;
+		}
+	}
 
 	for (int i = scrollControl[items.size()][1]; i < scrollControl[items.size()][2]; i++) {
 		if (i == scrollControl[items.size()][0] && !subSelect) {
@@ -605,8 +660,22 @@ void ScrollDown_2D<element>::_Show() {
 		if (i == scrollControl[items.size()][0]) {
 			Cursor subPos;
 			Cursor subSpos(subPos);
-			subPos._ChangeX(3);		
-			subSpos._ChangeX(2);
+			int distance;
+			if (i == index)
+				distance = 0;
+			else distance = maxLength - items[i].at(0)._DisplayLength();
+			if (items[i].size() > 1) {
+				Cursor chain(subSpos);
+				chain._ChangeX(1);
+				for (int k = 0; k < distance + 1; k++) {
+					chain._SetCursorPosition();
+					dsp._Display('-');
+					chain._ChangeX(1);
+				}
+			}
+			subPos._ChangeX(distance + 3);		
+			subSpos._ChangeX(distance + 2);
+
 			if (items[i].size() > 1) {
 				for (int j = scrollControl[*sCurr][1]; j < scrollControl[*sCurr][2]; j++) {
 					if (j == scrollControl[*sCurr][0] && subSelect) {
@@ -738,7 +807,7 @@ void ScrollDown_2D<element>::_InsertItem(std::vector<element>& newItem, int inde
 	tempControl[index][4] = items[index].size();
 	
 	int j = 0;
-	for (int i = 0; i <= items.size(); i++) {
+	for (size_t i = 0; i <= items.size(); i++) {
 		if (i != index) {
 			tempControl[i] = scrollControl[j];
 			j++;
@@ -746,4 +815,39 @@ void ScrollDown_2D<element>::_InsertItem(std::vector<element>& newItem, int inde
 	}
 	delete[]scrollControl;
 	scrollControl = tempControl;
+}
+
+template <typename element>
+void ScrollDown_2D<element>::_UpdateScrollControl() {
+	for (size_t i = 0; i < items.size(); i++)
+		delete[]scrollControl[i];
+	delete[]scrollControl;
+
+	scrollControl = new int*[items.size() + 1];
+	scrollControl[items.size()] = new int[5];
+	
+	scrollControl[items.size()][0] = 0;
+	scrollControl[items.size()][1] = 0;
+	scrollControl[items.size()][2] = 5;
+	scrollControl[items.size()][3] = 0;
+	scrollControl[items.size()][4] = items.size();
+	
+	for (size_t i = 0; i < items.size(); i++) {
+		scrollControl[i] = new int[5];
+		scrollControl[i][0] = 1;
+		scrollControl[i][1] = 1;
+		scrollControl[i][2] = 5;
+		scrollControl[i][3] = 1;
+		scrollControl[i][4] = items[i].size();
+	}
+	
+	for (size_t i = 0; i <= items.size(); i++)
+		scrollControl[i][2] = (scrollControl[i][2] > scrollControl[i][4]) ? scrollControl[i][4] : scrollControl[i][2];
+
+	// update scroll down
+	*sCurr = items.size() - 1;
+
+	scrollControl[items.size()][0] = *sCurr;
+	scrollControl[items.size()][1] = (*sCurr - 4 > 0) ? *sCurr - 4 : 0;
+	scrollControl[items.size()][2] = scrollControl[items.size()][4];
 }
