@@ -417,7 +417,7 @@ void UserInput::_ClearInput() {
 	}	
 	node = nullptr;
 	controlKey = false;
-	control = ControlKey::none;
+	control = ControlKey::none;	
 }
 
 void UserInput::_HideInput() {

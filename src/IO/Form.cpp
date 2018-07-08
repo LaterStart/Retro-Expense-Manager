@@ -562,8 +562,11 @@ Form::~Form() {
 
 FormField::~FormField() {	
 	if (inputField != nullptr) {
-		if (inputField->parentFrame != nullptr)
+		if (inputField->parentFrame != nullptr) {
 			delete inputField->parentFrame->dsp;
+			inputField->parentFrame->_RemoveFrame();
+			delete inputField->parentFrame;
+		}
 		delete inputField;
 	}
 }
@@ -571,6 +574,15 @@ FormField::~FormField() {
 OptionField::~OptionField() {
 	for (int i = 0; i < optFieldNum; i++)
 		delete optionalFields[i]->inputField;
+
+	if (inputField != nullptr) {
+		if (inputField->parentFrame != nullptr) {
+			delete inputField->parentFrame->dsp;
+			inputField->parentFrame->_RemoveFrame();
+			delete inputField->parentFrame;
+		}
+		delete inputField;
+	}	
 }
 
 FormField::FormField(const FormField& copy) : Label(copy.text) {
@@ -639,6 +651,7 @@ void Form::_Hide() {
 void FormField::_Hide() {
 	Label::_Hide();
 	this->inputField->_HideInput();
+	this->inputField->parentFrame->dsp->_WipeContent();
 	if (!hidden && activated) {
 		hidden = true;
 		parentForm->_UpdateHiddenFields(1);

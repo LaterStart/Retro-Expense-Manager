@@ -55,8 +55,10 @@ void AddCategoryExt::_StartModule() {
 			// If user changes his mind and wants to add new main category
 			FormField* cField = form._SelectField("Type:");
 			if (cField->inputField->selection == 1) {
-				ScrollDown<Category>* scroll = dynamic_cast<ScrollDown<Category>*>(cField);
-				scroll->_Items().~vector();
+				FormField* sField = form._SelectField("Main Category:");
+				ScrollDown<Category>* scroll = dynamic_cast<ScrollDown<Category>*>(sField);
+				vector<Category>* items = &scroll->_Items();
+				delete items;
 				form._RemoveFields(1, 1);
 				form._InitializeFields();
 				form._SetEventStatus(0, false);
@@ -91,6 +93,7 @@ void AddCategoryExt::_StartModule() {
 			Form* mainForm = dynamic_cast<Form*>(elements.at(0));
 			ScrollDown_2D<Category>* scroll = dynamic_cast<ScrollDown_2D<Category>*>(mainForm->_SelectField("Category:"));
 			scroll->_UpdateScrollControl();
+			scroll->_ToggleSubSelect(true); // -> change
 			break;
 		}
 		else if (form._IsPaused()) {

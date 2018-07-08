@@ -16,7 +16,13 @@ Category::Category(utility::LinkedList<Data*>* data, int ID, int profileID){
 
 // construct category model using bufferered data
 Category::Category(char* buffer) {
-	this->name = buffer;
+	this->_Deserialize(buffer);
+}
+
+// construct new category model using category name
+Category::Category(const char* name, CategoryType type) {
+	this->name = utility::_CopyChar(name);
+	this->type = type;
 }
 
 // category copy constructor
@@ -24,7 +30,7 @@ Category::Category(const Category& copy) {
 	this->ID = copy.ID;
 	this->parentID = copy.parentID;
 	this->profileID = copy.profileID;
-	this->name = copy.name;
+	this->name = utility::_CopyChar(copy.name);
 	this->type = copy.type;	
 }
 
@@ -32,8 +38,8 @@ Category::Category(const Category& copy) {
 void Category::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::categoryName:
-		name = utility::_CopyChar(data->input->input);	
-		nameSize = utility::_CharLength(name);
+		name = utility::_CopyChar(data->input->input);
+		nameSize = data->input->length + 1;
 		break;
 	case Field::categoryType:
 		type = static_cast<CategoryType>(data->input->selection - 1);
@@ -49,7 +55,7 @@ void Category::_BindData(Data* data) {
 //	serialize category model
 char* Category::_Serialize() {
 	//	Total object size					 
-	int size = nameSize + 3*sizeof(int);
+	int size = nameSize + 4*sizeof(int);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -66,6 +72,10 @@ char* Category::_Serialize() {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
 	}
+
+	//	store type into buffer
+	std::memcpy(buffer, &type, sizeof(int));
+	buffer += sizeof(int);
 
 	//	store name into buffer
 	std::memcpy(buffer, &nameSize, sizeof(int));
@@ -86,6 +96,9 @@ void Category::_Deserialize(char* page) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
 	}
+
+	this->type = static_cast<CategoryType>(*(int*)page);
+	page += sizeof(int);
 	
 	this->nameSize = *(int*)page;
 	page += sizeof(int);
@@ -100,5 +113,5 @@ std::ostream& Category::_Show(std::ostream& os) {
 }
 
 Category::~Category() {
-	//delete[]name;
+	delete[]name;
 }

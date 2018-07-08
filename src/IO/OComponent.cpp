@@ -62,13 +62,29 @@ Frame::~Frame() {
 }
 
 //	Update frames container recursive for all parent frames
-void Frame::_UpdateContainer(Frame* newFrame) {
+void Frame::_AddFrame(Frame* newFrame) {
 	Frame** ptr = new Frame*(nullptr);
 	utility::_AddElement(container.frames, *ptr, container.frameNum);
 	container.frames[container.frameNum - 1] = newFrame;
 	delete ptr;
 	if (parentFrame != nullptr)
-		parentFrame->_UpdateContainer(newFrame);
+		parentFrame->_AddFrame(newFrame);
+}
+
+void Frame::_RemoveFrame(Frame* frame) {
+	for (int i = 0; i < container.frameNum; i++) {
+		if (container.frames[i]->id == frame->id) {
+			utility::_RemoveElement(container.frames, i, container.frameNum);
+			break;
+		}
+	}
+	if (parentFrame != nullptr)
+		parentFrame->_RemoveFrame(frame);
+}
+
+void Frame::_RemoveFrame() {
+	if (parentFrame != nullptr)
+		parentFrame->_RemoveFrame(this);
 }
 
 //	Method used to create new frames within a frame using spliters
@@ -79,19 +95,19 @@ void Frame::_Split(Separator& separator, const char* firstID, const char* second
 	if (separator.direction == 0) {		
 		Frame* newFrame = new Frame(*this, max_x, min_x, coord.y1, min_y);
 		newFrame->IDname = firstID;
-		_UpdateContainer(newFrame);		
+		_AddFrame(newFrame);
 		newFrame = new Frame(*this, max_x, min_x, max_y , coord.y1+1);
 		newFrame->IDname = secondID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 	}
 	//	If separator is y direction
 	else if (separator.direction == 1) {
 		Frame* newFrame = new Frame(*this, coord.x1, min_x, max_y, min_y);
 		newFrame->IDname = firstID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 		newFrame = new Frame(*this, max_x, coord.x1 + 1, max_y, min_y);
 		newFrame->IDname = secondID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 	}
 }
 
@@ -104,20 +120,20 @@ void Frame::_Split(unsigned short percent, const char* direction,  const char* f
 		unsigned short splitPos = max_y * percent / 100;
 		Frame* newFrame = new Frame(*this, max_x, min_x, splitPos, min_y);
 		newFrame->IDname = firstID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 		newFrame = new Frame(*this, max_x, min_x, max_y, splitPos + 1);
 		newFrame->IDname = secondID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 	}
 	//	If separator is y direction
 	else if (dir == 1) {
 		unsigned short splitPos = max_x * percent / 100;
 		Frame* newFrame = new Frame(*this, splitPos, min_x, max_y, min_y);
 		newFrame->IDname = firstID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 		newFrame = new Frame(*this, max_x, splitPos + 1, max_y, min_y);
 		newFrame->IDname = secondID;
-		_UpdateContainer(newFrame);
+		_AddFrame(newFrame);
 	}
 }
 
@@ -187,7 +203,7 @@ void Frame::_CreateSubFrame(const char* IDname, Coordinates& coord) {
 
 	Frame* newFrame = new Frame(*this, coord.x2, coord.x1, coord.y2, coord.y1);
 	newFrame->IDname = IDname;
-	_UpdateContainer(newFrame);
+	_AddFrame(newFrame);
 }
 
 //	Change frame coordinates

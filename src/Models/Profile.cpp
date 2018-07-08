@@ -34,14 +34,14 @@ Profile::Profile(const Profile& copy) {
 void Profile::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::username:
-		username = data->input->input;
+		username = utility::_CopyChar(data->input->input);
 		usernameSize = data->input->length + 1;
 		break;
 	case Field::pwStatus:
 		pwProtected = data->input->check;
 		break;
 	case Field::password:
-		password =  data->input->input;
+		password = utility::_CopyChar(data->input->input);
 		passwordSize = data->input->length + 1;
 		utility::_XOR(password);
 		break;

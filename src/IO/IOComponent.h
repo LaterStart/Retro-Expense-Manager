@@ -140,6 +140,8 @@ private:
 			pos._ClearText();
 			pos._SetCharacterNumber(0);
 		}
+
+		~ActivePos() = default;
 	};
 
 	int activePosNum = 0;
@@ -184,7 +186,7 @@ public:
 	void _Display(Cursor& pos, int num);
 	void _LockContent(Cursor &pos);
 	void _LockContent();
-	void _Loading();
+	void _Loading();	
 };
 
 inline bool Display::_IsEmpty() {

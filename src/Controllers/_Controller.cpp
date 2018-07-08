@@ -70,6 +70,7 @@ DataBlock Controller::_GetBlock(char* page, int offset,  ModelName name) {
 		if (block._Model() == name) {
 			block._SetOffset(offset);
 			block.empty = false;
+			offset += block._NodeSize();
 			return block;
 		}
 		else {
@@ -119,6 +120,7 @@ void Controller::_LoadHeader(ModelHeader& header) {
 				DataBlock block = _GetBlock(page, readPos, ModelName::modelHeader);
 				if (!block.empty) {
 					readPos += block._PagePos();
+					readPos += block._NodeSize();
 					ModelHeader temporary;					
 					temporary._Deserialize(page+block._Offset());					
 
@@ -186,7 +188,7 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 	streamoff pageNum = pos / this->clusterSize;
 
 	// update last model header node
-	if (header._NodeCount() > 0)
+	if (this->header._NodeCount() > 0)
 		_UpdateLastNode(stream, this->header, ModelName::modelHeader, pageNum);
 
 	// update main header

@@ -35,8 +35,12 @@ void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int pr
 	// update 2D category list vector
 	if (newCategory._Type() == CategoryType::mainCategory)
 		categoryList->push_back(std::vector<Category>{newCategory});
-	else if (newCategory._Type() == CategoryType::subCategory)
-		categoryList->at(newCategory._ParentID()).push_back(newCategory);
+	else if (newCategory._Type() == CategoryType::subCategory) {
+		for (size_t i = 0; i < categoryList->size(); i++) {
+			if (categoryList->at(i).at(0)._ID() == newCategory._ParentID())
+				categoryList->at(i).push_back(newCategory);
+		}
+	}		
 	
 	stream->close();
 	delete stream;
@@ -44,9 +48,9 @@ void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int pr
 
 //	Load categories from database into 2D category list vector
 void CategoryController::_LoadCategoryList() {
-	fstream* stream = _OpenStream();
-	if (stream != nullptr) {
-		categoryList = new std::vector<std::vector<Category>>;
+	categoryList = new std::vector<std::vector<Category>>;
+	fstream* stream = _OpenStream();	
+	if (stream != nullptr) {		
 		char** buffer = _GetModels(stream, this->header, Query(Range::all));
 		for (unsigned int i = 0; i < header._NodeCount(); i++) {
 			Category category(buffer[i]);
@@ -65,7 +69,10 @@ void CategoryController::_LoadCategoryList() {
 //	Returns only main categories from 2D vector as 1D vector
 std::vector<Category> CategoryController::_GetMainCategoryList(){
 	std::vector<Category> mainCategories;
-	for (size_t i = 0; i < categoryList->size(); i++)
-		mainCategories.push_back(categoryList->at(i).at(0));
+	for (size_t i = 0; i < categoryList->size(); i++) {
+		Category* category = &categoryList->at(i).at(0);
+		if(category->_Type() == CategoryType::mainCategory)
+			mainCategories.push_back(*category);
+	}
 	return mainCategories;
 }

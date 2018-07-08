@@ -467,13 +467,14 @@ public:
 		this->OComponent::componentType = ComponentType::scrollDown;
 	}
 	ScrollDown(const ScrollDown& copy) : FormField(copy.text, copy.type, copy.dataType), items(copy.items), sMax(copy.items.size()) {
-		int sValue = copy.sValue;
-		int sFirst = copy.sFirst;
-		int sLast = copy.sLast;
-		int sMin = copy.sMin;
+		sValue = copy.sValue;
+		sFirst = copy.sFirst;
+		sLast = copy.sLast;
+		sMin = copy.sMin;
 		sLast = (sLast > sMax) ? sMax : sLast;
 		this->OComponent::componentType = ComponentType::scrollDown;
 	}
+	ScrollDown() = delete;
 
 	void _Show() override;
 	FormField* _Store() override;
@@ -510,7 +511,8 @@ void ScrollDown<element>::_Show() {
 		dsp._Display(items.at(i), pos);
 		pos._ChangeY(1);
 	}
-	parentForm->_SetSpecialContentHeight(5);
+	int height = (items.size() < 5) ? items.size() : 5;
+	parentForm->_SetSpecialContentHeight(height);
 
 	coord = inputField->parentFrame->_GetCoordinates();
 	Cursor iPos(coord.x1, coord.y1);
@@ -547,6 +549,7 @@ void ScrollDown<element>::_Show() {
 				dsp._WipeContent();
 			inputField->selection = sValue;
 			this->filled = true;
+			parentForm->_SetSpecialContentHeight(0);
 			parentForm->_ShowNextField(this);
 		}
 	}
@@ -617,7 +620,8 @@ public:
 	FormField* _Store() override;
 	std::vector<std::vector<element>>& _Items() const;
 	void _InsertItem(std::vector<element>& newItem, int index = 0);
-	void _UpdateScrollControl();
+	void _UpdateScrollControl(bool selectLastItem = true);
+	void _ToggleSubSelect(bool status);
 };
 
 template <typename element>
@@ -642,7 +646,7 @@ void ScrollDown_2D<element>::_Show() {
 	pos._ChangeX(1);
 
 	int maxLength = 0;
-	int index;
+	int index = 0;
 	for (int i = scrollControl[items.size()][1]+1; i < scrollControl[items.size()][2]; i++) {		
 		if (items[i].at(0)._DisplayLength() > maxLength) {
 			maxLength = items[i].at(0)._DisplayLength();
@@ -727,7 +731,7 @@ void ScrollDown_2D<element>::_Show() {
 			*sFirst = (*sValue - *sFirst < 2) ? *sFirst - 1 : *sFirst;
 			*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
 			*sLast = (*sLast - *sFirst > sHeight) ? *sLast - 1 : *sLast;
-			*sLast = (*sLast > *sMax) ? *sLast - 1 : *sLast;
+			*sLast = (*sLast > *sMax) ? *sMax : *sLast;
 
 			if (!subSelect)
 				*sCurr = *sValue;
@@ -801,28 +805,11 @@ std::vector<std::vector<element>>& ScrollDown_2D<element>::_Items() const {
 template <typename element>
 void ScrollDown_2D<element>::_InsertItem(std::vector<element>& newItem, int index) {
 	items.insert(items.begin() + index, newItem);
-	int** tempControl = new int*[items.size() + 1];
-	tempControl[index] = new int[5];
-
-	tempControl[index][0] = 1;
-	tempControl[index][1] = 1;
-	tempControl[index][2] = 5;
-	tempControl[index][3] = 1;
-	tempControl[index][4] = items[index].size();
-	
-	int j = 0;
-	for (size_t i = 0; i <= items.size(); i++) {
-		if (i != index) {
-			tempControl[i] = scrollControl[j];
-			j++;
-		}
-	}
-	delete[]scrollControl;
-	scrollControl = tempControl;
+	this->_UpdateScrollControl(false);
 }
 
 template <typename element>
-void ScrollDown_2D<element>::_UpdateScrollControl() {
+void ScrollDown_2D<element>::_UpdateScrollControl(bool selectLastItem) {
 	for (size_t i = 0; i < items.size(); i++)
 		delete[]scrollControl[i];
 	delete[]scrollControl;
@@ -849,9 +836,23 @@ void ScrollDown_2D<element>::_UpdateScrollControl() {
 		scrollControl[i][2] = (scrollControl[i][2] > scrollControl[i][4]) ? scrollControl[i][4] : scrollControl[i][2];
 
 	// update scroll down
-	*sCurr = items.size() - 1;
+	if (selectLastItem) {
+		*sCurr = items.size() - 1;
 
-	scrollControl[items.size()][0] = *sCurr;
-	scrollControl[items.size()][1] = (*sCurr - 4 > 0) ? *sCurr - 4 : 0;
-	scrollControl[items.size()][2] = scrollControl[items.size()][4];
+		scrollControl[items.size()][0] = *sCurr;
+		scrollControl[items.size()][1] = (*sCurr - sHeight > 0) ? *sCurr - sHeight : 0;
+		scrollControl[items.size()][2] = scrollControl[items.size()][4];
+	}
+}
+
+template <typename element>
+void ScrollDown_2D<element>::_ToggleSubSelect(bool status) {
+	this->subSelect = status;
+	if (status) {
+		sHeight = 4;
+		scrollControl[*sCurr][0] = items.at(*sCurr).size() -1;
+		scrollControl[*sCurr][1] = (items[*sCurr].size() - sHeight > 0) ? items[*sCurr].size() - sHeight : 0;
+		scrollControl[*sCurr][2] = scrollControl[*sCurr][4];
+	}
+	else sHeight = 5;
 }

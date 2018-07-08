@@ -102,7 +102,7 @@ void AddTransaction::_StartModule() {
 		if (form._EventStatus(1) == false) {
 			ScrollDown_2D<Category>* cField = dynamic_cast<ScrollDown_2D<Category>*>(form._SelectField("Category:"));
 			// insert new element at beggining of Category list 2D vector
-			vector<Category> newItem{ Category("Add new category->") };
+			vector<Category> newItem{ Category("Add new category->", CategoryType::temporary) };
 			cField->_InsertItem(newItem);
 			form._SetEventStatus(1, true);
 		}

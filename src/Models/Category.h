@@ -3,7 +3,8 @@
 
 const enum class CategoryType {
 	mainCategory,
-	subCategory	
+	subCategory,
+	temporary
 };
 
 class Category : public Model {
@@ -31,6 +32,7 @@ public:
 	Category() = default;
 	Category(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Category(char* buffer);
+	Category(const char* name, CategoryType type = CategoryType::mainCategory);
 	Category(const Category& copy);
 	~Category();	
 };

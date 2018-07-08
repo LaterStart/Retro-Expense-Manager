@@ -122,12 +122,14 @@ inline unsigned short OComponent::_Width() const {
 
 class FrameElement;
 class Frame : public OComponent{	
-private:
 	friend class Console;
 	friend class Layout;
+
+private:	
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
 	Frame(Frame& parentFrame, const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);	
-	void _UpdateContainer(Frame* newFrame);	
+	void _AddFrame(Frame* newFrame);
+	void _RemoveFrame(Frame* frame);
 	unsigned short leftPadding = 0;
 
 	void _AddElement(FrameElement& newElement);
@@ -166,6 +168,7 @@ public:
 	void _AddTopPadding(unsigned short padding);
 	void _AddBottomPadding(unsigned short padding);
 	void _ShowElements();
+	void _RemoveFrame();
 	std::vector<FrameElement*> _SelectElements(ComponentType type);
 
 	//	Add more FrameElements using variadic template
@@ -230,6 +233,7 @@ public:
 	unsigned short _Padding() const;
 	unsigned short _Ypos() const;
 	Frame* _ParentFrame() const;
+	virtual ~FrameElement() = default;
 };
 
 inline void FrameElement::_Show() {}
