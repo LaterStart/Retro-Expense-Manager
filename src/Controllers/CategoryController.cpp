@@ -12,7 +12,7 @@ ModelHeader CategoryController::header(ModelName::category);
 
 //	category controller constructor - loads categories from database
 CategoryController::CategoryController() {
-	this->model = ModelName::profile;
+	this->model = ModelName::category;
 	if (this->header._Loaded() == false) {
 		_LoadHeader(this->header);
 	}

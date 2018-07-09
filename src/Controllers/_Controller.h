@@ -26,7 +26,9 @@ const enum class Field {
 	date,
 	description,
 	categoryName,
-	parentCategory
+	parentCategory,
+	accountName,
+	accountType
 };
 
 const enum class Range {

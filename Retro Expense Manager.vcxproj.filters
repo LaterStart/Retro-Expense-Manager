@@ -108,6 +108,15 @@
     <ClInclude Include="src\Modules\AddCategoryExt.h">
       <Filter>Header Files\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="src\Modules\AddAccountExt.h">
+      <Filter>Header Files\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Controllers\AccountController.h">
+      <Filter>Header Files\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Models\Account.h">
+      <Filter>Header Files\Models</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Controllers\ModuleController.cpp">
@@ -181,6 +190,15 @@
     </ClCompile>
     <ClCompile Include="src\Modules\AddCategoryExt.cpp">
       <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\AddAccountExt.cpp">
+      <Filter>Source Files\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Controllers\AccountController.cpp">
+      <Filter>Source Files\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Models\Account.cpp">
+      <Filter>Source Files\Models</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

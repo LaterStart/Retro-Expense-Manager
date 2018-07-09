@@ -1,19 +1,19 @@
-#include "AddCategoryExt.h"
+#include "AddAccountExt.h"
 #include "../Models/Profile.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
 using namespace std;
 
-Module& AddCategoryExt::_GetInstance() {
+Module& AddAccountExt::_GetInstance() {
 	return _LoadModule();
 }
 
-AddCategoryExt& AddCategoryExt::_LoadModule() {
-	static AddCategoryExt module;
+AddAccountExt& AddAccountExt::_LoadModule() {
+	static AddAccountExt module;
 	return module;
 }
 
-void AddCategoryExt::_StartModule() {
+void AddAccountExt::_StartModule() {
 	Display dsp;
 	Frame* extTitle = layout->_Select("ExtensionTitle");
 	Frame* content = layout->_Select("ExtensionForm");
@@ -21,7 +21,7 @@ void AddCategoryExt::_StartModule() {
 	extTitle->dsp = &dsp;
 	content->dsp = &dsp;
 
-	Label title("Add Category ", ::headerSymbol, "left");
+	Label title("Add Account ", ::headerSymbol, "left");
 	extTitle->_AddElements(title);
 	title._Show();
 
@@ -31,8 +31,9 @@ void AddCategoryExt::_StartModule() {
 	Form form;
 	form._SetParentFrame(content);
 	form._AddFields(
-		SelectionField("Type:", categoryController.categoryType, Field::categoryType),
-		FormField("Name:", InputType::text, Field::categoryName),
+		ScrollDown<const char*>("Type:", accountController.accountType, Field::accountType),
+		FormField("Name:", InputType::text, Field::accountName),
+		FormField("Currency:", InputType::text, Field::currency),
 		ConfirmField("Save?:")
 	);
 	content->_AddElements(info, form);

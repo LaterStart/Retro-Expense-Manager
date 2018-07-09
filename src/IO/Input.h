@@ -119,13 +119,13 @@ protected:
 	void _SwitchField(ControlKey control);
 	
 public:		
-	FormField(const char* text, InputType type, Field field = Field::none) : Label(text), type(type), dataType(field){
+	FormField(const char* text, InputType type, Field field = Field::none) : Label(text), type(type), field(field){
 		this->IOComponent::componentType = ComponentType::formField;
 	}
 	FormField(const FormField& copy);
 	
 	UserInput* inputField = nullptr;
-	Field dataType = Field::none;
+	Field field = Field::none;
 
 	void _SetFilledStatus(bool status);
 	void _SetActiveStatus(bool status);
@@ -371,6 +371,7 @@ public:
 	void _ChangeNextYpos(short y);
 	void _Break();
 	utility::LinkedList<Data*>* _GetData();
+	UserInput* _GetData(Field field);
 	Frame::Coordinates _GetSpecialContentCoord();
 
 	FormField* _GetNextField(FormField* currentField);
@@ -466,7 +467,7 @@ public:
 		sLast = (sLast > sMax) ? sMax : sLast;
 		this->OComponent::componentType = ComponentType::scrollDown;
 	}
-	ScrollDown(const ScrollDown& copy) : FormField(copy.text, copy.type, copy.dataType), items(copy.items), sMax(copy.items.size()) {
+	ScrollDown(const ScrollDown& copy) : FormField(copy.text, copy.type, copy.field), items(copy.items), sMax(copy.items.size()) {
 		sValue = copy.sValue;
 		sFirst = copy.sFirst;
 		sLast = copy.sLast;
@@ -621,7 +622,7 @@ public:
 	std::vector<std::vector<element>>& _Items() const;
 	void _InsertItem(std::vector<element>& newItem, int index = 0);
 	void _UpdateScrollControl(bool selectLastItem = true);
-	void _ToggleSubSelect(bool status);
+	void _ToggleSubSelect(bool status, int parentID = 0);
 };
 
 template <typename element>
@@ -846,12 +847,14 @@ void ScrollDown_2D<element>::_UpdateScrollControl(bool selectLastItem) {
 }
 
 template <typename element>
-void ScrollDown_2D<element>::_ToggleSubSelect(bool status) {
+void ScrollDown_2D<element>::_ToggleSubSelect(bool status, int parentID) {
 	this->subSelect = status;
 	if (status) {
+		*sCurr = parentID;
 		sHeight = 4;
-		scrollControl[*sCurr][0] = items.at(*sCurr).size() -1;
-		scrollControl[*sCurr][1] = (items[*sCurr].size() - sHeight > 0) ? items[*sCurr].size() - sHeight : 0;
+		int size = items[*sCurr].size();
+		scrollControl[*sCurr][0] = size -1;
+		scrollControl[*sCurr][1] = (size - sHeight < 1) ? 1 : size - sHeight;
 		scrollControl[*sCurr][2] = scrollControl[*sCurr][4];
 	}
 	else sHeight = 5;

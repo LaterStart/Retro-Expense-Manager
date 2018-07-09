@@ -5,6 +5,7 @@
 #include "../Controllers/ProfileController.h"
 #include "../Controllers/TransactionController.h"
 #include "../Controllers/CategoryController.h"
+#include "../Controllers/AccountController.h"
 #include "../Controllers/ModuleController.h"
 #include "../IO/OComponent.h"
 
@@ -27,6 +28,7 @@ protected:
 	static ProfileController profileController;
 	static TransactionController transactionController;
 	static CategoryController categoryController;
+	static AccountController accountController;
 
 	bool extensionStatus = false;	
 

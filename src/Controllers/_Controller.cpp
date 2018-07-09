@@ -165,6 +165,7 @@ void Controller::_UpdateHeader(fstream* stream, Header& header) {
 	if (buffer != nullptr) {
 		int bufferSize = *(int*)buffer;	
 		stream->seekp(header._Position() + DataBlock::_BlockSize(), ios::beg);
+		streamoff pos = stream->tellp();
 		stream->write(buffer + sizeof(int), bufferSize);
 		delete[]buffer;
 	}
@@ -198,6 +199,7 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 	this->header._EditLastNode(pageNum);
 
 	_UpdateHeader(stream, this->header);
+	header._SetLoadStatus(true);
 }
 
 //	updates last node with new next node info

@@ -128,6 +128,9 @@ int UserInput::_VerifyInput(char& ch) {
 		case 81:
 			// page down
 			return 13;
+		case 83: 
+			// delete key
+			return 14;
 		default:
 			return 0;
 		}
@@ -159,6 +162,8 @@ int UserInput::_VerifyInput(char& ch) {
 			return _Verify_password(ch);
 		case InputType::scrollDown:
 			return _Verify_scrollDown(ch);
+		case InputType::value:
+			return _Verify_value(ch);
 		default:
 			return 0;
 		}
@@ -209,12 +214,46 @@ int UserInput::_Verify_scrollDown(char& ch) {
 }
 
 int UserInput::_Verify_value(char& ch) {
-	return 0;
+	if (ch == 13)
+		return 3;
+	else if (ch == 46) {
+		List* checker = node->previousNode;
+		int digitCount = 0;
+		while (checker != nullptr) {
+			if (checker->value == 46)
+				return 0;
+			else digitCount++;
+			checker = checker->previousNode;
+		}
+		if(digitCount > 0)
+			return 2;
+		else return 0;
+	}
+	else if (ch < 48 || ch > 57)		
+		return 0;
+	else {
+		List* checker = node->previousNode;
+		while (checker != nullptr) {
+			if (checker->value == 46) {
+				int decimalCount = 0;
+				while (checker != node) {
+					checker = checker->nextNode;
+					if (checker->value >= 48 && checker->value <= 57)
+						decimalCount++;
+				}
+				if (decimalCount == 2)
+					return 0;
+				else return 2;
+			}
+			checker = checker->previousNode;
+		}
+		return 2;
+	}
 }
 
 int UserInput::_UpdateInput(int& control, char& ch) {	
-	switch (control) {		
-	case -1: 
+	switch (control) {
+	case -1:
 		// special keys - delete last node and end input
 	del: {
 		while (node->nextNode != nullptr)
@@ -227,7 +266,7 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 			delete deleter;
 		}
 	}
-		return 1;
+		 return 1;
 	case 0:
 		// continue - reject input
 		return 0;
@@ -238,11 +277,11 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		// continue - accept input			
 		if (node->nextNode == nullptr) {
 			_ContinueAccept(ch);
-			_DisplayInput(ch);			
+			_DisplayInput(ch);
 		}
 		// insert character
-		else 
-			_ContinueInsert(ch);		
+		else
+			_ContinueInsert(ch);
 		return 2;
 	case 3:	goto del; // enter key pressed
 	case 4:
@@ -262,8 +301,8 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 			_ContinueInsert(ch);
 		return 2;
 	case 6: goto del; // up, down, left, right - arrow
-	case 7: 
-		//	backspace - delete input
+	case 7:
+		//	backspace - delete previous input
 		if (node->previousNode != nullptr) {
 			if (node->previousNode->previousNode != nullptr) {
 				List* deleter = node->previousNode;
@@ -289,7 +328,7 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 				curr._ChangeX(-1);
 				curr._SetCursorPosition();
 			}
-		}		
+		}
 		return 2;
 	case 8:
 		//	left arrow
@@ -329,7 +368,43 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		this->control = ControlKey::pageDown;
 		controlKey = true;
 		goto del;
-	default: 
+	case 14:
+		//	delete key - delete selected input
+		if (length > 0 && node->nextNode != nullptr) {
+			if (node->previousNode != nullptr) {
+				node->previousNode->nextNode = node->nextNode;
+				if (node->nextNode != nullptr)
+					node->nextNode->previousNode = node->previousNode;
+			}
+			else if (node->nextNode != nullptr)
+				node->nextNode->previousNode = nullptr;
+
+			if (node->nextNode != nullptr) {
+				List* deleter = node;
+				node = node->nextNode;
+				delete deleter;
+			}
+			else if (node->previousNode != nullptr) {
+				List* deleter = node;
+				initial = node->previousNode;
+				delete deleter;
+			}
+			else initial = node;
+
+			if (node->previousNode == nullptr)
+				initial = node;
+			first = initial;
+			length--;
+
+			Cursor curr;
+			_LoadBuffer();
+			dsp._WipeContent();
+			pos._SetX(min_x);
+			dsp._Display(pos, buffer);
+			curr._SetCursorPosition();
+		}
+		return 2;
+	default:
 		return 0;
 	}
 }

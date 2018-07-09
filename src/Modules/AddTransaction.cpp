@@ -58,7 +58,7 @@ void AddTransaction::_StartModule() {
 	form._AddFields(
 		SelectionField("Type:", transactionController.transactionType, Field::transactionType),
 		ScrollDown_2D<Category>("Category:", *categoryController.categoryList, Field::category),
-		FormField("Amount:", InputType::text, Field::amount),
+		FormField("Amount:", InputType::value, Field::amount),
 		FormField("Currency:", InputType::text, Field::currency),
 		FormField("Account:", InputType::text, Field::account),		
 		FormField("Description:", InputType::text, Field::description),
@@ -177,4 +177,7 @@ void AddTransaction::_StartModule() {
 	} while (true);
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
+
+	//	remove add new category temporary category from categories vector
+	categoryController.categoryList->erase(categoryController.categoryList->begin());
 }

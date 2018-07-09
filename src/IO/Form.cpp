@@ -532,18 +532,29 @@ void Form::_SwitchToMenu(FormField* currentField) {
 
 utility::LinkedList<Data*>* Form::_GetData() {	
 	FormField* field = fields[0];
-	Data* data = new Data(fields[0]->dataType, fields[0]->inputField);
+	Data* data = new Data(fields[0]->field, fields[0]->inputField);
 	utility::LinkedList<Data*>* list = new utility::LinkedList<Data*>(data);
 	utility::LinkedList<Data*>* first = list;
 	while (field != nullptr) {		
 		field = _GetNextField(field);
 		if (field != nullptr && field->_GetDataStatus()) {
-			data = new Data(field->dataType, field->inputField);
+			data = new Data(field->field, field->inputField);
 			list->_AddNextLink(data);
 			list = list->nextNode;
 		}
 	}
 	return first;
+}
+
+UserInput* Form::_GetData(Field field_) {
+	FormField* field = fields[0];
+	while (field != nullptr) {
+		if (field != nullptr && field->field == field_) {
+			return field->inputField;
+		}
+		field = _GetNextField(field);		
+	}
+	return nullptr;
 }
 
 Frame::Coordinates Form::_GetSpecialContentCoord() {
@@ -574,15 +585,6 @@ FormField::~FormField() {
 OptionField::~OptionField() {
 	for (int i = 0; i < optFieldNum; i++)
 		delete optionalFields[i]->inputField;
-
-	if (inputField != nullptr) {
-		if (inputField->parentFrame != nullptr) {
-			delete inputField->parentFrame->dsp;
-			inputField->parentFrame->_RemoveFrame();
-			delete inputField->parentFrame;
-		}
-		delete inputField;
-	}	
 }
 
 FormField::FormField(const FormField& copy) : Label(copy.text) {
@@ -593,7 +595,7 @@ FormField::FormField(const FormField& copy) : Label(copy.text) {
 	this->filled = copy.filled;
 	this->dataField = copy.dataField;
 	this->inputField = copy.inputField;
-	this->dataType =copy.dataType;
+	this->field =copy.field;
 	this->OComponent::componentType = copy.OComponent::componentType;
 }
 
