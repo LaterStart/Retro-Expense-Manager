@@ -4,6 +4,7 @@ using namespace std;
 ProfileController Module::profileController;
 TransactionController Module::transactionController;
 CategoryController Module::categoryController;
+AccountController Module::accountController;
 
 ModuleManagement::ModuleManagement(Console* myConsole) : moduleList(nullptr), moduleNum(0), initialized(false), console(myConsole){
 	_InitializeModules();

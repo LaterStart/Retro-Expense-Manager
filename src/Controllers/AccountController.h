@@ -1,18 +1,23 @@
 #pragma once
 #include "_Controller.h"
+#include "../Models/Account.h"
+#include "../Models/AccountType.h"
 
-class Account; class ModelHeader;
+class Account; class AccountType;  class ModelHeader;
 class AccountController : public Controller {
 private:
-	static ModelHeader header;	
+	static ModelHeader accountHeader;	
+	static ModelHeader accountTypeHeader;
 
 public:
 	AccountController();
 	~AccountController() = default;
 
-	static std::vector<const char*> accountType;
-	std::vector<std::vector<Account>>* accountsList;
+	std::vector<AccountType>* accountTypes;
+	std::vector<Account>* accounts;
 	
 	void _AddNewAccount(utility::LinkedList<Data*>*data, int profileID);
-	void _LoadAccountList();
+	void _AddNewAccountType(utility::LinkedList<Data*>*data);
+	void _LoadAccounts();
+	void _LoadAccountTypes();
 };

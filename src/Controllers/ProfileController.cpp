@@ -1,7 +1,5 @@
 #include <fstream>
 #include "ProfileController.h"
-#include "../Models/_Header.h"
-#include "../Models/Profile.h"
 using namespace std;
 
 //	static profile model header
@@ -9,7 +7,6 @@ ModelHeader ProfileController::header(ModelName::profile);
 
 //	profile controller constructor - loads profile model header from database
 ProfileController::ProfileController() {
-	this->model = ModelName::profile;
 	if (this->header._Loaded() == false) {
 		_LoadHeader(this->header);
 	}

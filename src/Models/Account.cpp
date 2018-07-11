@@ -20,17 +20,17 @@ Account::Account(char* buffer) {
 }
 
 // construct new account model using account name
-Account::Account(const char* name, AccountType type) {
+Account::Account(const char* name, int accountTypeID) {
 	this->name = utility::_CopyChar(name);
-	this->type = type;
+	this->accountTypeID = accountTypeID;
 }
 
 // account copy constructor
 Account::Account(const Account& copy) {
 	this->ID = copy.ID;
 	this->profileID = copy.profileID;
-	this->name = utility::_CopyChar(copy.name);
-	this->type = copy.type;	
+	this->accountTypeID = copy.accountTypeID;
+	this->name = utility::_CopyChar(copy.name);	
 }
 
 //	binds form data to object data
@@ -41,7 +41,7 @@ void Account::_BindData(Data* data) {
 		nameSize = data->input->length + 1;
 		break;
 	case Field::accountType:
-		type = static_cast<AccountType>(data->input->selection - 1);
+		accountTypeID = data->input->selection;
 		break;
 	default:
 		break;
@@ -63,15 +63,11 @@ char* Account::_Serialize() {
 	buffer += sizeof(int);
 
 	//	store IDs into buffer
-	int* ptr[] = { &profileID };
+	int* ptr[] = { &profileID, &accountTypeID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
 	}
-
-	//	store type into buffer
-	std::memcpy(buffer, &type, sizeof(int));
-	buffer += sizeof(int);
 
 	//	store name into buffer
 	std::memcpy(buffer, &nameSize, sizeof(int));
@@ -87,14 +83,11 @@ void Account::_Deserialize(char* page) {
 	page += sizeof(int);
 
 	//	deserialize IDs
-	int* ptr[] = { &profileID };
+	int* ptr[] = { &profileID, &accountTypeID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
 	}
-
-	this->type = static_cast<AccountType>(*(int*)page);
-	page += sizeof(int);
 	
 	this->nameSize = *(int*)page;
 	page += sizeof(int);

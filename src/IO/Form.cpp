@@ -323,6 +323,7 @@ void ConfirmField::_Show() {
 			parentForm->_SetStatus(true);
 			Display* dsp = _GetDisplay();		
 			dsp->_Loading();
+			parentForm->_Break();
 		}
 	}
 	else {
@@ -666,10 +667,10 @@ void OptionField::_Hide() {
 		optionalFields[i]->_Hide();
 }
 
-FormField* Form::_SelectField(const char* text) {
+FormField* Form::_SelectField(Field field_) {
 	FormField* field = fields[0];
 	do {
-		if (utility::_CompareChar(field->text,text))
+		if (field->field == field_)
 			return field;
 		field = _GetNextField(field);		
 	} while (field != nullptr);

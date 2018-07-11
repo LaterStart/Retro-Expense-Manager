@@ -28,6 +28,8 @@ public:
 	char* _Name() const;
 	CategoryType _Type() const;
 	int _DisplayLength();
+	void _SetProfileID(int profileID);
+	void _SetID(int ID);
 
 	Category() = default;
 	Category(utility::LinkedList<Data*>* data, int ID, int profileID);
@@ -55,4 +57,12 @@ inline int Category::_DisplayLength() {
 
 inline int Category::_ParentID() const {
 	return this->parentID;
+}
+
+inline void Category::_SetProfileID(int profileID) {
+	this->profileID = profileID;
+}
+
+inline void Category::_SetID(int ID) {
+	this->ID = ID;
 }

@@ -2,7 +2,6 @@
 #include <functional>
 #include "IOComponent.h"
 #include "../Controllers/_Controller.h"
-#include "../Models/Category.h"
 
 const enum class InputType { 
 	none, 
@@ -375,7 +374,7 @@ public:
 	Frame::Coordinates _GetSpecialContentCoord();
 
 	FormField* _GetNextField(FormField* currentField);
-	FormField* _SelectField(const char* text);
+	FormField* _SelectField(Field field);
 
 	Form() {
 		this->OComponent::componentType = ComponentType::form;
@@ -480,6 +479,8 @@ public:
 	void _Show() override;
 	FormField* _Store() override;
 	std::vector<element>& _Items() const;
+	void _UpdateScrollDown(bool selectLastItem = true);
+	void _InsertItem(element& newItem, int index = 0);
 };
 
 template <typename element>
@@ -571,6 +572,28 @@ std::vector<element>& ScrollDown<element>::_Items() const {
 	return this->items;
 }
 
+template <typename element>
+void ScrollDown<element>::_UpdateScrollDown(bool selectLastItem) {
+	sMax = items.size();
+	sLast = (sValue + 5 > sMax) ? sMax : sValue + 5;
+	if (selectLastItem) {
+		sValue = sMax - 1;
+		sFirst = (sValue - 4 > 0) ? sValue - 4 : 0;
+		sLast = sMax;
+
+		coord = inputField->parentFrame->_GetCoordinates();
+		Cursor iPos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_WipeContent();
+		inputField->parentFrame->dsp->_Display(items.at(sValue), iPos);
+	}
+}
+
+template <typename element>
+void ScrollDown<element>::_InsertItem(element& newItem, int index) {
+	items.insert(items.begin() + index, newItem);
+	this->_UpdateScrollDown(false);
+}
+
 template <class element>
 class ScrollDown_2D : public FormField {
 private:
@@ -584,6 +607,7 @@ private:
 	int* sMax = nullptr;
 	bool subSelect = false;
 	int sHeight = 5;
+	size_t initSize = items.size();
 
 public:
 	ScrollDown_2D(const char* text, std::vector<std::vector<element>>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items) {
@@ -811,7 +835,7 @@ void ScrollDown_2D<element>::_InsertItem(std::vector<element>& newItem, int inde
 
 template <typename element>
 void ScrollDown_2D<element>::_UpdateScrollControl(bool selectLastItem) {
-	for (size_t i = 0; i < items.size(); i++)
+	for (size_t i = 0; i < initSize; i++)
 		delete[]scrollControl[i];
 	delete[]scrollControl;
 
@@ -841,9 +865,15 @@ void ScrollDown_2D<element>::_UpdateScrollControl(bool selectLastItem) {
 		*sCurr = items.size() - 1;
 
 		scrollControl[items.size()][0] = *sCurr;
-		scrollControl[items.size()][1] = (*sCurr - sHeight > 0) ? *sCurr - sHeight : 0;
+		scrollControl[items.size()][1] = (*sCurr - sHeight+1 > 0) ? *sCurr - sHeight+1 : 0;
 		scrollControl[items.size()][2] = scrollControl[items.size()][4];
+
+		coord = inputField->parentFrame->_GetCoordinates();
+		Cursor iPos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_WipeContent();
+		inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(0), iPos);
 	}
+	initSize = items.size();	
 }
 
 template <typename element>
@@ -856,6 +886,12 @@ void ScrollDown_2D<element>::_ToggleSubSelect(bool status, int parentID) {
 		scrollControl[*sCurr][0] = size -1;
 		scrollControl[*sCurr][1] = (size - sHeight < 1) ? 1 : size - sHeight;
 		scrollControl[*sCurr][2] = scrollControl[*sCurr][4];
+
+		coord = inputField->parentFrame->_GetCoordinates();
+		Cursor iPos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_WipeContent();
+		inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(0), iPos);
+		inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(scrollControl[scrollControl[items.size()][0]][0]), iPos);
 	}
 	else sHeight = 5;
 }

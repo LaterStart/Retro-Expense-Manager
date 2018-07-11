@@ -22,6 +22,7 @@ Category::Category(char* buffer) {
 // construct new category model using category name
 Category::Category(const char* name, CategoryType type) {
 	this->name = utility::_CopyChar(name);
+	this->nameSize = utility::_CharSize(this->name);
 	this->type = type;
 }
 
@@ -31,6 +32,7 @@ Category::Category(const Category& copy) {
 	this->parentID = copy.parentID;
 	this->profileID = copy.profileID;
 	this->name = utility::_CopyChar(copy.name);
+	this->nameSize = copy.nameSize;
 	this->type = copy.type;	
 }
 

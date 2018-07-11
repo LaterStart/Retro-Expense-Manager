@@ -1,5 +1,6 @@
 #pragma once
 #include "_Controller.h"
+#include "../Models/Transaction.h"
 
 class Transaction; class ModelHeader;
 class TransactionController : public Controller {

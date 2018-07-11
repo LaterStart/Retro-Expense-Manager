@@ -17,3 +17,14 @@ extern const unsigned char horizontalLine;
 extern const unsigned char verticalLine;
 extern const unsigned char spaceKey;
 extern const unsigned char headerSymbol;
+
+const enum class ModelName {
+	none,
+	mainHeader,
+	modelHeader,
+	profile,
+	account,
+	transaction,
+	category,
+	accountType
+};

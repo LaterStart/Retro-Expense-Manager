@@ -1,16 +1,7 @@
 #pragma once
 #include <fstream>
 #include "../config.h"
-
-const enum class ModelName {
-	none,
-	mainHeader,
-	modelHeader,
-	profile,
-	account,
-	transaction,
-	category
-};
+#include "../Models/_Header.h"
 
 const enum class Field {
 	none,
@@ -28,7 +19,8 @@ const enum class Field {
 	categoryName,
 	parentCategory,
 	accountName,
-	accountType
+	accountType,
+	accountTypeName
 };
 
 const enum class Range {
@@ -77,8 +69,6 @@ private:
 	Controller(bool& initialize);
 
 protected:		
-	ModelName model = ModelName::none;
-	
 	std::fstream* _OpenStream();
 	bool _CreateDatabase();
 	void _WriteNewModelHeader(std::fstream* stream, ModelHeader& header);

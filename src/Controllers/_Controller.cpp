@@ -1,6 +1,5 @@
 #include <fstream>
 #include "_Controller.h"
-#include "../Models/_Header.h"
 #include "../Models/_DataBlock.h"
 using namespace std;
 
@@ -119,7 +118,7 @@ void Controller::_LoadHeader(ModelHeader& header) {
 			do {
 				DataBlock block = _GetBlock(page, readPos, ModelName::modelHeader);
 				if (!block.empty) {
-					readPos += block._PagePos();
+					readPos = block._PagePos();
 					readPos += block._NodeSize();
 					ModelHeader temporary;					
 					temporary._Deserialize(page+block._Offset());					

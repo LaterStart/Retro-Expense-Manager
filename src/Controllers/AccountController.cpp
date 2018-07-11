@@ -1,45 +1,93 @@
 #include <fstream>
 #include "AccountController.h"
-#include "../Models/_Header.h"
-#include "../Models/Account.h"
 using namespace std;
 
-//	account types
-vector<const char*> AccountController::accountType{ "Cash", "Savings", "Credit Card", "Bank Account", "Loan", "Insurance", "Investment" };
-
 //	static account model header
-ModelHeader AccountController::header(ModelName::account);
+ModelHeader AccountController::accountHeader(ModelName::account);
 
-//	account controller constructor - loads accounts from database
-AccountController::AccountController() {
-	this->model = ModelName::account;
-	if (this->header._Loaded() == false) {
-		_LoadHeader(this->header);
+//	static account type model header
+ModelHeader AccountController::accountTypeHeader(ModelName::accountType);
+
+//	account controller constructor - loads accounts from database and creates default account types vector
+AccountController::AccountController() {	
+	if (accountHeader._Loaded() == false) {
+		_LoadHeader(accountHeader);
 	}
-	this->_LoadAccountList();
+	_LoadAccounts();
+	accountTypes = new vector<AccountType>{ 
+		AccountType("Cash", 0),
+		AccountType("Credit Card", 1),
+		AccountType("Bank Account", 2),
+		AccountType("Insurance", 3),
+		AccountType("Loan", 4),
+		AccountType("Investment", 5)
+	};
+	accountTypeHeader._SetNodeCount(6);
+	accountTypeHeader._SetStartID(6);
+	if (accountTypeHeader._Loaded() == false) {
+		_LoadHeader(accountTypeHeader);
+	}
+	_LoadAccountTypes();
 }
 
 //	Add new account
 void AccountController::_AddNewAccount(utility::LinkedList<Data*>*data, int profileID) {
-	Account newAccount(data, header._GiveID(), profileID);
+	Account newAccount(data, accountHeader._GiveID(), profileID);
 	fstream* stream = _OpenStream();
 
 	// check if model header exists
-	if(this->header._Loaded() == false)
-		this->_WriteNewModelHeader(stream, this->header);
+	if(accountHeader._Loaded() == false)
+		_WriteNewModelHeader(stream, accountHeader);
 
 	// write model		
 	char* buffer = newAccount._Serialize();
-	_WriteModel(stream, this->header, buffer);	
+	_WriteModel(stream, accountHeader, buffer);	
 
 	// update accounts list vector
-
+	accounts->push_back(newAccount);
 	
 	stream->close();
 	delete stream;
 }
 
-//	Load accounts from database into 2D category list vector
-void AccountController::_LoadAccountList() {
+//	Add new account type
+void AccountController::_AddNewAccountType(utility::LinkedList<Data*>* data) {
+	AccountType newAccountType(data, accountTypeHeader._GiveID());
+	fstream* stream = _OpenStream();
+
+	// check if model header exists
+	if (accountTypeHeader._Loaded() == false)
+		_WriteNewModelHeader(stream, accountTypeHeader);
+
+	// write model		
+	char* buffer = newAccountType._Serialize();
+	_WriteModel(stream, accountTypeHeader, buffer);
+
+	// update account types list vector
+	accountTypes->push_back(newAccountType);
+
+	stream->close();
+	delete stream;
+}
+
+//	Load accounts from database into 1D accounts vector
+void AccountController::_LoadAccounts() {
+	accounts = new vector<Account>;
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char** buffer = _GetModels(stream, this->accountHeader, Query(Range::all));
+		for (unsigned int i = 0; i < accountHeader._NodeCount(); i++) {
+			Account account(buffer[i]);
+			accounts->push_back(account);
+			delete[]buffer[i];
+		}
+		delete[]buffer;
+		stream->close();
+	}
+	delete stream;
+}
+
+//	Load account types from database into 1D account types vector
+void AccountController::_LoadAccountTypes() {
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "_Controller.h"
+#include "../Models/Category.h"
 
 class Category; class ModelHeader;
 class CategoryController : public Controller {
@@ -14,6 +15,7 @@ public:
 	std::vector<std::vector<Category>>* categoryList;
 	
 	void _AddNewCategory(utility::LinkedList<Data*>*data, int profileID);
+	void _AddNewCategory(Category& category, int profileID);
 	void _LoadCategoryList();
 	std::vector<Category> _GetMainCategoryList();
 };

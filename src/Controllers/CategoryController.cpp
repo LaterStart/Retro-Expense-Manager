@@ -1,7 +1,5 @@
 #include <fstream>
 #include "CategoryController.h"
-#include "../Models/_Header.h"
-#include "../Models/Category.h"
 using namespace std;
 
 //	category types
@@ -12,7 +10,6 @@ ModelHeader CategoryController::header(ModelName::category);
 
 //	category controller constructor - loads categories from database
 CategoryController::CategoryController() {
-	this->model = ModelName::category;
 	if (this->header._Loaded() == false) {
 		_LoadHeader(this->header);
 	}
@@ -34,7 +31,7 @@ void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int pr
 
 	// update 2D category list vector
 	if (newCategory._Type() == CategoryType::mainCategory)
-		categoryList->push_back(std::vector<Category>{newCategory});
+		categoryList->push_back(vector<Category>{newCategory});
 	else if (newCategory._Type() == CategoryType::subCategory) {
 		for (size_t i = 0; i < categoryList->size(); i++) {
 			if (categoryList->at(i).at(0)._ID() == newCategory._ParentID())
@@ -46,16 +43,43 @@ void CategoryController::_AddNewCategory(utility::LinkedList<Data*>*data, int pr
 	delete stream;
 }
 
+void CategoryController::_AddNewCategory(Category& newCategory, int profileID) {
+	newCategory._SetID(header._GiveID());
+	newCategory._SetProfileID(profileID);
+	fstream* stream = _OpenStream();
+
+	// check if model header exists
+	if (this->header._Loaded() == false)
+		this->_WriteNewModelHeader(stream, this->header);
+
+	// write model		
+	char* buffer = newCategory._Serialize();
+	_WriteModel(stream, this->header, buffer);
+
+	// update 2D category list vector
+	if (newCategory._Type() == CategoryType::mainCategory)
+		categoryList->push_back(vector<Category>{newCategory});
+	else if (newCategory._Type() == CategoryType::subCategory) {
+		for (size_t i = 0; i < categoryList->size(); i++) {
+			if (categoryList->at(i).at(0)._ID() == newCategory._ParentID())
+				categoryList->at(i).push_back(newCategory);
+		}
+	}
+
+	stream->close();
+	delete stream;
+}
+
 //	Load categories from database into 2D category list vector
 void CategoryController::_LoadCategoryList() {
-	categoryList = new std::vector<std::vector<Category>>;
+	categoryList = new vector<vector<Category>>;
 	fstream* stream = _OpenStream();	
 	if (stream != nullptr) {		
 		char** buffer = _GetModels(stream, this->header, Query(Range::all));
 		for (unsigned int i = 0; i < header._NodeCount(); i++) {
 			Category category(buffer[i]);
 			if (category._Type() == CategoryType::mainCategory)
-				categoryList->insert(categoryList->begin() + category._ID(), std::vector<Category>{category});
+				categoryList->push_back(vector<Category>{category});
 			else if (category._Type() == CategoryType::subCategory)
 				categoryList->at(category._ParentID()).push_back(category);
 			delete[]buffer[i];			
@@ -67,8 +91,8 @@ void CategoryController::_LoadCategoryList() {
 }
 
 //	Returns only main categories from 2D vector as 1D vector
-std::vector<Category> CategoryController::_GetMainCategoryList(){
-	std::vector<Category> mainCategories;
+vector<Category> CategoryController::_GetMainCategoryList(){
+	vector<Category> mainCategories;
 	for (size_t i = 0; i < categoryList->size(); i++) {
 		Category* category = &categoryList->at(i).at(0);
 		if(category->_Type() == CategoryType::mainCategory)

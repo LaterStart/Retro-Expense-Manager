@@ -28,6 +28,8 @@ public:
 	void _SetLoadStatus(bool status);
 	unsigned int _NodeCount() const;
 	unsigned int _GiveID();
+	void _SetNodeCount(int nodeCount);
+	void _SetStartID(int startID);
 
 	virtual ~Header() = default;
 };
@@ -78,6 +80,14 @@ inline unsigned int Header::_NodeCount() const {
 
 inline unsigned int Header::_GiveID(){
 	return this->idCount++;
+}
+
+inline void Header::_SetNodeCount(int nodeCount) {
+	this->nodeCount = nodeCount;
+}
+
+inline void Header::_SetStartID(int startID) {
+	this->idCount = startID;
 }
 
 class MainHeader : public Header {

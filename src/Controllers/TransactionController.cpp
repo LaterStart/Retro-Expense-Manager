@@ -1,7 +1,5 @@
 #include <fstream>
 #include "TransactionController.h"
-#include "../Models/_Header.h"
-#include "../Models/Transaction.h"
 using namespace std;
 
 //	transaction types
