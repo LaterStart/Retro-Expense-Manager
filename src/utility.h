@@ -31,6 +31,8 @@ struct Date {
 	Date() = default;
 
 	int _DisplayLength();
+
+	friend bool operator <(const Date&, const Date&);
 };
 
 std::ostream& operator<<(std::ostream& os, Date& date);
@@ -51,6 +53,7 @@ namespace utility {
 	int _CharSize(char* arr);
 	int _CharSize(const char* arr);
 	int _ConvertToInteger(char* text);
+	int _ConvertToInteger(char* buffer, int size);
 	int _DigitNumber(int num);
 	int _Find(char* word, char* arr);
 	int _ReadAlign(const char* align);

@@ -70,18 +70,37 @@ void AccountController::_AddNewAccountType(utility::LinkedList<Data*>* data) {
 	delete stream;
 }
 
+void AccountController::_AddNewAccountType(char* name) {
+	AccountType newAccountType(name, accountTypeHeader._GiveID());
+	fstream* stream = _OpenStream();
+
+	// check if model header exists
+	if (accountTypeHeader._Loaded() == false)
+		_WriteNewModelHeader(stream, accountTypeHeader);
+
+	// write model		
+	char* buffer = newAccountType._Serialize();
+	_WriteModel(stream, accountTypeHeader, buffer);
+
+	// update account types list vector
+	accountTypes->push_back(newAccountType);
+
+	stream->close();
+	delete stream;
+}
+
 //	Load accounts from database into 1D accounts vector
 void AccountController::_LoadAccounts() {
 	accounts = new vector<Account>;
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
-		char** buffer = _GetModels(stream, this->accountHeader, Query(Range::all));
-		for (unsigned int i = 0; i < accountHeader._NodeCount(); i++) {
-			Account account(buffer[i]);
+		vector<char*>* buffer = _GetModels(stream, this->accountHeader, Query(Range::all));
+		for (unsigned int i = 0; i < buffer->size(); i++) {
+			Account account(buffer->at(i));
 			accounts->push_back(account);
-			delete[]buffer[i];
+			delete[]buffer->at(i);
 		}
-		delete[]buffer;
+		delete buffer;
 		stream->close();
 	}
 	delete stream;
@@ -89,5 +108,16 @@ void AccountController::_LoadAccounts() {
 
 //	Load account types from database into 1D account types vector
 void AccountController::_LoadAccountTypes() {
-
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		vector<char*>* buffer = _GetModels(stream, this->accountTypeHeader, Query(Range::all));
+		for (unsigned int i = 0; i < buffer->size(); i++) {
+			AccountType accountType(buffer->at(i));
+			accountTypes->push_back(accountType);
+			delete[]buffer->at(i);
+		}
+		delete buffer;
+		stream->close();
+	}
+	delete stream;
 }

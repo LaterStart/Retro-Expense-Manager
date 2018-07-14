@@ -26,5 +26,6 @@ const enum class ModelName {
 	account,
 	transaction,
 	category,
-	accountType
+	accountType,
+	exchangeRate
 };

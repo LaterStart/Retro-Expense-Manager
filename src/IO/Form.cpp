@@ -319,7 +319,7 @@ void ConfirmField::_Show() {
 		parentForm->_UpdateActiveFields(-1);
 		if (inputField->check == true) {		
 			parentForm->_Hide();
-			parentForm->_DisplayMessage("Saved successfully.");
+			parentForm->_DisplayMessage("Saved successfully");
 			parentForm->_SetStatus(true);
 			Display* dsp = _GetDisplay();		
 			dsp->_Loading();
@@ -677,6 +677,19 @@ FormField* Form::_SelectField(Field field_) {
 	return nullptr;
 }
 
+std::vector<FormField*> Form::_SelectFields(std::vector<Field> fields_) {
+	std::vector<FormField*> result;
+	FormField* field = fields[0];
+	for (int i = 0; i < fields_.size(); i++) {
+		do {
+			if (field->field == fields_.at(i))
+				result.push_back(field);
+			field = _GetNextField(field);
+		} while (field != nullptr);
+	}
+	return result;
+}
+
 void Form::_AddEvent(std::function<void(Form&, FormField*)> const& lambda) {
 	std::function<void(Form&, FormField*)>* temp1 = new std::function<void(Form&, FormField*)>[eventNum + 1];
 	bool* temp2 = new bool[eventNum + 1];
@@ -707,6 +720,7 @@ void Form::_RemoveFields(int index, int fieldNum) {
 }
 
 void Form::_RunEvents(FormField* currentField) {
+	lastField = currentField;
 	for (int i = 0; i < eventNum; i++) 
 		events[i](*this, currentField);		
 }

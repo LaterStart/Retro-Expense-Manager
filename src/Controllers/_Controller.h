@@ -39,18 +39,70 @@ public:
 };
 
 class Query {
-	Range range = Range::none;
+	Range range = Range::none;	
+	std::vector<int>* includeIDs = new std::vector<int>;
+	std::vector<int>* excludeIDs = new std::vector<int>;
+
+	void _IncludeID(int id);
+	void _ExcludeID(int id);
 
 public:
 	void _SetRange(Range range);
+
+	template <typename T>
+	void _IncludeIDs(T ID) {
+		_IncludeID(ID);
+	}
+	template<typename T, typename ... TT>
+	void _IncludeIDs(T ID, TT ... nextIDs) {
+		_IncludeID(ID);
+		_IncludeIDs(nextIDs...);
+	}
+
+	template <typename T>
+	void _ExcludeIDs(T ID) {
+		_ExcludeID(ID);
+	}
+	template<typename T, typename ... TT>
+	void _ExcludeIDs(T ID, TT ... nextIDs) {
+		_ExcludeID(ID);
+		_ExcludeIDs(nextIDs...);
+	}
+
+	bool _ValidateID(int ID);
+
 	Query() = default;
 	Query(Range range) : range(range){}
-	~Query() = default;
+	Query(const Query& copy) {
+		this->range = copy.range;
+		this->excludeIDs = copy.excludeIDs;
+		this->includeIDs = copy.includeIDs;
+	}
+	~Query() {
+		delete includeIDs;
+		delete excludeIDs;
+	}
 };
 
 inline void Query::_SetRange(Range range) {
 	this->range = range;
 }
+
+inline void Query::_IncludeID(int id) {
+	includeIDs->push_back(id);
+}
+
+inline void Query::_ExcludeID(int id) {
+	excludeIDs->push_back(id);
+}
+
+struct Buffer {
+	char* data = nullptr;
+	int size = 0;
+	Buffer* nextNode = nullptr;
+
+	~Buffer(){ delete[]data; }
+};
 
 class DataBlock; class Header; class MainHeader; class ModelHeader;
 class Controller {
@@ -73,10 +125,10 @@ protected:
 	bool _CreateDatabase();
 	void _WriteNewModelHeader(std::fstream* stream, ModelHeader& header);
 	void _WriteModel(std::fstream* stream, ModelHeader& header, char* buffer);
-	void _LoadHeader(ModelHeader& header);
-	char** _GetModels(std::fstream* stream, ModelHeader& header, Query query);
+	void _LoadHeader(ModelHeader& header);	
 	char* _GetModel(std::fstream* stream, ModelHeader& header, int ID);
 	void _UpdateModel(std::fstream* stream, ModelHeader& header, int ID, char* buffer);
+	std::vector<char*>* _GetModels(std::fstream* stream, ModelHeader& header, Query& query);
 	
 	Controller() = default;
 	~Controller() = default;

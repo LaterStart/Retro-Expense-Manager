@@ -7,6 +7,7 @@ class CategoryController : public Controller {
 private:
 	static ModelHeader header;	
 
+	void _LoadCategoryList();
 public:
 	CategoryController();
 	~CategoryController() = default;
@@ -15,7 +16,6 @@ public:
 	std::vector<std::vector<Category>>* categoryList;
 	
 	void _AddNewCategory(utility::LinkedList<Data*>*data, int profileID);
-	void _AddNewCategory(Category& category, int profileID);
-	void _LoadCategoryList();
+	void _AddNewCategory(Category& category, int profileID);	
 	std::vector<Category> _GetMainCategoryList();
 };

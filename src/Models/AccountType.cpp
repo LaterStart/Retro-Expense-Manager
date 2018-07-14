@@ -18,16 +18,40 @@ AccountType::AccountType(char* buffer) {
 	this->_Deserialize(buffer);
 }
 
-// construct new account type model using account name
-AccountType::AccountType(const char* name, int ID) {
+// construct new account type model using account type name
+AccountType::AccountType(char* name, int ID) {
 	this->ID = ID;
 	this->name = utility::_CopyChar(name);
+	this->nameSize = utility::_CharSize(name);
 }
 
 // account type copy constructor
 AccountType::AccountType(const AccountType& copy) {
 	this->ID = copy.ID;
 	this->name = utility::_CopyChar(copy.name);
+	this->nameSize = copy.nameSize;
+}
+
+// account type move constructor
+AccountType::AccountType(AccountType&& move) {	
+	this->ID = move.ID;
+	this->name = move.name;
+	this->nameSize = move.nameSize;
+	move.name = nullptr;
+}
+
+// account type move assignment
+AccountType& AccountType::operator=(AccountType&& move){	
+	if (&move == this)
+		return *this;
+	delete[]name;
+
+	this->ID = move.ID;
+	this->name = move.name;
+	this->nameSize = move.nameSize;
+	move.name = nullptr;
+
+	return *this;
 }
 
 //	binds form data to object data

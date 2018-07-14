@@ -22,6 +22,7 @@ Account::Account(char* buffer) {
 // construct new account model using account name
 Account::Account(const char* name, int accountTypeID) {
 	this->name = utility::_CopyChar(name);
+	this->nameSize = utility::_CharSize(name);
 	this->accountTypeID = accountTypeID;
 }
 
@@ -31,6 +32,33 @@ Account::Account(const Account& copy) {
 	this->profileID = copy.profileID;
 	this->accountTypeID = copy.accountTypeID;
 	this->name = utility::_CopyChar(copy.name);	
+	this->nameSize = copy.nameSize;
+}
+
+// account move constructor
+Account::Account(Account&& move) {
+	this->ID = move.ID;
+	this->profileID = move.profileID;
+	this->accountTypeID = move.accountTypeID;
+	this->name = move.name;
+	this->nameSize = move.nameSize;
+	move.name = nullptr;
+}
+
+// account move assignment
+Account& Account::operator=(Account&& move) {
+	if (&move == this)
+		return *this;
+	delete[]name;
+
+	this->ID = move.ID;
+	this->profileID = move.profileID;
+	this->accountTypeID = move.accountTypeID;
+	this->name = move.name;
+	this->nameSize = move.nameSize;
+	move.name = nullptr;
+
+	return *this;
 }
 
 //	binds form data to object data

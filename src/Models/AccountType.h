@@ -21,9 +21,12 @@ public:
 	AccountType() = default;
 	AccountType(utility::LinkedList<Data*>* data, int ID);
 	AccountType(char* buffer);
-	AccountType(const char* name, int ID);
-	AccountType(const AccountType& copy);
+	AccountType(char* name, int ID);
+	AccountType(const AccountType& copy);	
+	AccountType(AccountType&& move);
 	~AccountType();
+
+	AccountType& operator=(AccountType&& a);
 };
 
 inline int AccountType::_ID() const {

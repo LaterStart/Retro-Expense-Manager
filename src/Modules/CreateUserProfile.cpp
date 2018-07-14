@@ -49,7 +49,7 @@ void CreateUserProfile::_StartModule() {
 	Frame* content = layout._Select("Content");
 	content->_AddElements(info);
 	layout._ShowElements();	
-	
+
 	//	Input form
 	Form form;
 	form._SetParentFrame(content);
@@ -60,7 +60,7 @@ void CreateUserProfile::_StartModule() {
 			// true marks as key password field
 			PasswordField("Password:", true),	
 			PasswordField("Repeat password:")),
-		FormField("Default currency:", InputType::text, Field::currency),
+		ScrollDown<Currency>("Default currency:", *exchangeRateController.currencies, Field::currency),
 		ConfirmField("Save?:")
 	);
 	form._SetYpos(++content->nextYpos);
@@ -73,6 +73,7 @@ void CreateUserProfile::_StartModule() {
 			utility::LinkedList<Data*>* data = form._GetData();
 			profileController._AddNewProfile(data);
 			moduler->_SetNextModule("Dashboard", this);
+			exchangeRateController._WriteExchangeRate();
 			break;
 		}
 		else if (form._IsPaused()) {			

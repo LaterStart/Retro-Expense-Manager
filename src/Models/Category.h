@@ -36,7 +36,10 @@ public:
 	Category(char* buffer);
 	Category(const char* name, CategoryType type = CategoryType::mainCategory);
 	Category(const Category& copy);
+	Category(Category&& move);
 	~Category();	
+
+	Category& operator=(Category&& move);
 };
 
 inline int Category::_ID() const {
@@ -52,7 +55,7 @@ inline CategoryType Category::_Type() const {
 }
 
 inline int Category::_DisplayLength() {
-	return utility::_CharLength(name);
+	return nameSize;
 }
 
 inline int Category::_ParentID() const {

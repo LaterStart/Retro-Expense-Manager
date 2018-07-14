@@ -6,6 +6,7 @@
 #include "../Controllers/TransactionController.h"
 #include "../Controllers/CategoryController.h"
 #include "../Controllers/AccountController.h"
+#include "../Controllers/ExchangeRateController.h"
 #include "../Controllers/ModuleController.h"
 #include "../IO/OComponent.h"
 
@@ -29,6 +30,7 @@ protected:
 	static TransactionController transactionController;
 	static CategoryController categoryController;
 	static AccountController accountController;
+	static ExchangeRateController exchangeRateController;
 
 	bool extensionStatus = false;	
 

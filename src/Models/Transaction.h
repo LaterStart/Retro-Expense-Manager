@@ -27,7 +27,10 @@ public:
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Transaction(char* buffer);
 	Transaction(const Transaction& copy);
+	Transaction(Transaction&& move);
 	~Transaction();
+
+	Transaction& operator=(Transaction&& move);
 };
 
 inline int Transaction::_ID() const {

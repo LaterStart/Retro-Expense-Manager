@@ -375,6 +375,8 @@ public:
 
 	FormField* _GetNextField(FormField* currentField);
 	FormField* _SelectField(Field field);
+	FormField* _LastField();
+	std::vector<FormField*> _SelectFields(std::vector<Field> fields);
 
 	Form() {
 		this->OComponent::componentType = ComponentType::form;
@@ -438,6 +440,10 @@ inline void Form::_Break() {
 
 inline void Form::_ChangeNextYpos(short y) {
 	this->Ypos += y;
+}
+
+inline FormField* Form::_LastField() {
+	return this->lastField;
 }
 
 class InputField : public FormField{
@@ -547,12 +553,53 @@ void ScrollDown<element>::_Show() {
 			this->_Show();
 		}
 		else {
-			if (inputField->control != ControlKey::esc)
+			if (inputField->length > 0) {
+				bool found = false;
+				char d = inputField->input[0];
+				inputField->_ClearInput();
+				for (int i = sValue+1; i < sMax; i++) {
+					char a = items.at(i)._Name()[0] + 32;
+					char b = items.at(i)._Name()[0] - 32;
+					char c = items.at(i)._Name()[0];					
+					if (a == d || b == d || c == d) {
+						sValue = i;
+						sLast = i + 3;
+						sLast = (sLast < 5) ? 5 : sLast;
+						sLast = (sLast > sMax) ? sMax : sLast;
+						sFirst = sLast - 5;
+						sFirst = (sFirst < sMin) ? sMin : sFirst;
+						found = true;
+						break;
+					}
+				}
+				if (found == false) {
+					for (int i = sMin; i < sValue; i++) {
+						char a = items.at(i)._Name()[0] + 32;
+						char b = items.at(i)._Name()[0] - 32;
+						char c = items.at(i)._Name()[0];
+						if (a == d || b == d || c == d) {
+							sValue = i;
+							sLast = i + 3;
+							sLast = (sLast < 5) ? 5 : sLast;
+							sLast = (sLast > sMax) ? sMax : sLast;
+							sFirst = sLast - 5;
+							sFirst = (sFirst < sMin) ? sMin : sFirst;		
+							break;
+						}
+					}
+				}
+				parentForm->_SetSpecialContentHeight(0);
 				dsp._WipeContent();
-			inputField->selection = sValue;
-			this->filled = true;
-			parentForm->_SetSpecialContentHeight(0);
-			parentForm->_ShowNextField(this);
+				this->_Show();
+			}
+			else {
+				if (inputField->control != ControlKey::esc)
+					dsp._WipeContent();
+				inputField->selection = sValue;
+				this->filled = true;
+				parentForm->_SetSpecialContentHeight(0);
+				parentForm->_ShowNextField(this);
+			}
 		}
 	}
 	else {
@@ -798,14 +845,73 @@ void ScrollDown_2D<element>::_Show() {
 			dsp._WipeContent();
 			this->_Show();
 		}
-		else {	
-			if (inputField->control != ControlKey::esc) {
-				dsp._WipeContent();
+		else {
+			if (inputField->length > 0) {
+				bool found = false;
+				char d = inputField->input[0];
+				inputField->_ClearInput();
+				char a, b, c;
+				for (int i = *sValue + 1; i < *sMax; i++) {				
+					if (subSelect) {
+						a = items[*sCurr].at(i)._Name()[0] + 32;
+						b = items[*sCurr].at(i)._Name()[0] - 32;
+						c = items[*sCurr].at(i)._Name()[0];
+					}
+					else {
+						a = items[i].at(0)._Name()[0] + 32;
+						b = items[i].at(0)._Name()[0] - 32;
+						c = items[i].at(0)._Name()[0];
+					}					
+					if (a == d || b == d || c == d) {
+						int diff = (sHeight == 5) ? 3 : 2;
+						*sValue = i;
+						*sLast = i + diff;
+						*sLast = (*sLast < sHeight) ? sHeight : *sLast;
+						*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+						*sFirst = *sLast - sHeight;
+						*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+						found = true;
+						break;
+					}
+				}
+				if (found == false) {
+					char a, b, c;
+					for (int i = *sMin; i < *sValue; i++) {						
+						if (subSelect) {
+							a = items[*sCurr].at(i)._Name()[0] + 32;
+							b = items[*sCurr].at(i)._Name()[0] - 32;
+							c = items[*sCurr].at(i)._Name()[0];
+						}
+						else {
+							a = items[i].at(0)._Name()[0] + 32;
+							b = items[i].at(0)._Name()[0] - 32;
+							c = items[i].at(0)._Name()[0];
+						}
+						if (a == d || b == d || c == d) {
+							int diff = (sHeight == 5) ? 3 : 2;
+							*sValue = i;
+							*sLast = i + diff;
+							*sLast = (*sLast < sHeight) ? sHeight : *sLast;
+							*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+							*sFirst = *sLast - sHeight;
+							*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+							break;
+						}
+					}
+				}
 				parentForm->_SetSpecialContentHeight(0);
+				dsp._WipeContent();
+				this->_Show();
 			}
-			inputField->selection = *sValue;
-			this->filled = true;
-			parentForm->_ShowNextField(this);
+			else {
+				if (inputField->control != ControlKey::esc) {
+					dsp._WipeContent();
+					parentForm->_SetSpecialContentHeight(0);
+				}
+				inputField->selection = *sValue;
+				this->filled = true;
+				parentForm->_ShowNextField(this);
+			}
 		}
 	}
 	else {

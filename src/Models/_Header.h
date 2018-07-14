@@ -111,8 +111,16 @@ public:
 	char* _Serialize();
 	void _Deserialize(char* page);
 	ModelName _Name() const;
+	void _ResetHeader();
 };
 
 inline ModelName ModelHeader::_Name() const {
 	return this->model;
+}
+
+inline void ModelHeader::_ResetHeader() {
+	this->firstNode = -1;
+	this->idCount = 0;
+	this->lastNode = -1;
+	this->nodeCount = 0;
 }

@@ -16,16 +16,16 @@ ProfileController::ProfileController() {
 Profile* ProfileController::_GetLastUsedProfile() {	
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
-		char** buffer = _GetModels(stream, this->header, Query(Range::all));
-		for (unsigned int i = 0; i < header._NodeCount(); i++) {
-			Profile temporary(buffer[i]);
-			delete[]buffer[i];
+		vector<char*>* buffer = _GetModels(stream, this->header, Query(Range::all));
+		for (unsigned int i = 0; i < buffer->size(); i++) {
+			Profile temporary(buffer->at(i));
+			delete[]buffer->at(i);
 			if (temporary._Active() == true) {
 				this->activeProfile = new Profile(temporary);
 				break;
 			}
 		}
-		delete[]buffer;
+		delete buffer;
 		stream->close();
 	}
 	return this->activeProfile;
@@ -36,16 +36,18 @@ bool ProfileController::_Exists(char* username) {
 	fstream* stream = _OpenStream();
 	bool result = false;
 	if (stream != nullptr) {
-		char** buffer = _GetModels(stream, this->header, Query(Range::all));
-		for (unsigned int i = 0; i < header._NodeCount(); i++) {
-			Profile temporary(buffer[i]);
-			delete[]buffer[i];
-			if (utility::_CompareChar(temporary._Username(), username)) {
-				result = true;				
-				break;
+		vector<char*>* buffer = _GetModels(stream, this->header, Query(Range::all));
+		if (buffer != nullptr) {
+			for (unsigned int i = 0; i < header._NodeCount(); i++) {
+				Profile temporary(buffer->at(i));
+				delete[]buffer->at(i);
+				if (utility::_CompareChar(temporary._Username(), username)) {
+					result = true;
+					break;
+				}
 			}
+			delete buffer;
 		}
-		delete[]buffer;
 		stream->close();
 	}
 	delete stream;
@@ -56,16 +58,16 @@ bool ProfileController::_Exists(char* username) {
 Profile* ProfileController::_GetProfile(char* username) {
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
-		char** buffer = _GetModels(stream, this->header, Query(Range::all));
+		vector<char*>* buffer = _GetModels(stream, this->header, Query(Range::all));
 		for (unsigned int i = 0; i < header._NodeCount(); i++) {
-			Profile temporary(buffer[i]);
-			delete[]buffer[i];
+			Profile temporary(buffer->at(i));
+			delete[]buffer->at(i);
 			if (utility::_CompareChar(temporary._Username(), username)) {
 				Profile* profile = new Profile(temporary);
 				return profile;
 			}
 		}
-		delete[]buffer;
+		delete buffer;
 		stream->close();
 	}
 	delete stream;

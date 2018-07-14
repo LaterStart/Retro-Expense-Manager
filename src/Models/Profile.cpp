@@ -30,6 +30,41 @@ Profile::Profile(const Profile& copy) {
 	this->username = utility::_CopyChar(copy.username);
 }
 
+// profile move constructor
+Profile::Profile(Profile&& move) {
+	this->ID = move.ID;
+	this->active = move.active;
+	this->defaultCurrencyID = move.defaultCurrencyID;
+	this->pwProtected = move.pwProtected;
+	this->usernameSize = move.usernameSize;
+	this->passwordSize = move.passwordSize;
+	this->password = move.password;
+	this->username = move.username;
+	move.username = nullptr;
+	move.password = nullptr;
+}
+
+// profile move assignment
+Profile& Profile::operator=(Profile&& move) {
+	if (&move == this)
+		return *this;
+	delete[]password;
+	delete[]username;
+
+	this->ID = move.ID;
+	this->active = move.active;
+	this->defaultCurrencyID = move.defaultCurrencyID;
+	this->pwProtected = move.pwProtected;
+	this->usernameSize = move.usernameSize;
+	this->passwordSize = move.passwordSize;
+	this->password = move.password;
+	this->username = move.username;
+	move.username = nullptr;
+	move.password = nullptr;
+
+	return *this;
+}
+
 //	binds form data to object data
 void Profile::_BindData(Data* data) {
 	switch (data->field) {

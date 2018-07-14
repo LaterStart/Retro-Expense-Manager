@@ -26,6 +26,7 @@ fstream* Controller::_OpenStream() {
 	}
 }
 
+//	delete buffered data
 void Controller::_DeleteBuffers(char* &buffer, char* &dblock, bool containsID) {
 	buffer -= sizeof(int);
 	if (containsID)
@@ -179,13 +180,25 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 	block._WrapData(buffer, ModelName::modelHeader, false);
 	char* dblock = block._Serialize();
 
+	// check if page has enough free space to write on
 	streamoff pos = stream->tellp();
+	streamoff pageNum = pos / clusterSize;
+	streamoff writeSize = block._BlockSize() + block._BufferSize();
+	streamoff freeSpace = (((pageNum + 1) * streamoff(clusterSize)) - pos);
+
+	if (freeSpace - writeSize < 0) {
+		// seek to next page
+		char* emptyBuff = new char[freeSpace];
+		stream->write(emptyBuff, freeSpace);
+		pos = stream->tellp();
+	}
+
 	stream->write(dblock, block._BlockSize());
 	stream->write(buffer, block._BufferSize());
 	header._SetPosition(pos);
 
 	_DeleteBuffers(buffer, dblock, false);
-	streamoff pageNum = pos / this->clusterSize;
+	pageNum = pos / this->clusterSize;
 
 	// update last model header node
 	if (this->header._NodeCount() > 0)
@@ -203,6 +216,8 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 
 //	updates last node with new next node info
 void Controller::_UpdateLastNode(fstream* stream, Header& header, ModelName name, streamoff pageNum) {	
+	if (header._LastNode() < 0)
+		return;
 	stream->seekg(header._LastNode()*clusterSize, ios::beg);
 
 	char* page = new char[clusterSize];
@@ -239,12 +254,24 @@ void Controller::_WriteModel(fstream* stream, ModelHeader& header, char* buffer)
 	block._WrapData(buffer, header._Name());
 	char* dblock = block._Serialize();
 
+	// check if page has enough free space to write on
 	streamoff pos = stream->tellp();
+	streamoff pageNum = pos / clusterSize;
+	streamoff writeSize = block._BlockSize() + block._BufferSize();
+	streamoff freeSpace = (((pageNum + 1) * streamoff(clusterSize)) - pos);
+
+	if (freeSpace - writeSize < 0) {
+		// seek to next page
+		char* emptyBuff = new char[freeSpace];
+		stream->write(emptyBuff, freeSpace);
+		pos = stream->tellp();
+	}
+
 	stream->write(dblock, block._BlockSize());
 	stream->write(buffer, block._BufferSize());
 
 	_DeleteBuffers(buffer, dblock);
-	streamoff pageNum = pos / clusterSize;
+	pageNum = pos / clusterSize;
 
 	// update last model node block
 	if (header._NodeCount() > 0) 
@@ -260,7 +287,7 @@ void Controller::_WriteModel(fstream* stream, ModelHeader& header, char* buffer)
 }
 
 //	returns all models that meet the query range conditions from database
-char** Controller::_GetModels(fstream* stream, ModelHeader& header, Query query) {
+vector<char*>* Controller::_GetModels(fstream* stream, ModelHeader& header, Query& query) {
 	if (header._NodeCount() > 0) {
 		char* page = new char[clusterSize];
 		stream->seekg(header._FirstNode()*clusterSize, ios::beg);
@@ -269,21 +296,30 @@ char** Controller::_GetModels(fstream* stream, ModelHeader& header, Query query)
 		streamoff pageNum = pos / clusterSize;
 		int pagePos = 0;
 
-		char**buffer = new char*[header._NodeCount()];
+		vector<char*>* buffer = new vector<char*>;
 		for (unsigned int i = 0; i < header._NodeCount(); i++) {
 			DataBlock block = _GetBlock(page, pagePos, header._Name());
 			pagePos = block._PagePos();
 			if (!block.empty) {
 				int ID = block._ID();
-				buffer[i] = new char[block._BufferSize() + sizeof(int)];
-				std::memcpy(buffer[i], &ID, sizeof(int));
-				std::memcpy(buffer[i]+sizeof(int), page + block._Offset(), block._BufferSize());
+				bool acceptID = query._ValidateID(ID);
+				
+				if (acceptID) {					
+					char* buff = new char[block._BufferSize() + sizeof(int)];
+					std::memcpy(buff, &ID, sizeof(int));
+					std::memcpy(buff + sizeof(int), page + block._Offset(), block._BufferSize());
+					buffer->push_back(buff);
+				}
 
 				if (block._NextNode() > pageNum) {
 					pagePos = 0;
 					stream->seekg(block._NextNode() * clusterSize, ios::beg);
+					pos = stream->tellg();
 					stream->read(page, clusterSize);
+					pageNum = pos / clusterSize;
 				}
+				else if (block._NextNode() < 0)
+					break;
 				else pagePos += block._NodeSize();
 			}
 		}
@@ -321,6 +357,8 @@ char* Controller::_GetModel(fstream* stream, ModelHeader& header, int ID) {
 				stream->seekg(block._NextNode() * clusterSize, ios::beg);
 				stream->read(page, clusterSize);
 			}
+			else if (block._NextNode() < 0)
+				break;
 			else pagePos += block._NodeSize();
 		}
 
@@ -367,8 +405,27 @@ void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char
 				stream->seekg(originalBlock._NextNode() * clusterSize, ios::beg);
 				stream->read(page, clusterSize);
 			}
+			else if (originalBlock._NextNode() < 0)
+				break;
 			else pagePos += originalBlock._NodeSize();
 		}
 		delete[]page;
 	}
+}
+
+bool Query::_ValidateID(int ID) {
+	if (includeIDs->size() > 0) {
+		for (size_t i = 0; i < includeIDs->size(); i++) {
+			if (includeIDs->at(i) == ID)
+				return true;
+		}
+		return false;
+	}
+	else if (excludeIDs->size() > 0) {
+		for (size_t i = 0; i < excludeIDs->size(); i++) {
+			if (excludeIDs->at(i) == ID)
+				return false;
+		}
+	}
+	return true;
 }

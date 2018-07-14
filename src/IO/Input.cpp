@@ -210,7 +210,9 @@ int UserInput::_Verify_password(char& ch) {
 int UserInput::_Verify_scrollDown(char& ch) {
 	if (ch == 13)
 		return 3;
-	else return 0;
+	else if (ch < 32 || ch > 126)
+		return 0;
+	else return 15;
 }
 
 int UserInput::_Verify_value(char& ch) {
@@ -404,6 +406,10 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 			curr._SetCursorPosition();
 		}
 		return 2;
+	case 15:
+		// scroll down letter search
+		_ContinueAccept(ch);
+		goto del;
 	default:
 		return 0;
 	}

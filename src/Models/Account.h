@@ -26,7 +26,10 @@ public:
 	Account(char* buffer);
 	Account(const char* name, int accountTypeID);
 	Account(const Account& copy);
+	Account(Account&& move);
 	~Account();
+
+	Account& operator=(Account&& move);
 };
 
 inline int Account::_ID() const {
@@ -42,5 +45,5 @@ inline int Account::_Type() const {
 }
 
 inline int Account::_DisplayLength() {
-	return utility::_CharLength(name);
+	return nameSize;
 }

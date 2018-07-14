@@ -75,16 +75,22 @@ void CategoryController::_LoadCategoryList() {
 	categoryList = new vector<vector<Category>>;
 	fstream* stream = _OpenStream();	
 	if (stream != nullptr) {		
-		char** buffer = _GetModels(stream, this->header, Query(Range::all));
-		for (unsigned int i = 0; i < header._NodeCount(); i++) {
-			Category category(buffer[i]);
-			if (category._Type() == CategoryType::mainCategory)
-				categoryList->push_back(vector<Category>{category});
-			else if (category._Type() == CategoryType::subCategory)
-				categoryList->at(category._ParentID()).push_back(category);
-			delete[]buffer[i];			
+		vector<char*>* buffer = _GetModels(stream, this->header, Query(Range::all));
+		if (buffer != nullptr) {
+			for (unsigned int i = 0; i < buffer->size(); i++) {
+				Category category(buffer->at(i));
+				if (category._Type() == CategoryType::mainCategory)
+					categoryList->push_back(vector<Category>{category});
+				else if (category._Type() == CategoryType::subCategory) {
+					for (size_t i = 0; i < categoryList->size(); i++) {
+						if (categoryList->at(i).at(0)._ID() == category._ParentID())
+							categoryList->at(i).push_back(category);
+					}
+				}
+				delete[]buffer->at(i);
+			}
+			delete buffer;
 		}
-		delete[]buffer;
 		stream->close();
 	}
 	delete stream;

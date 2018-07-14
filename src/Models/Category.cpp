@@ -36,6 +36,34 @@ Category::Category(const Category& copy) {
 	this->type = copy.type;	
 }
 
+// category move constructor
+Category::Category(Category&& move) {
+	this->ID = move.ID;
+	this->parentID = move.parentID;
+	this->profileID = move.profileID;
+	this->name = move.name;
+	this->nameSize = move.nameSize;
+	this->type = move.type;
+	move.name = nullptr;
+}
+
+// category move assignment
+Category& Category::operator=(Category&& move) {
+	if (&move == this)
+		return *this;
+	delete[]name;
+
+	this->ID = move.ID;
+	this->parentID = move.parentID;
+	this->profileID = move.profileID;
+	this->name = move.name;
+	this->nameSize = move.nameSize;
+	this->type = move.type;
+	move.name = nullptr;
+
+	return *this;
+}
+
 //	binds form data to object data
 void Category::_BindData(Data* data) {
 	switch (data->field) {

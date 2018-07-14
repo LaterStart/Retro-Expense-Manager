@@ -9,6 +9,8 @@ private:
 	static ModelHeader accountHeader;	
 	static ModelHeader accountTypeHeader;
 
+	void _LoadAccounts();
+	void _LoadAccountTypes();
 public:
 	AccountController();
 	~AccountController() = default;
@@ -18,6 +20,5 @@ public:
 	
 	void _AddNewAccount(utility::LinkedList<Data*>*data, int profileID);
 	void _AddNewAccountType(utility::LinkedList<Data*>*data);
-	void _LoadAccounts();
-	void _LoadAccountTypes();
+	void _AddNewAccountType(char* name);
 };

@@ -34,7 +34,10 @@ public:
 	Profile(utility::LinkedList<Data*>* data, int ID);
 	Profile(char* buffer);
 	Profile(const Profile& copy);
+	Profile(Profile&& move);
 	~Profile();
+
+	Profile& operator=(Profile&& move);
 };
 
 inline char* Profile::_Username() const {

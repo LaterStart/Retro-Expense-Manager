@@ -56,11 +56,14 @@ void Login::_StartModule() {
 		Frame* content = layout._Select("Content");
 
 		//	No user profile detected
-		if (profile == nullptr) {			
+		if (profile == nullptr) {
+			//	Download exchange rate data for currency list
+			exchangeRateController._DownloadExchangeRate();
+
 			Label text1("No recent user profile was detected.");
 			Label text2("Please create new one or load existing.");			
 			content->_AddElements(text1, text2);
-			layout._ShowElements();			
+			layout._ShowElements();	
 
 			//	Read user input - menu selection only available 
 			Cursor(2, ::height - 4);
@@ -71,7 +74,7 @@ void Login::_StartModule() {
 				selection = select.selection;
 				select._ClearInput();
 			}			
-			moduler->_SetNextModule(mainMenu._GetLink(selection), this);
+			moduler->_SetNextModule(mainMenu._GetLink(selection), this);			
 		}
 		//	Profile password protected
 		else if (profile->_PwStatus() && profile->_Locked()) {

@@ -48,6 +48,23 @@ std::ostream& operator << (std::ostream& os, Date& date) {
 	return os;
 }
 
+bool operator < (const Date &d1, const Date &d2) {
+	if (d1.year < d2.year)
+		return true;
+	else if (d1.year == d2.year)
+	{
+		if (d1.month < d2.month)
+			return true;
+		else if (d1.month == d2.month)
+		{
+			if (d1.day < d2.day)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 int Date::_DisplayLength() {
 	return 10;
 }
@@ -228,6 +245,18 @@ namespace utility {
 			}
 		}
 		return number;
+	}
+
+	int _ConvertToInteger(char* buffer, int size) {
+		int multi = 1;
+		int num = 0;
+		int x;
+		for (int i = size - 1; i >= 0; i--) {
+			x = (buffer[i] - '0') * multi;
+			num += x;
+			multi *= 10;
+		}
+		return num;
 	}
 
 	char* _CopyChar(char* char_in) {

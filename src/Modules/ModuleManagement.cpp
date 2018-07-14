@@ -5,6 +5,7 @@ ProfileController Module::profileController;
 TransactionController Module::transactionController;
 CategoryController Module::categoryController;
 AccountController Module::accountController;
+ExchangeRateController Module::exchangeRateController;
 
 ModuleManagement::ModuleManagement(Console* myConsole) : moduleList(nullptr), moduleNum(0), initialized(false), console(myConsole){
 	_InitializeModules();

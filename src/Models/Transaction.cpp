@@ -21,7 +21,52 @@ Transaction::Transaction(char* buffer) {
 
 // transaction copy constructor
 Transaction::Transaction(const Transaction& copy) {
+	this->ID = copy.ID;
+	this->profileID = copy.profileID;
+	this->typeID = copy.typeID;
+	this->accountID = copy.accountID;
+	this->categoryID = copy.categoryID;
+	this->currencyID = copy.currencyID;
+	this->amount = copy.amount;
+	this->date = copy.date;
+	this->descriptionSize = copy.descriptionSize;
+	this->description = utility::_CopyChar(copy.description);
+}
 
+// transaction move constructor
+Transaction::Transaction(Transaction&& move) {
+	this->ID = move.ID;
+	this->profileID = move.profileID;
+	this->typeID = move.typeID;
+	this->accountID = move.accountID;
+	this->categoryID = move.categoryID;
+	this->currencyID = move.currencyID;
+	this->amount = move.amount;
+	this->date = move.date;
+	this->descriptionSize = move.descriptionSize;
+	this->description = move.description;
+	move.description = nullptr;
+}
+
+// transaction move assignment
+Transaction& Transaction::operator=(Transaction&& move) {
+	if (&move == this)
+		return *this;
+	delete[]description;
+
+	this->ID = move.ID;
+	this->profileID = move.profileID;
+	this->typeID = move.typeID;
+	this->accountID = move.accountID;
+	this->categoryID = move.categoryID;
+	this->currencyID = move.currencyID;
+	this->amount = move.amount;
+	this->date = move.date;
+	this->descriptionSize = move.descriptionSize;
+	this->description = move.description;
+	move.description = nullptr;
+
+	return *this;
 }
 
 //	binds form data to object data
@@ -43,7 +88,7 @@ void Transaction::_BindData(Data* data) {
 		amount = utility::_ConvertToFloat(data->input->input);
 		break;
 	case Field::description:
-		description = data->input->input;
+		description = utility::_CopyChar(data->input->input);
 		descriptionSize = data->input->length;
 	default:
 		break;
