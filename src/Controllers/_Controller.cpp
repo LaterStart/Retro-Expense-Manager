@@ -288,7 +288,7 @@ void Controller::_WriteModel(fstream* stream, ModelHeader& header, char* buffer)
 
 //	returns all models that meet the query range conditions from database
 vector<char*>* Controller::_GetModels(fstream* stream, ModelHeader& header, Query& query) {
-	if (header._NodeCount() > 0) {
+	if (header._NodeCount() > 0 && header._FirstNode() >= 0) {
 		char* page = new char[clusterSize];
 		stream->seekg(header._FirstNode()*clusterSize, ios::beg);
 		streamoff pos = stream->tellg();
@@ -404,6 +404,7 @@ void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char
 				pagePos = 0;
 				stream->seekg(originalBlock._NextNode() * clusterSize, ios::beg);
 				stream->read(page, clusterSize);
+				pageNum = originalBlock._NextNode();
 			}
 			else if (originalBlock._NextNode() < 0)
 				break;

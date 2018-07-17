@@ -106,3 +106,26 @@ vector<Category> CategoryController::_GetMainCategoryList(){
 	}
 	return mainCategories;
 }
+
+//	check if category with the given name already exists
+bool CategoryController::_Exists(char* name) {
+	fstream* stream = _OpenStream();
+	bool result = false;
+	if (stream != nullptr) {
+		vector<char*>* buffer = _GetModels(stream, this->header, Query(Range::all));
+		if (buffer != nullptr) {
+			for (unsigned int i = 0; i < header._NodeCount(); i++) {
+				Category temporary(buffer->at(i));
+				delete[]buffer->at(i);
+				if (utility::_CompareChar(temporary._Name(), name)) {
+					result = true;
+					break;
+				}
+			}
+			delete buffer;
+		}
+		stream->close();
+	}
+	delete stream;
+	return result;
+}

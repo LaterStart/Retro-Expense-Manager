@@ -95,12 +95,14 @@ void AccountController::_LoadAccounts() {
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
 		vector<char*>* buffer = _GetModels(stream, this->accountHeader, Query(Range::all));
-		for (unsigned int i = 0; i < buffer->size(); i++) {
-			Account account(buffer->at(i));
-			accounts->push_back(account);
-			delete[]buffer->at(i);
+		if (buffer != nullptr) {
+			for (unsigned int i = 0; i < buffer->size(); i++) {
+				Account account(buffer->at(i));
+				accounts->push_back(account);
+				delete[]buffer->at(i);
+			}
+			delete buffer;
 		}
-		delete buffer;
 		stream->close();
 	}
 	delete stream;
@@ -111,12 +113,14 @@ void AccountController::_LoadAccountTypes() {
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
 		vector<char*>* buffer = _GetModels(stream, this->accountTypeHeader, Query(Range::all));
-		for (unsigned int i = 0; i < buffer->size(); i++) {
-			AccountType accountType(buffer->at(i));
-			accountTypes->push_back(accountType);
-			delete[]buffer->at(i);
+		if (buffer != nullptr) {
+			for (unsigned int i = 0; i < buffer->size(); i++) {
+				AccountType accountType(buffer->at(i));
+				accountTypes->push_back(accountType);
+				delete[]buffer->at(i);
+			}
+			delete buffer;
 		}
-		delete buffer;
 		stream->close();
 	}
 	delete stream;

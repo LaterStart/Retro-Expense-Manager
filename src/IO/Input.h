@@ -776,8 +776,8 @@ void ScrollDown_2D<element>::_Show() {
 	Cursor iPos(coord.x1, coord.y1);
 	inputField->parentFrame->dsp->_WipeContent();
 
-	if(subSelect)
-		 inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(scrollControl[scrollControl[items.size()][0]][0]), iPos);
+	if (subSelect)	
+		inputField->parentFrame->dsp->_Display(items[*sCurr].at(scrollControl[scrollControl[items.size()][0]][0]), iPos);	
 	else inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(0), iPos);
 
 	if (_InputControl()) {
@@ -993,11 +993,36 @@ void ScrollDown_2D<element>::_ToggleSubSelect(bool status, int parentID) {
 		scrollControl[*sCurr][1] = (size - sHeight < 1) ? 1 : size - sHeight;
 		scrollControl[*sCurr][2] = scrollControl[*sCurr][4];
 
+		int* sVal_init = sValue;
+		int* sFir_init = sFirst;
+		int* sLas_init = sLast;
+		int* sMin_init = sMin;
+		int* sMax_init = sMax;
+
+		sValue = &scrollControl[items.size()][0];
+		sFirst = &scrollControl[items.size()][1];
+		sLast  = &scrollControl[items.size()][2];
+		sMin   = &scrollControl[items.size()][3];
+		sMax   = &scrollControl[items.size()][4];
+
+		int diff = 3;
+		*sValue = *sCurr;
+		*sLast = *sCurr + diff;
+		*sLast = (*sLast < 5) ? 5 : *sLast;
+		*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+		*sFirst = *sLast - 5;
+		*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+
 		coord = inputField->parentFrame->_GetCoordinates();
 		Cursor iPos(coord.x1, coord.y1);
 		inputField->parentFrame->dsp->_WipeContent();
-		inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(0), iPos);
-		inputField->parentFrame->dsp->_Display(items[scrollControl[items.size()][0]].at(scrollControl[scrollControl[items.size()][0]][0]), iPos);
+		inputField->parentFrame->dsp->_Display(items[*sCurr].back(), iPos);
+
+		sValue = sVal_init;
+		sFirst = sFir_init;
+		sLast  = sLas_init;
+		sMin   = sMin_init;
+		sMax   = sMax_init;
 	}
 	else sHeight = 5;
 }

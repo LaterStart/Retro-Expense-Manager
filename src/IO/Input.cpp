@@ -37,6 +37,7 @@ void UserInput::_Initialize() {
 	first = node;
 
 	delete[]input;
+	input = nullptr;
 	if (length > 0) {
 		while (node->nextNode != nullptr) {
 			node = node->nextNode;

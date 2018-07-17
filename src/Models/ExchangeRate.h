@@ -16,6 +16,7 @@ public:
 
 	int _DisplayLength();
 	int _CurrencyNumber() const;
+	int _BaseID() const;
 	void _SetBaseID(int ccyID);
 	void _SetCurrencyNumber(int num);
 	void _SetDate(Date date);
@@ -54,6 +55,10 @@ inline Date ExchangeRate::_Date() const {
 	return this->date;
 }
 
+inline int ExchangeRate::_BaseID() const {
+	return this->baseID;
+}
+
 class Currency: public ExchangeRate {
 private:	
 	int ID = -1;
@@ -80,6 +85,7 @@ public:
 	Currency(Currency&& move);
 	~Currency();
 
+	Currency& operator=(Currency& copy);
 	Currency& operator=(Currency&& move);
 };
 

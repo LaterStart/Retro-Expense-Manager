@@ -28,16 +28,27 @@ void ExchangeRateController::_LoadExchangeRate() {
 			// check if current excRate is older 
 			Date date(utility::_GetCurrentDate());
 			if (excRate->_Date() < date) {
+				ExchangeRate old(*excRate);
 				// Download new exchange rate
-				this->header._ResetHeader();
+				this->header._ResetIDCounter();
 				_DownloadExchangeRate();
-				// update existing exchange rate records
-				char* buffer = excRate->_Serialize();
-				_UpdateModel(stream, header, -1, buffer);
-				for (int i = 0; i < currencies->size(); i++) {
-					buffer = currencies->at(i)._Serialize();
-					_UpdateModel(stream, header, currencies->at(i)._ID(), buffer);
-				}				
+
+				if (excRate->_CurrencyNumber() == old._CurrencyNumber()) {
+					// update existing exchange rate records
+					char* buffer = excRate->_Serialize();
+					_UpdateModel(stream, header, -1, buffer);
+					stream->clear();
+					for (int i = 0; i < currencies->size(); i++) {
+						buffer = currencies->at(i)._Serialize();
+						_UpdateModel(stream, header, currencies->at(i)._ID(), buffer);
+					}
+				}
+				else {
+					int test = 0;
+
+
+
+				}
 			}
 			else {
 				// load current exchange rate
@@ -163,7 +174,7 @@ bool ExchangeRateController::_DownloadExchangeRate() {
 //	Parse downloaded JSON and store data into vector
 void ExchangeRateController::_ParseJSON(char* buffer) {
 	bool status;
-	char** currencyList = new char*[174];
+	delete excRate;
 	excRate = new ExchangeRate;
 
 	int pos = 0, cpos = 0;
@@ -209,8 +220,10 @@ void ExchangeRateController::_ParseJSON(char* buffer) {
 
 		ccy._SetName(ccyName);
 
-		if (strcmp(ccyName, baseName) == 0)
+		if (excRate->_BaseID() < 0 && strcmp(ccyName, baseName) == 0) {
 			this->excRate->_SetBaseID(currencies->size());
+			delete[]baseName;
+		}
 
 		pos += 2; z = 0;
 

@@ -95,6 +95,20 @@ Currency::Currency(const Currency& copy) {
 	this->rate = copy.rate;
 }
 
+// currency copy assignment
+Currency& Currency::operator=(Currency& copy) {
+	if (&copy == this)
+		return *this;
+	delete[]name;
+
+	this->ID = copy.ID;
+	this->name = utility::_CopyChar(copy.name);
+	this->nameSize = copy.nameSize;
+	this->rate = copy.rate;
+
+	return *this;
+}
+
 // currency move constructor
 Currency::Currency(Currency&& move) {
 	this->ID = move.ID;

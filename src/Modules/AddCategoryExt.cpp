@@ -84,22 +84,41 @@ void AddCategoryExt::_StartModule() {
 			}
 		}
 		else {
-			// If user adds new main category within sub category selection - update scrolldown & form
+			// If user adds new main category within sub category selection
 			if (currentField->field == Field::categoryName) {
-				ScrollDown<Category>* cField = dynamic_cast<ScrollDown<Category>*>(form._SelectField(Field::parentCategory));
-				vector<Category>* mainCategories = &cField->_Items();
-				mainCategories->push_back(Category(currentField->inputField->input, CategoryType::mainCategory));				
-				categoryController._AddNewCategory(mainCategories->back(), profileController._ActiveProfile()->_ID());
+				// check if category already exists
+				if (categoryController._Exists(currentField->inputField->input)) {
+					form._DisplayMessage("Category already exists");
+					currentField->_Show();
+				}
+				else {
+					// update scrolldown & form
+					ScrollDown<Category>* cField = dynamic_cast<ScrollDown<Category>*>(form._SelectField(Field::parentCategory));
+					vector<Category>* mainCategories = &cField->_Items();
+					mainCategories->push_back(Category(currentField->inputField->input, CategoryType::mainCategory));
+					categoryController._AddNewCategory(mainCategories->back(), profileController._ActiveProfile()->_ID());
 
-				form._RemoveFields(2, 1);
-				form._InitializeFields();
-				form._SetEventStatus(1, false);
-				cField->_UpdateScrollDown();
-				cField->_Show();
+					form._RemoveFields(2, 1);
+					form._InitializeFields();
+					form._SetEventStatus(1, false);
+					cField->_UpdateScrollDown();
+					cField->_Show();
+				}
 			}
 		}
 	};
 	form._AddEvent(newMainCategoryEvent);
+
+	// Validate category name - check if already exists
+	const function<void(Form&, FormField*)> validateCategoryNameEvent = [](Form& form, FormField* currentField) {
+		if (currentField != nullptr && currentField->field == Field::categoryName) {
+			if (categoryController._Exists(currentField->inputField->input)) {
+				form._DisplayMessage("Category already exists");
+				currentField->_Show();
+			}
+		}
+	};
+	form._AddEvent(validateCategoryNameEvent);
 
 	form._SetYpos(2);
 	info._Show();
@@ -136,12 +155,12 @@ void AddCategoryExt::_StartModule() {
 			//  Update main form scroll control			
 			std::vector<FrameElement*>elements = layout->_Select("MainForm")->_SelectElements(ComponentType::form);
 			Form* mainForm = dynamic_cast<Form*>(elements.at(0));
-			ScrollDown_2D<Category>* scroll = dynamic_cast<ScrollDown_2D<Category>*>(mainForm->_SelectField(Field::category));
-			scroll->_UpdateScrollControl();					
+			ScrollDown_2D<Category>* scroll = dynamic_cast<ScrollDown_2D<Category>*>(mainForm->_SelectField(Field::category));								
 			if (subCategory) {
-				field = form._GetData(Field::parentCategory);
+				scroll->_UpdateScrollControl(false);
 				scroll->_ToggleSubSelect(true, mainIndex);
-			}	
+			}
+			else scroll->_UpdateScrollControl(true);
 			break;
 		}
 		else if (form._IsPaused()) {
