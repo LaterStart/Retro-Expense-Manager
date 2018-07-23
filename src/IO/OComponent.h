@@ -124,6 +124,7 @@ class FrameElement;
 class Frame : public OComponent{	
 	friend class Console;
 	friend class Layout;
+	friend class Table;
 
 private:	
 	Frame(const unsigned short max_x, const unsigned short min_x, const unsigned short max_y, const unsigned short min_y);
@@ -233,6 +234,8 @@ public:
 	unsigned short _Padding() const;
 	unsigned short _Ypos() const;
 	Frame* _ParentFrame() const;
+
+	virtual FrameElement* _Clone() const;
 	virtual ~FrameElement() = default;
 };
 
@@ -283,6 +286,10 @@ inline Frame* FrameElement::_ParentFrame() const {
 	return this->parentFrame;
 }
 
+inline FrameElement* FrameElement::_Clone() const {
+	return new FrameElement(*this);
+}
+
 class Separator : public FrameElement {
 private:
 	friend void Display::_Display(Separator& separator);
@@ -296,12 +303,20 @@ public:
 	Separator(Frame& parentFrame, short length, bool direction, unsigned short start_X, unsigned short start_Y);
 	Separator(Layout& layout, short length, bool direction, unsigned short start_X, unsigned short start_Y);
 	Separator(const Separator& copy);
+
+	FrameElement* _Clone() const override;
 };
 
+inline FrameElement* Separator::_Clone() const {
+	return new Separator(*this);
+}
 
 class Label : public FrameElement {
+private:
+	bool deleteText = false;
+
 protected:
-	Cursor _Align();
+	Cursor _Align();	
 
 public:	
 	char* text = nullptr;
@@ -312,8 +327,10 @@ public:
 	Label() {
 		this->componentType = ComponentType::label;
 	}
-	Label(const Label& copy) : FrameElement(copy), text(copy.text), length(copy.length) { 
+	Label(const Label& copy) : FrameElement(copy), text(utility::_CopyChar(copy.text)), length(copy.length) , symbol(copy.symbol), cut(copy.cut){ 
 		this->componentType = ComponentType::label;
+		deleteText = true;
+		this->align = copy.align;
 	}
 	Label(const char* text) : text((char*)text) { 
 		length = utility::_CharLength(text);
@@ -329,12 +346,26 @@ public:
 		this->align = align;
 		this->componentType = ComponentType::label;
 	}
+	Label(int num) : text(utility::_ConvertToChar(num)), length(utility::_DigitNumber(num)) {
+		this->componentType = ComponentType::label;
+		this->deleteText = true;
+	}
+	Label(Date& date) : text(date._DateChar()) {
+		this->componentType = ComponentType::label;
+		this->deleteText = true;
+	}
 
 	void _SetText(const char* text);
 
 	virtual short _Length() const;
 	virtual void _Show() override;
-	virtual void _Hide() override;
+	virtual void _Hide() override;	
+	virtual FrameElement* _Clone() const override;
+
+	virtual ~Label() {
+		if (deleteText)
+			delete[]text;
+	}
 };
 
 inline short Label::_Length() const {
@@ -346,13 +377,17 @@ inline void Label::_SetText(const char* text) {
 	this->length = utility::_CharLength(text);
 }
 
+inline FrameElement* Label::_Clone() const {
+	return new Label(*this);
+}
+
 class Layout : public FrameElement {	
 private:
-	Frame * parentFrame;
-	Frame * frame = nullptr;
+	Frame* frame = nullptr;
 
 public:
-	Layout(Frame* parentFrame) : parentFrame(parentFrame) {}
+	Layout(Frame* parentFrame) : FrameElement(parentFrame) { this->componentType = ComponentType::layout; }
+	Layout(const Layout& copy) : FrameElement(copy.parentFrame), frame(copy.frame) { this->componentType = ComponentType::layout; }
 	Frame * _Select();
 	Frame* _Select(const char* IDname);
 	void _Split(Separator& separator, const char* firstID, const char* secondID);
@@ -360,13 +395,20 @@ public:
 	void _ShowElements();
 	std::vector<FrameElement*> _SelectElements(ComponentType type);
 
+	FrameElement* _Clone() const override;
+
 	~Layout();
 };
+
+inline FrameElement* Layout::_Clone() const {
+	return new Layout(*this);
+}
 
 class MenuItem;
 class Menu : public FrameElement {
 private:
 	void _AddItem(MenuItem& item);
+	bool deleteItems = false;
 
 public:
 	int size = 0;
@@ -387,15 +429,18 @@ public:
 	void _ChangeItem(const char* text, const char* newText, const char* newLink = nullptr);
 	void _Show() override;
 	void _Hide() override;
+	FrameElement* _Clone() const override;
 
 	Menu() {
 		this->componentType = ComponentType::menu;
 	};
-	Menu(const Menu& copy){
-		this->componentType = ComponentType::menu;
-	}
+	Menu(const Menu& copy);
 	~Menu();
 };
+
+inline FrameElement* Menu::_Clone() const {
+	return new Menu(*this);
+}
 
 class Module;
 class MenuItem : public Label {
@@ -411,11 +456,17 @@ public:
 		this->componentType = ComponentType::menuItem;
 	}
 	MenuItem(const char* text, Module* previousModule);
+	MenuItem(const MenuItem& copy) : Label(copy), prefix(copy.prefix), link(copy.link), orderNum(copy.orderNum) {
+		this->componentType = ComponentType::menuItem;
+	}
 	void _SetOrderNumber(char* orderNum);
 	void _SetSpecialPrefix(const char* prefix);
 	void _SetLink(const char* moduleName);
 	short _Length() const override;
 	void _Show() override;
+	FrameElement* _Clone() const override;
+
+	~MenuItem() = default;
 };
 
 inline void MenuItem::_SetOrderNumber(char* orderNum) {
@@ -442,11 +493,16 @@ inline void MenuItem::_SetLink(const char* moduleName) {
 	this->link = moduleName;
 }
 
+inline FrameElement* MenuItem::_Clone() const {
+	return new MenuItem(*this);
+}
+
 class TextBar : public Label {
 private:
 	Label** items = nullptr;
 	int num = 0;
 	int spacing = 1;
+	bool deleteItems = false;
 
 	void _AddItem(Label& item);
 
@@ -469,10 +525,43 @@ public:
 
 	void _SetSpacing(int spacing);
 	void _Show() override;
+	FrameElement* _Clone() const override;
 
+	TextBar(const TextBar& copy);
 	~TextBar();
 };
 
 inline void TextBar::_SetSpacing(int spacing) {
 	this->spacing = spacing;
+}
+
+inline FrameElement* TextBar::_Clone() const {
+	return new TextBar(*this);
+}
+
+class Table : public FrameElement {
+	int rowNum = 0;
+	int colNum = 0;
+	
+	bool showBorder = false;
+
+	void _DrawBorder();
+public:
+	void _ToggleBorder(bool status);
+	void _Show() override;
+	FrameElement* _Clone() const override;
+
+	Frame*** cells = nullptr;
+
+	Table(Frame* parentFrame, int rowNum, int colNum);
+	Table(const Table& copy);
+	~Table();
+};
+
+inline void Table::_ToggleBorder(bool status) {
+	this->showBorder = status;
+}
+
+inline FrameElement* Table::_Clone() const {
+	return new Table(*this);
 }

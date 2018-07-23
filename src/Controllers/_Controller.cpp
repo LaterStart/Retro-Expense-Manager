@@ -302,9 +302,9 @@ vector<char*>* Controller::_GetModels(fstream* stream, ModelHeader& header, Quer
 			pagePos = block._PagePos();
 			if (!block.empty) {
 				int ID = block._ID();
-				bool acceptID = query._ValidateID(ID);
+				bool acceptItem = query._ValidateID(ID, header);
 				
-				if (acceptID) {					
+				if (acceptItem) {					
 					char* buff = new char[block._BufferSize() + sizeof(int)];
 					std::memcpy(buff, &ID, sizeof(int));
 					std::memcpy(buff + sizeof(int), page + block._Offset(), block._BufferSize());
@@ -414,7 +414,11 @@ void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char
 	}
 }
 
-bool Query::_ValidateID(int ID) {
+bool Query::_ValidateID(int ID, ModelHeader& header) {
+	if (this->range == Range::lastTen) {
+		if (ID < header._LastID() - 10)
+			return false;
+	}
 	if (includeIDs->size() > 0) {
 		for (size_t i = 0; i < includeIDs->size(); i++) {
 			if (includeIDs->at(i) == ID)

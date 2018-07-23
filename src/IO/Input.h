@@ -10,7 +10,8 @@ const enum class InputType {
 	YN,
 	password,
 	value,
-	scrollDown
+	scrollDown,
+	date
 };
 
 const enum class ControlKey {
@@ -61,6 +62,7 @@ private:
 	int _Verify_password(char& ch);
 	int _Verify_scrollDown(char& ch);
 	int _Verify_value(char& ch);
+	int _Verify_date(char& ch);
 	
 public:
 	int length = 0;
@@ -82,6 +84,7 @@ public:
 	void _ReadUserInput();
 	void _ClearInput();
 	void _HideInput();
+	void _SetDefaultInput(char* input);
 	bool _ControlKey() const;
 	InputType _Type() const;
 };
@@ -287,6 +290,19 @@ public:
 		this->OComponent::componentType = ComponentType::confirmField;
 	}
 	ConfirmField(const ConfirmField& copy);
+
+	FormField* _Store() override;
+	void _Show() override;
+};
+
+class DateField : public FormField {
+private:
+	bool currentDateDisplayed = false;
+public:
+	DateField(const char* text, Field field) : FormField(text, InputType::date, field) {
+		this->OComponent::componentType = ComponentType::dateField;
+	}
+	DateField(const DateField& copy);
 
 	FormField* _Store() override;
 	void _Show() override;

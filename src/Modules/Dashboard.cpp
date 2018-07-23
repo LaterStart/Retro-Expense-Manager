@@ -1,6 +1,7 @@
 #include "Dashboard.h"
 #include "../IO/IOComponent.h"
 #include "../IO/Input.h"
+using namespace std;
 
 Module& Dashboard::_GetInstance() {
 	return _LoadModule();
@@ -32,8 +33,33 @@ void Dashboard::_StartModule() {
 		MenuItem("Add Category", "AddCategory")
 	);
 	layout._Select("Menu")->_AddElements(mainMenu);
+
+	//	Split content frame
+	Frame* content = layout._Select("Content");
+	Separator middleSplit(*layout._Select("Body"), content->_X2() - content->_X1() + 2, 0, content->_X1() - 3, (content->_Y2() / 2) - 1);
+	Separator titleLine(*layout._Select("Body"), content->_X2() - content->_X1() + 2, 0, content->_X1() - 3, (content->_Y2() / 2) + 1);
+	content->_Split(middleSplit, "NetWorth", "LatestTransactions");
+
+	//	Latest transactions	
+	layout._Select("LatestTransactions")->_Split(titleLine, "LatestTransactionsHeader", "LatestTransactionsBody");
+	display._Display(titleLine);
+
+	Label latestTransactionTitle("Latest Transactions ", ::headerSymbol, "left");
+	latestTransactionTitle._SetPadding(2);
+	layout._Select("LatestTransactionsHeader")->_AddElements(latestTransactionTitle);
+
+	vector<Transaction>* latestTransactions = transactionController._GetLatestTransactions();
+	Frame* ltFrame = layout._Select("LatestTransactionsBody");
+	ltFrame->_AddLeftPadding(2);
+	Table table(layout._Select("LatestTransactionsBody"), latestTransactions->size(), 6);
+	for (int i = 0; i < latestTransactions->size(); i++) {
+		table.cells[i][0]->_AddElements(Label(latestTransactions->at(i)._ID()));
+		table.cells[i][1]->_AddElements(Label(latestTransactions->at(i)._Date()));
+	}
+	table._Show();
 	layout._ShowElements();
 
+	//	User input
 	Cursor(2, ::height - 4);
 	UserInput select(InputType::select);
 	int selection = 0;

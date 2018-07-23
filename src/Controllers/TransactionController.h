@@ -5,8 +5,10 @@
 class Transaction; class ModelHeader;
 class TransactionController : public Controller {
 private:
-	static ModelHeader header;
-	
+	static ModelHeader header;	
+	std::vector<Transaction>* latestTransactions = nullptr;
+
+	void _LoadLatestTransactions();
 
 public:
 	TransactionController();
@@ -15,4 +17,5 @@ public:
 	static std::vector<const char*> transactionType;
 	
 	void _AddNewTransaction(utility::LinkedList<Data*>*data, int profileID);
+	std::vector<Transaction>* _GetLatestTransactions();
 };

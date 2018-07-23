@@ -29,8 +29,10 @@ struct Date {
 
 	Date(char* text);
 	Date() = default;
+	Date(const Date& copy);
 
 	int _DisplayLength();
+	char* _DateChar();
 
 	friend bool operator <(const Date&, const Date&);
 };
@@ -61,6 +63,8 @@ namespace utility {
 
 	bool _CompareChar(char* first, char* second);
 	bool _CompareChar(const char* first, const char* second);	
+	bool _IsLeapYear(int year);
+	bool _VerifyDate(char* date);
 
 	void _Countdown(int seconds);
 	void _XOR(char* &password);

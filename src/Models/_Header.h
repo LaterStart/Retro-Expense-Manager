@@ -112,6 +112,7 @@ public:
 	void _Deserialize(char* page);
 	ModelName _Name() const;
 	void _ResetIDCounter();
+	int _LastID() const;
 };
 
 inline ModelName ModelHeader::_Name() const {
@@ -120,4 +121,8 @@ inline ModelName ModelHeader::_Name() const {
 
 inline void ModelHeader::_ResetIDCounter() {
 	this->idCount = 0;
+}
+
+inline int ModelHeader::_LastID() const {
+	return this->idCount;
 }

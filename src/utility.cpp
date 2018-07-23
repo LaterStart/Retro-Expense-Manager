@@ -43,6 +43,12 @@ Date::Date(char* text) {
 	*ptr[2] = utility::_ConvertToInteger(text);
 }
 
+Date::Date(const Date& copy) {
+	this->day = copy.day;
+	this->month = copy.month;
+	this->year = copy.year;
+}
+
 std::ostream& operator << (std::ostream& os, Date& date) {
 	os << date.day << "/" << date.month << "/" << date.year;
 	return os;
@@ -67,6 +73,34 @@ bool operator < (const Date &d1, const Date &d2) {
 
 int Date::_DisplayLength() {
 	return 10;
+}
+
+char* Date::_DateChar() {
+	char* dateChar = new char[11];
+	dateChar[0] = 0 + '0';
+	dateChar[2] = '/';
+	dateChar[3] = 0 + '0';
+	dateChar[5] = '/';
+	dateChar[10] = '\0';
+
+	if (day < 10)
+		dateChar[1] = day + '0';
+	else {
+		dateChar[1] = day % 10 + '0';
+		dateChar[0] = day / 10 + '0';
+	}
+	if (month < 10)
+		dateChar[4] = month + '0';
+	else {
+		dateChar[4] = month % 10 + '0';
+		dateChar[3] = month / 10 + '0';
+	}	
+	short z = 9;
+	while (year > 0) {
+		dateChar[z--] = year % 10 + '0';
+		year /= 10;
+	}
+	return dateChar;
 }
 
 namespace utility {
@@ -206,6 +240,7 @@ namespace utility {
 		int number = 0;
 		int decimal = 0;
 		int multiply = (int)pow(10,n-1);
+		int divide = 1;
 
 		for (int i = 0; i < n; i++) {
 			if ((text[i] == 46 || text[i] == 44)) {
@@ -213,7 +248,9 @@ namespace utility {
 					return 0.0;
 				else if (!separatorFound) {
 					separatorFound = true;
-					multiply = n - i;
+					multiply = (int)pow(10 , n - (i+1));
+					divide = (int)pow(10, n - i);
+					continue;
 				}
 				else return 0.0;
 			}			
@@ -225,9 +262,11 @@ namespace utility {
 			else number += multiply * (text[i] - '0');
 
 			multiply /= 10;
-		}
-		
-		return number + (float(1.0) / decimal);
+		}		
+
+		number /= divide;
+		float result = number + (0.1 * decimal / 100);
+		return result;
 	}
 
 	int _ConvertToInteger(char* text) {
@@ -387,5 +426,53 @@ namespace utility {
 		for (int i = 0; i < size; i++) {
 			password[i] ^= key[j++];
 		}
+	}
+
+	bool _IsLeapYear(int year) {
+		if (year % 4 == 0) {
+			if (year % 100 == 0) {
+				if (year % 400 == 0)
+					return true;
+				else
+					return false;
+			}
+			else return true;
+		}
+		else return false;
+	}
+
+	bool _VerifyDate(char* date) {
+		int n = _CharLength(date);
+		if (n < 10)
+			return false;
+
+		if (date[2] != '/' && date[5] != '/')
+			return false;
+
+		int day = _ConvertToInteger(date, 2);
+		date += 3;
+		int month = _ConvertToInteger(date, 2);
+		date += 3;
+		int year = _ConvertToInteger(date);
+
+		Date current(::currentDate);
+		if (year > current.year)
+			return false;
+
+		if (month > 12 || month < 1)
+			return false;
+		if (month == 2) {
+			bool leap = utility::_IsLeapYear(year);
+			if (leap) {
+				if (day < 1 || day > 29)
+					return false;
+			}
+			else if (day < 1 || day > 28)
+				return false;
+		}
+		else if (day < 1 || day >28)
+			return false;	
+
+		return true;
 	}
 }

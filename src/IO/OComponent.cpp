@@ -149,7 +149,7 @@ Frame* Frame::_Select(const char* IDname) {
 void Frame::_AddElement(FrameElement& newElement) {
 	FrameElement** element = new FrameElement*(nullptr);	
 	utility::_AddElement(elements, *element, elNum);
-	elements[elNum - 1] = &newElement;
+	elements[elNum - 1] = newElement._Clone();
 	elements[elNum - 1]->_SetParentFrame(this);
 	elements[elNum - 1]->_SetX1(this->x1);
 	delete element;
@@ -232,7 +232,7 @@ FrameElement::FrameElement(const FrameElement& copy) : OComponent(copy){
 
 //	FrameElement overloaded copy constructor
 FrameElement::FrameElement(const FrameElement& copy, Frame* parentFrame) : OComponent(*parentFrame), parentFrame(parentFrame) {}
-
+	
 //	Find corresponding display for this frame element
 Display* FrameElement::_GetDisplay() {
 	Frame* select = parentFrame;
@@ -407,7 +407,19 @@ Layout::~Layout() {
 	delete frame;
 }
 
+Menu::Menu(const Menu& copy) : size(copy.size), linkNum(copy.linkNum){
+	this->componentType = ComponentType::menu;
+	items = new MenuItem*[size];
+	for (int i = 0; i < size; i++) 
+		items[i] = static_cast<MenuItem*>(copy.items[i]->MenuItem::_Clone());
+	deleteItems = true;
+}
+
 Menu::~Menu() {
+	if (deleteItems) {
+		for (int i = 0; i < size; i++)
+			delete items[i];
+	}
 	delete[]items;
 }
 
@@ -467,7 +479,19 @@ void TextBar::_Show() {
 	}
 }
 
+TextBar::TextBar(const TextBar& copy) : num(copy.num), spacing(copy.spacing) {
+	this->componentType = ComponentType::textBar;
+	items = new Label*[num];
+	for (int i = 0; i < num; i++) 
+		items[i] = static_cast<Label*>(copy.items[i]->_Clone());
+	deleteItems = true;
+}
+
 TextBar::~TextBar() {
+	if (deleteItems) {
+		for (int i = 0; i < num; i++)
+			delete items[i];
+	}
 	delete[]items;
 }
 
@@ -489,4 +513,80 @@ std::vector<FrameElement*> Layout::_SelectElements(ComponentType type) {
 			container.push_back(subContainer.at(j));
 	}
 	return container;	
+}
+
+Table::Table(Frame* parentFrame, int rowNum, int colNum) : rowNum(rowNum), colNum(colNum), FrameElement(parentFrame){
+	this->componentType = ComponentType::table;
+
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	int cellWidth = (coord.x2 - coord.x1 ) / colNum;
+
+	char cellName[] = { "0,0" };
+	int cellY = coord.y1;
+	cells = new Frame**[rowNum];
+	for (int i = 0; i < rowNum; i++) {
+		cells[i] = new Frame*[colNum];
+		int cellX = coord.x1;
+		cellName[0] = (i+1) + '0';
+		for (int j = 0; j < colNum; j++) {
+			cellName[2] = (j+1) + '0';
+			cells[i][j] = new Frame(*parentFrame, cellX + cellWidth, cellX, cellY + 1, cellY);
+			cells[i][j]->IDname = utility::_CopyChar(cellName);
+			cellX = cellX + cellWidth;
+		}
+		cellY+=2;
+	}	
+}
+
+Table::Table(const Table& copy) : rowNum(copy.rowNum), colNum(copy.colNum), showBorder(copy.showBorder) {
+	this->componentType = ComponentType::table;
+	cells = new Frame**[rowNum];
+	for (int i = 0; i < rowNum; i++) {
+		cells[i] = new Frame*[colNum];
+		for (int j = 0; j < colNum; j++) {
+			cells[i][j] = new Frame(*copy.cells[i][j]);
+		}
+	}
+}
+
+void Table::_DrawBorder() {
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	Display* dsp = _GetDisplay();
+	for (int i = 0; i < rowNum; i++) {
+		for (int j = 0; j < colNum; j++) {
+			Frame::Coordinates coord = cells[i][j]->_GetCoordinates();
+			Cursor pos(coord.x1, coord.y1);
+			for (int k = coord.x1; k < coord.x2; k++) 
+				dsp->_Display(::horizontalLine);
+			pos._ChangeY(1);
+			pos._SetCursorPosition();
+			dsp->_Display(::verticalLine);
+			Cursor pos2(coord.x2, pos._GetY());
+			dsp->_Display(::verticalLine);
+			pos._ChangeY(1);
+			pos._SetCursorPosition();
+			for (int k = coord.x1; k < coord.x2; k++)
+				dsp->_Display(::horizontalLine);
+		}
+	}
+}
+
+void Table::_Show() {
+	if (showBorder) 
+		_DrawBorder();
+	for (int i = 0; i < rowNum; i++) {
+		for (int j = 0; j < colNum; j++) {
+			cells[i][j]->_ShowElements();
+		}
+	}
+}
+
+Table::~Table() {
+	for (int i = 0; i < rowNum; i++) {
+		for (int j = 0; j < colNum; j++) {
+			delete cells[i][j];
+		}
+		delete[]cells[i];
+	}
+	delete[]cells;
 }

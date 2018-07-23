@@ -18,6 +18,12 @@ void UserInput::_Initialize() {
 	}
 
 	if (parentFrame != nullptr && type!= InputType::scrollDown && type!= InputType::select) {
+		if (type == InputType::date) {
+			for (int i = 0; i < 10; i++) {
+				if (input[i] == ::spaceKey)
+					length--;
+			}
+		}
 		Frame::Coordinates coord = parentFrame->_GetCoordinates();
 		if (dsp._IsEmpty() && length > 0) {
 			pos._SetXY(coord.x1,coord.y1);
@@ -25,7 +31,8 @@ void UserInput::_Initialize() {
 			dsp._Display(input);
 		}
 
-		pos._SetXY(coord.x1 + length, coord.y1);
+		int varLngth = (type == InputType::date) ? 10 : length;
+		pos._SetXY(coord.x1 + varLngth, coord.y1);
 		pos._SetCursorPosition();
 		min_x = coord.x1;
 		max_x = coord.x2;
@@ -165,6 +172,8 @@ int UserInput::_VerifyInput(char& ch) {
 			return _Verify_scrollDown(ch);
 		case InputType::value:
 			return _Verify_value(ch);
+		case InputType::date:
+			return _Verify_date(ch);
 		default:
 			return 0;
 		}
@@ -254,6 +263,38 @@ int UserInput::_Verify_value(char& ch) {
 	}
 }
 
+int UserInput::_Verify_date(char& ch) {
+	if (ch == 13) {
+		bool verify = false;
+		if (length == 10) {
+			char* temp = new char[length + 1];
+			temp[length] = '\0';
+			unsigned int z = length - 1;
+			List* tmp = node->previousNode;
+
+			while (tmp != nullptr) {
+				temp[z--] = tmp->value;
+				tmp = tmp->previousNode;
+			}
+
+			verify = utility::_VerifyDate(temp);
+			delete[]temp;
+		}
+		if (verify)
+			return 3;
+		else return 0;
+	}
+	if (node->value == '/' && ch != '/')
+		return 0;
+	else if (node->value == '/' && ch == '/')
+		return 16;
+	else if (ch < 48 || ch > 57)
+		return 0;
+	else if (length == 10)
+		return 0;
+	else return 16;
+}
+
 int UserInput::_UpdateInput(int& control, char& ch) {	
 	switch (control) {
 	case -1:
@@ -303,10 +344,29 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 			// insert character
 			_ContinueInsert(ch);
 		return 2;
-	case 6: goto del; // up, down, left, right - arrow
+	case 6: 
+		// up, down, left, right - arrow
+		if (type == InputType::date)
+			length = 10;
+		if (this->control == ControlKey::upArrow || this->control == ControlKey::downArrow)
+			goto del;
+		if (type == InputType::date) 
+			return 1;
+		goto del; 
 	case 7:
 		//	backspace - delete previous input
 		if (node->previousNode != nullptr) {
+			if (type == InputType::date) {
+				if (node->previousNode->value == '/')
+					return 2;
+				else {
+					dsp._Backspace();	
+					length = (node->previousNode->value == ::spaceKey) ? length : length - 1;
+					node = node->previousNode;
+					node->value = ::spaceKey;
+					return 2;
+				}
+			}				
 			if (node->previousNode->previousNode != nullptr) {
 				List* deleter = node->previousNode;
 				node->previousNode->previousNode->nextNode = node;
@@ -373,6 +433,16 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		goto del;
 	case 14:
 		//	delete key - delete selected input
+		if (type == InputType::date) {
+			if (node->value == '/')
+				return 2;
+			else {
+				Cursor tmp;
+				dsp._Display(::spaceKey);
+				tmp._SetCursorPosition();
+				return 2;
+			}
+		}
 		if (length > 0 && node->nextNode != nullptr) {
 			if (node->previousNode != nullptr) {
 				node->previousNode->nextNode = node->nextNode;
@@ -411,6 +481,18 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 		// scroll down letter search
 		_ContinueAccept(ch);
 		goto del;
+	case 16:
+		// date input
+		if (node->nextNode == nullptr)
+			return 2;
+		else {
+			node->value = ch;
+			dsp._Display(ch);
+			node = node->nextNode;
+			if(ch!='/')
+				length++;
+			return 2;
+		}
 	default:
 		return 0;
 	}
@@ -504,6 +586,21 @@ void UserInput::_ClearInput() {
 
 void UserInput::_HideInput() {
 	dsp._WipeContent();
+}
+
+void UserInput::_SetDefaultInput(char* input) {
+	length = utility::_CharLength(input);
+	node = new List;
+	initial = node;
+	for (int i = 0; i < length - 1; i++) {
+		node->value = input[i];
+		node->nextNode = new List;
+		node->nextNode->previousNode = node;
+		node = node->nextNode;
+	}
+	node->value = input[length - 1];
+	node = initial;
+	this->input = utility::_CopyChar(input);
 }
 
 bool InputField::_InputControl() {

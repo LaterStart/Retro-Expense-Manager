@@ -729,3 +729,24 @@ bool Form::_SwitchToExtension(const char* moduleName) {
 	this->moduler->_OpenModule(moduleName, moduler->_CurrentModule());
 	return moduler->_CurrentModule()->_ExtensionStatus();
 }
+
+FormField* DateField::_Store() {
+	return new DateField(*this);
+}
+
+DateField::DateField(const DateField& copy) : FormField(copy) {
+	this->OComponent::componentType = ComponentType::dateField;
+}
+
+void DateField::_Show() {
+	Label::_Show();
+	if (currentDateDisplayed == false){		
+		this->inputField->_SetDefaultInput(::currentDate);
+		currentDateDisplayed = true;
+	}
+	if (_InputControl()) {
+		filled = true;
+		parentForm->_ShowNextField(this);
+	}
+	else _SwitchField(inputField->control);
+}

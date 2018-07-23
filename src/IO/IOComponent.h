@@ -3,7 +3,7 @@
 
 const enum class ComponentType {
 	none, console, cursor, link, display, frame, coordinates, container, separator, label, menu, menuItem, textBar, form, formField, userInput,
-	optionField, selectionField, usernameField, passwordField, confirmField, inputField, scrollDown, scrollDown_2D
+	optionField, selectionField, usernameField, passwordField, confirmField, inputField, scrollDown, scrollDown_2D, dateField, table, layout
 };
 
 class IOComponent {	

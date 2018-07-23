@@ -59,7 +59,8 @@ void AddTransaction::_StartModule() {
 		ScrollDown_2D<Category>("Category:", *categoryController.categoryList, Field::category),
 		FormField("Amount:", InputType::value, Field::amount),
 		ScrollDown<Currency>("Currency:", *exchangeRateController.currencies, Field::currency),
-		ScrollDown<Account>("Account:", *accountController.accounts, Field::account),		
+		ScrollDown<Account>("Account:", *accountController.accounts, Field::account),
+		DateField("Date:", Field::date),
 		FormField("Description:", InputType::text, Field::description),
 		ConfirmField("Save?:")
 	);

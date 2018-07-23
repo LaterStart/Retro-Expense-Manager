@@ -73,13 +73,13 @@ Transaction& Transaction::operator=(Transaction&& move) {
 void Transaction::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::account:
-		accountID = data->input->selection;		
+		accountID = data->input->selection -1;		
 		break;
 	case Field::transactionType:
-		typeID = data->input->selection;
+		typeID = data->input->selection -1;
 		break;
 	case Field::category:
-		categoryID = data->input->selection;
+		categoryID = data->input->selection -1;
 		break;
 	case Field::currency:
 		currencyID = data->input->selection;
@@ -89,7 +89,11 @@ void Transaction::_BindData(Data* data) {
 		break;
 	case Field::description:
 		description = utility::_CopyChar(data->input->input);
-		descriptionSize = data->input->length;
+		descriptionSize = data->input->length + 1;
+		break;
+	case Field::date:
+		date = Date(data->input->input);
+		break;
 	default:
 		break;
 	}
@@ -98,7 +102,7 @@ void Transaction::_BindData(Data* data) {
 //	serialize category model
 char* Transaction::_Serialize() {
 	//	Total object size					 
-	int size = descriptionSize + 6*sizeof(int) + sizeof(float);
+	int size = descriptionSize + 6*sizeof(int) + sizeof(float) + sizeof(Date);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -124,6 +128,10 @@ char* Transaction::_Serialize() {
 	std::memcpy(buffer, &descriptionSize, sizeof(int));
 	buffer += sizeof(int);
 	std::memcpy(buffer, description, descriptionSize);
+	buffer += descriptionSize;
+
+	//	store date into buffer
+	std::memcpy(buffer, &date, sizeof(Date));
 
 	return firstByte;
 }
@@ -148,6 +156,9 @@ void Transaction::_Deserialize(char* page) {
 
 	this->description = new char[descriptionSize];
 	std::memcpy(description, page, descriptionSize);
+	page += descriptionSize;
+
+	this->date = *(Date*)page;
 }
 
 std::ostream& Transaction::_Show(std::ostream& os) {

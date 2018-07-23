@@ -25,7 +25,8 @@ const enum class Field {
 
 const enum class Range {
 	none,
-	all
+	all,
+	lastTen
 };
 
 class UserInput;
@@ -38,6 +39,7 @@ public:
 	~Data() = default;
 };
 
+class ModelHeader;
 class Query {
 	Range range = Range::none;	
 	std::vector<int>* includeIDs = new std::vector<int>;
@@ -69,7 +71,7 @@ public:
 		_ExcludeIDs(nextIDs...);
 	}
 
-	bool _ValidateID(int ID);
+	bool _ValidateID(int ID, ModelHeader& header);
 
 	Query() = default;
 	Query(Range range) : range(range){}
@@ -104,7 +106,7 @@ struct Buffer {
 	~Buffer(){ delete[]data; }
 };
 
-class DataBlock; class Header; class MainHeader; class ModelHeader;
+class DataBlock; class Header; class MainHeader;
 class Controller {
 	friend void Initialize::_Controller();
 private:

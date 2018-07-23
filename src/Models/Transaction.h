@@ -22,6 +22,7 @@ public:
 	void _Deserialize(char* buffer);
 	
 	int _ID() const;
+	Date _Date() const;
 	int _DisplayLength();
 
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
@@ -39,4 +40,8 @@ inline int Transaction::_ID() const {
 
 inline int Transaction::_DisplayLength() {
 	return date._DisplayLength() + utility::_DigitNumber(amount) + utility::_CharLength(description);
+}
+
+inline Date Transaction::_Date() const {
+	return this->date;
 }
