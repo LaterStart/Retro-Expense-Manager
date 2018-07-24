@@ -12,6 +12,7 @@ Transaction::Transaction(utility::LinkedList<Data*>* data, int ID, int profileID
 	this->ID = ID;
 	this->profileID = profileID;
 	data->_DeleteList();
+	_AmountToChar();
 }
 
 // construct transacion model using bufferered data
@@ -31,6 +32,8 @@ Transaction::Transaction(const Transaction& copy) {
 	this->date = copy.date;
 	this->descriptionSize = copy.descriptionSize;
 	this->description = utility::_CopyChar(copy.description);
+	this->amountChar = utility::_CopyChar(copy.amountChar);
+
 }
 
 // transaction move constructor
@@ -46,6 +49,8 @@ Transaction::Transaction(Transaction&& move) {
 	this->descriptionSize = move.descriptionSize;
 	this->description = move.description;
 	move.description = nullptr;
+	this->amountChar = move.amountChar;
+	move.amountChar = nullptr;
 }
 
 // transaction move assignment
@@ -65,6 +70,8 @@ Transaction& Transaction::operator=(Transaction&& move) {
 	this->descriptionSize = move.descriptionSize;
 	this->description = move.description;
 	move.description = nullptr;
+	this->amountChar = move.amountChar;
+	move.amountChar = nullptr;
 
 	return *this;
 }
@@ -79,7 +86,7 @@ void Transaction::_BindData(Data* data) {
 		typeID = data->input->selection -1;
 		break;
 	case Field::category:
-		categoryID = data->input->selection -1;
+		categoryID = data->input->selection;
 		break;
 	case Field::currency:
 		currencyID = data->input->selection;
@@ -159,6 +166,7 @@ void Transaction::_Deserialize(char* page) {
 	page += descriptionSize;
 
 	this->date = *(Date*)page;
+	_AmountToChar();
 }
 
 std::ostream& Transaction::_Show(std::ostream& os) {
@@ -168,4 +176,29 @@ std::ostream& Transaction::_Show(std::ostream& os) {
 
 Transaction::~Transaction() {
 	delete[]description;
+	delete[]amountChar;
+}
+
+void Transaction::_AmountToChar() {
+	int size = utility::_DigitNumberFloat(amount) + 3;
+	this->amountChar = new char[size];
+	switch (typeID) {
+	case 0:
+		amountChar[0] = '+';
+		break;
+	case 1:
+		amountChar[0] = '-';
+		break;
+	case 2:
+		amountChar[0] = '=';
+		break;
+	case 3:
+		amountChar[0] = '+';
+		break;
+	default:
+		break;
+	}
+	char* tmp = utility::_FloatToChar(amount);
+	char* tmp2 = amountChar + 1;
+	std::memcpy(tmp2, tmp, utility::_CharSize(tmp));
 }

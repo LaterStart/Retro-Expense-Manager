@@ -44,7 +44,8 @@ namespace utility {
 	char* _ChopChar(char* arr, char* remove);
 	char* _ChopChar(char* arr, char* removeOne, char* removeTwo);	
 	char* _InsertChar(char* arr, char* insert);
-	char* _ConvertToChar(unsigned int number);
+	char* _IntToChar(unsigned int number);
+	char* _FloatToChar(float numer);
 	char* _ConcatenateChar(const char* myChar ...);
 	char* _CopyChar(char* char_in);
 	char* _CopyChar(const char* char_in);	
@@ -56,7 +57,8 @@ namespace utility {
 	int _CharSize(const char* arr);
 	int _ConvertToInteger(char* text);
 	int _ConvertToInteger(char* buffer, int size);
-	int _DigitNumber(int num);
+	int _DigitNumberInt(int num);
+	int _DigitNumberFloat(float num);
 	int _Find(char* word, char* arr);
 	int _ReadAlign(const char* align);
 	int _ReadDirection(const char* direction);

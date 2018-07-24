@@ -38,7 +38,7 @@ void ExchangeRateController::_LoadExchangeRate() {
 					char* buffer = excRate->_Serialize();
 					_UpdateModel(stream, header, -1, buffer);
 					stream->clear();
-					for (int i = 0; i < currencies->size(); i++) {
+					for (size_t i = 0; i < currencies->size(); i++) {
 						buffer = currencies->at(i)._Serialize();
 						_UpdateModel(stream, header, currencies->at(i)._ID(), buffer);
 					}
@@ -264,7 +264,7 @@ void ExchangeRateController::_WriteExchangeRate() {
 		_WriteModel(stream, header, buffer);
 
 		// write currencies (rates) into database
-		for (int i = 0; i < currencies->size(); i++) {
+		for (size_t i = 0; i < currencies->size(); i++) {
 			buffer = currencies->at(i)._Serialize();
 			_WriteModel(stream, header, buffer);
 		}

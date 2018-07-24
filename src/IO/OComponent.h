@@ -205,8 +205,11 @@ inline void Frame::_SetDisplay(Display& dsp) {
 	this->dsp = &dsp;
 }
 
-class FrameElement : public OComponent {	
+class FrameElement : public OComponent {
 protected:
+	FrameElement * original = nullptr;
+	FrameElement * clone = nullptr;
+
 	bool paddingSet = false;
 	bool yposSet = false;
 	const char* align = "left";
@@ -234,9 +237,10 @@ public:
 	unsigned short _Padding() const;
 	unsigned short _Ypos() const;
 	Frame* _ParentFrame() const;
+	FrameElement* _Original() const;
 
-	virtual FrameElement* _Clone() const;
-	virtual ~FrameElement() = default;
+	virtual FrameElement* _Clone();
+	virtual ~FrameElement();
 };
 
 inline void FrameElement::_Show() {}
@@ -286,8 +290,15 @@ inline Frame* FrameElement::_ParentFrame() const {
 	return this->parentFrame;
 }
 
-inline FrameElement* FrameElement::_Clone() const {
-	return new FrameElement(*this);
+inline FrameElement* FrameElement::_Clone() {
+	FrameElement* clone = new FrameElement(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
+}
+
+inline FrameElement* FrameElement::_Original() const {
+	return this->original;
 }
 
 class Separator : public FrameElement {
@@ -304,11 +315,14 @@ public:
 	Separator(Layout& layout, short length, bool direction, unsigned short start_X, unsigned short start_Y);
 	Separator(const Separator& copy);
 
-	FrameElement* _Clone() const override;
+	virtual Separator* _Clone();
 };
 
-inline FrameElement* Separator::_Clone() const {
-	return new Separator(*this);
+inline Separator* Separator::_Clone() {
+	Separator* clone = new Separator(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class Label : public FrameElement {
@@ -346,11 +360,17 @@ public:
 		this->align = align;
 		this->componentType = ComponentType::label;
 	}
-	Label(int num) : text(utility::_ConvertToChar(num)), length(utility::_DigitNumber(num)) {
+	Label(int num) : length(utility::_DigitNumberInt(num)) {
+		this->text = utility::_IntToChar(num);
 		this->componentType = ComponentType::label;
 		this->deleteText = true;
 	}
 	Label(Date& date) : text(date._DateChar()) {
+		this->componentType = ComponentType::label;
+		this->deleteText = true;
+		this->length = utility::_CharLength(text);
+	}	
+	Label(char* text) : text(utility::_CopyChar(text)), length(utility::_CharLength(text)) {
 		this->componentType = ComponentType::label;
 		this->deleteText = true;
 	}
@@ -360,7 +380,7 @@ public:
 	virtual short _Length() const;
 	virtual void _Show() override;
 	virtual void _Hide() override;	
-	virtual FrameElement* _Clone() const override;
+	virtual Label* _Clone();
 
 	virtual ~Label() {
 		if (deleteText)
@@ -377,8 +397,11 @@ inline void Label::_SetText(const char* text) {
 	this->length = utility::_CharLength(text);
 }
 
-inline FrameElement* Label::_Clone() const {
-	return new Label(*this);
+inline Label* Label::_Clone() {
+	Label* clone = new Label(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class Layout : public FrameElement {	
@@ -395,13 +418,16 @@ public:
 	void _ShowElements();
 	std::vector<FrameElement*> _SelectElements(ComponentType type);
 
-	FrameElement* _Clone() const override;
+	virtual Layout* _Clone();
 
 	~Layout();
 };
 
-inline FrameElement* Layout::_Clone() const {
-	return new Layout(*this);
+inline Layout* Layout::_Clone() {
+	Layout* clone = new Layout(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class MenuItem;
@@ -429,7 +455,7 @@ public:
 	void _ChangeItem(const char* text, const char* newText, const char* newLink = nullptr);
 	void _Show() override;
 	void _Hide() override;
-	FrameElement* _Clone() const override;
+	virtual Menu* _Clone();
 
 	Menu() {
 		this->componentType = ComponentType::menu;
@@ -438,8 +464,11 @@ public:
 	~Menu();
 };
 
-inline FrameElement* Menu::_Clone() const {
-	return new Menu(*this);
+inline Menu* Menu::_Clone(){
+	Menu* clone = new Menu(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class Module;
@@ -464,7 +493,7 @@ public:
 	void _SetLink(const char* moduleName);
 	short _Length() const override;
 	void _Show() override;
-	FrameElement* _Clone() const override;
+	virtual MenuItem* _Clone();
 
 	~MenuItem() = default;
 };
@@ -493,8 +522,11 @@ inline void MenuItem::_SetLink(const char* moduleName) {
 	this->link = moduleName;
 }
 
-inline FrameElement* MenuItem::_Clone() const {
-	return new MenuItem(*this);
+inline MenuItem* MenuItem::_Clone() {
+	MenuItem* clone = new MenuItem(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class TextBar : public Label {
@@ -525,9 +557,11 @@ public:
 
 	void _SetSpacing(int spacing);
 	void _Show() override;
-	FrameElement* _Clone() const override;
+	virtual TextBar* _Clone();
 
-	TextBar(const TextBar& copy);
+	// copy constructor without const - gives advantage over variadic template
+	TextBar(TextBar& copy);
+	
 	~TextBar();
 };
 
@@ -535,8 +569,11 @@ inline void TextBar::_SetSpacing(int spacing) {
 	this->spacing = spacing;
 }
 
-inline FrameElement* TextBar::_Clone() const {
-	return new TextBar(*this);
+inline TextBar* TextBar::_Clone() {
+	TextBar* clone = new TextBar(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class Table : public FrameElement {
@@ -544,12 +581,15 @@ class Table : public FrameElement {
 	int colNum = 0;
 	
 	bool showBorder = false;
+	bool cellSeparator = true;
 
 	void _DrawBorder();
 public:
 	void _ToggleBorder(bool status);
+	void _ToggleCellSeparator(bool status);
+	void _SetColumnWidth(int columnIndex, int width);
 	void _Show() override;
-	FrameElement* _Clone() const override;
+	virtual Table* _Clone();
 
 	Frame*** cells = nullptr;
 
@@ -558,10 +598,21 @@ public:
 	~Table();
 };
 
-inline void Table::_ToggleBorder(bool status) {
-	this->showBorder = status;
+inline Table* Table::_Clone() {
+	Table* clone = new Table(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
-inline FrameElement* Table::_Clone() const {
-	return new Table(*this);
+inline void Table::_ToggleBorder(bool status) {
+	this->showBorder = status;
+	if (showBorder)
+		this->cellSeparator = false;
+}
+
+inline void Table::_ToggleCellSeparator(bool status) {
+	this->cellSeparator = status;
+	if (status)
+		this->showBorder = false;
 }

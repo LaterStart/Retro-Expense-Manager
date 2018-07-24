@@ -1,5 +1,6 @@
 #include <time.h>
 #include <iomanip>
+#include <math.h> 
 #include "utility.h"
 #include "config.h"
 #include "IO/IOComponent.h"
@@ -214,7 +215,7 @@ namespace utility {
 		return result;
 	}
 
-	char* _ConvertToChar(unsigned int number) {
+	char* _IntToChar(unsigned int number) {
 		int z = 0;
 		unsigned int y = number;
 		if (y == 0)
@@ -233,12 +234,50 @@ namespace utility {
 		return myChar;
 	}
 
+	char* _FloatToChar(float number) {
+		float fractpart, intpart;		
+		fractpart = modf(number, &intpart);
+		fractpart = roundf(fractpart * 100) / 100;
+		fractpart *= 100;
+		
+		int a_num = (int)intpart;
+		int b_num = (int)fractpart;
+
+		int anum = _DigitNumberInt(a_num);
+		int bnum = _DigitNumberInt(b_num);
+		bnum = (b_num < 10) ? bnum + 1 : bnum;
+		int size = anum + bnum + 2;
+
+		char* result = new char[size];
+		char* init = result;
+		result[size - 1] = '\0';
+
+		char* ANUM = _IntToChar(a_num);
+		char* BNUM = nullptr;
+		if (b_num < 10) {
+			BNUM = new char[2];
+			BNUM[0] = 0 + '0';
+			BNUM[1] = b_num + '0';
+		}
+		else BNUM = _IntToChar(b_num);
+
+		std::memcpy(result, ANUM, anum);
+		result += anum;
+		result[0] = '.';
+		result++;
+		std::memcpy(result, BNUM, bnum);
+
+		delete[]ANUM;
+		delete[]BNUM;
+		return init;
+	}
+
 	float _ConvertToFloat(char* text) {
 		bool separatorFound = false;
 		int n = _CharLength(text);
 
-		int number = 0;
-		int decimal = 0;
+		long long number = 0;
+		long long decimal = 0;
 		int multiply = (int)pow(10,n-1);
 		int divide = 1;
 
@@ -265,7 +304,7 @@ namespace utility {
 		}		
 
 		number /= divide;
-		float result = number + (0.1 * decimal / 100);
+		float result = number + (0.1f * decimal / 100);
 		return result;
 	}
 
@@ -319,11 +358,11 @@ namespace utility {
 	void _Countdown(int seconds) {
 		Cursor pos;
 		Display dsp;
-		int n = _DigitNumber(seconds);
+		int n = _DigitNumberInt(seconds);
 		short sx = pos._GetX();
 		for (int i = seconds; i > 0; i--) {
 			pos._SetX(sx);
-			int x = n - _DigitNumber(i);			
+			int x = n - _DigitNumberInt(i);			
 			for (int i = 0; i < x; i++) {				
 				dsp._Display(pos, 0);
 				pos._ChangeX(1);
@@ -370,12 +409,24 @@ namespace utility {
 		return ::currentDate;
 	}	
 
-	int _DigitNumber(int num) {
+	int _DigitNumberInt(int num) {
 		if (num == 0)
 			return 1;
 		int count = 0;
 		while (num > 0) {
 			num /= 10;
+			count++;
+		}
+		return count;
+	}
+
+	int _DigitNumberFloat(float num) {
+		if (num == 0.00)
+			return 3;
+		int count = 2;
+		int intg = int(num);	
+		while (intg > 0) {
+			intg /= 10;
 			count++;
 		}
 		return count;

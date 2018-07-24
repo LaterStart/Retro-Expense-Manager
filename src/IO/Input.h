@@ -385,6 +385,7 @@ public:
 	void _SetYpos(unsigned short y) override;
 	void _ChangeNextYpos(short y);
 	void _Break();
+	FrameElement* _Clone() override;
 	utility::LinkedList<Data*>* _GetData();
 	UserInput* _GetData(Field field);
 	Frame::Coordinates _GetSpecialContentCoord();
@@ -397,6 +398,7 @@ public:
 	Form() {
 		this->OComponent::componentType = ComponentType::form;
 	}
+	Form(const Form& copy);
 	~Form();
 };
 
@@ -460,6 +462,13 @@ inline void Form::_ChangeNextYpos(short y) {
 
 inline FormField* Form::_LastField() {
 	return this->lastField;
+}
+
+inline FrameElement* Form::_Clone() {
+	Form* clone = new Form(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
 }
 
 class InputField : public FormField{
@@ -671,6 +680,7 @@ private:
 	bool subSelect = false;
 	int sHeight = 5;
 	size_t initSize = items.size();
+	element* value = nullptr;
 
 public:
 	ScrollDown_2D(const char* text, std::vector<std::vector<element>>& items, Field field) : FormField(text, InputType::scrollDown, field), items(items) {
@@ -710,6 +720,7 @@ public:
 	void _InsertItem(std::vector<element>& newItem, int index = 0);
 	void _UpdateScrollControl(bool selectLastItem = true);
 	void _ToggleSubSelect(bool status, int parentID = 0);
+	element* _Value() const;
 };
 
 template <typename element>
@@ -926,6 +937,9 @@ void ScrollDown_2D<element>::_Show() {
 				}
 				inputField->selection = *sValue;
 				this->filled = true;
+				if (subSelect)
+					this->value = &items[*sCurr].at(scrollControl[scrollControl[items.size()][0]][0]);
+				else this->value = &items[scrollControl[items.size()][0]].at(0);
 				parentForm->_ShowNextField(this);
 			}
 		}
@@ -1041,4 +1055,9 @@ void ScrollDown_2D<element>::_ToggleSubSelect(bool status, int parentID) {
 		sMax   = sMax_init;
 	}
 	else sHeight = 5;
+}
+
+template <typename element>
+element* ScrollDown_2D<element>::_Value() const {
+	return this->value;
 }

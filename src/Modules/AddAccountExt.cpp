@@ -109,7 +109,7 @@ void AddAccountExt::_StartModule() {
 			vector<FormField*> fields = mainForm->_SelectFields(vector<Field>{Field::account});
 			ScrollDown<Account>* scroll1 = dynamic_cast<ScrollDown<Account>*>(activeField);
 			ScrollDown<Account>* scroll2 = nullptr;
-			for (int i = 0; i < fields.size(); i++) {
+			for (size_t i = 0; i < fields.size(); i++) {
 				if (fields.at(i) != activeField) 
 					scroll2 = dynamic_cast<ScrollDown<Account>*>(fields.at(i));				
 			}

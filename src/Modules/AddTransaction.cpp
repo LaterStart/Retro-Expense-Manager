@@ -163,7 +163,11 @@ void AddTransaction::_StartModule() {
 		form._Show();
 		if (form._Status()) {
 			//	Get form data and pass it to controller
-			utility::LinkedList<Data*>* data = form._GetData();
+			FormField* field = form._SelectField(Field::category);
+			ScrollDown_2D<Category>* categoryField = dynamic_cast<ScrollDown_2D<Category>*>(field);
+			Category* category = categoryField->_Value();
+			field->inputField->selection = category->_ID();
+			utility::LinkedList<Data*>* data = form._GetData();			
 			transactionController._AddNewTransaction(data, profileController._ActiveProfile()->_ID());
 			moduler->_SetNextModule("Dashboard", this);
 			break;

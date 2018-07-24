@@ -42,8 +42,8 @@ void Console::_Initialize() {
 
 //	Method which creates char* type system mode parameter to set console system mode using preconfigured width and height
 char* Console::_SystemMode() {
-	char* widthChar = utility::_ConvertToChar(width);
-	char* heightChar = utility::_ConvertToChar(height);
+	char* widthChar = utility::_IntToChar(width);
+	char* heightChar = utility::_IntToChar(height);
 	const char* mode = "MODE ";
 	char ch = ',';
 
@@ -246,7 +246,7 @@ void Display::_Display(Separator& separator) {
 
 void Display::_Display(Cursor& pos, int num) {
 	pos._SetCursorPosition();
-	pos._SetCharacterNumber(utility::_DigitNumber(num));
+	pos._SetCharacterNumber(utility::_DigitNumberInt(num));
 	cout << num;
 	ActivePos apos(pos, -1);
 	_AddActivePosition(apos);

@@ -152,6 +152,8 @@ void Frame::_AddElement(FrameElement& newElement) {
 	elements[elNum - 1] = newElement._Clone();
 	elements[elNum - 1]->_SetParentFrame(this);
 	elements[elNum - 1]->_SetX1(this->x1);
+	newElement._SetParentFrame(this);
+	newElement._SetX1(this->x1);
 	delete element;
 }
 
@@ -465,7 +467,7 @@ void Menu::_Hide() {
 void TextBar::_AddItem(Label& item) {
 	Label** pp = new Label*(nullptr);
 	utility::_AddElement(items, *pp, num);
-	items[num - 1] = &item;
+	items[num - 1] = new Label(item);
 	delete pp;
 }
 
@@ -479,11 +481,11 @@ void TextBar::_Show() {
 	}
 }
 
-TextBar::TextBar(const TextBar& copy) : num(copy.num), spacing(copy.spacing) {
+TextBar::TextBar(TextBar& copy) : Label(copy), num(copy.num), spacing(copy.spacing) {
 	this->componentType = ComponentType::textBar;
 	items = new Label*[num];
-	for (int i = 0; i < num; i++) 
-		items[i] = static_cast<Label*>(copy.items[i]->_Clone());
+	for (int i = 0; i < num; i++)
+		items[i] = new Label(*copy.items[i]);
 	deleteItems = true;
 }
 
@@ -498,8 +500,11 @@ TextBar::~TextBar() {
 std::vector<FrameElement*> Frame::_SelectElements(ComponentType type) {
 	std::vector<FrameElement*> container;
 	for (int i = 0; i < elNum; i++) {
-		if (elements[i]->componentType == type)
-			container.push_back(elements[i]);
+		if (elements[i]->componentType == type) {
+			if(elements[i]->_Original() != nullptr)
+				container.push_back(elements[i]->_Original());
+			else container.push_back(elements[i]);
+		}
 	}
 	return container;
 }
@@ -534,7 +539,7 @@ Table::Table(Frame* parentFrame, int rowNum, int colNum) : rowNum(rowNum), colNu
 			cells[i][j]->IDname = utility::_CopyChar(cellName);
 			cellX = cellX + cellWidth;
 		}
-		cellY+=2;
+		cellY++;
 	}	
 }
 
@@ -555,13 +560,13 @@ void Table::_DrawBorder() {
 	for (int i = 0; i < rowNum; i++) {
 		for (int j = 0; j < colNum; j++) {
 			Frame::Coordinates coord = cells[i][j]->_GetCoordinates();
-			Cursor pos(coord.x1, coord.y1);
+			Cursor pos(coord.x1-1, coord.y1-1 + i);
 			for (int k = coord.x1; k < coord.x2; k++) 
 				dsp->_Display(::horizontalLine);
 			pos._ChangeY(1);
 			pos._SetCursorPosition();
 			dsp->_Display(::verticalLine);
-			Cursor pos2(coord.x2, pos._GetY());
+			Cursor pos2(coord.x2-1, pos._GetY());
 			dsp->_Display(::verticalLine);
 			pos._ChangeY(1);
 			pos._SetCursorPosition();
@@ -572,11 +577,24 @@ void Table::_DrawBorder() {
 }
 
 void Table::_Show() {
+	Display*dsp = _GetDisplay();
+	Cursor pos;
 	if (showBorder) 
 		_DrawBorder();
 	for (int i = 0; i < rowNum; i++) {
 		for (int j = 0; j < colNum; j++) {
+			if (showBorder)
+				cells[i][j]->_AddTopPadding(i);
+			else if (cellSeparator) {
+				Frame::Coordinates coord = cells[i][j]->_GetCoordinates();
+				pos._SetXY(coord.x2-1, coord.y1);
+				pos._SetCursorPosition();
+				dsp->_Display(::verticalLine);
+				if (j > 0)
+					cells[i][j]->_AddLeftPadding(1);
+			}
 			cells[i][j]->_ShowElements();
+			pos._GetCursorPosition();
 		}
 	}
 }
@@ -589,4 +607,25 @@ Table::~Table() {
 		delete[]cells[i];
 	}
 	delete[]cells;
+}
+
+FrameElement::~FrameElement() {
+	if (this->clone != nullptr) {
+		clone->original = nullptr;
+	}
+}
+
+void Table::_SetColumnWidth(int columnIndex, int newWidth) {
+	for (int i = 0; i < rowNum; i++) {
+		Frame::Coordinates coord = cells[i][columnIndex]->_GetCoordinates();
+		int oldWidth = coord.x2 - coord.x1;
+		int diff = newWidth - oldWidth + cells[i][columnIndex]->parentFrame->leftPadding;
+		coord.x2 += diff;		
+		cells[i][columnIndex]->_ChangeCoordinates(coord);
+		if (columnIndex + 1 < colNum) {
+			Frame::Coordinates coord = cells[i][columnIndex + 1]->_GetCoordinates();
+			coord.x1 += diff;
+			cells[i][columnIndex + 1]->_ChangeCoordinates(coord);
+		}
+	}
 }

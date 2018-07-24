@@ -129,3 +129,13 @@ bool CategoryController::_Exists(char* name) {
 	delete stream;
 	return result;
 }
+//	Returns category with the given ID from 2D category list vector
+Category* CategoryController::_GetCategory(int id) {
+	for (size_t i = 0; i < categoryList->size(); i++) {
+		for (size_t j = 0; j < categoryList->at(i).size(); j++) {
+			if (categoryList->at(i).at(j)._ID() == id)
+				return &categoryList->at(i).at(j);
+		}
+	}
+	return nullptr;
+}

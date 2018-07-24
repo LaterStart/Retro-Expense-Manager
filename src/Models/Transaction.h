@@ -12,10 +12,12 @@ private:
 	int descriptionSize = 0;
 	float amount = 0.0;
 	char* description = nullptr;	
+	char* amountChar = nullptr;
 	Date date;
 	
 	void _BindData(Data* data);
 	std::ostream& _Show(std::ostream& os);
+	void _AmountToChar();
 
 public:	
 	char* _Serialize();
@@ -23,6 +25,12 @@ public:
 	
 	int _ID() const;
 	Date _Date() const;
+	int _Currency() const;
+	float _Amount() const;
+	char* _AmountChar() const;
+	char* _Description() const;
+	int _Category() const;
+	int _Account() const;
 	int _DisplayLength();
 
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
@@ -39,9 +47,33 @@ inline int Transaction::_ID() const {
 }
 
 inline int Transaction::_DisplayLength() {
-	return date._DisplayLength() + utility::_DigitNumber(amount) + utility::_CharLength(description);
+	return date._DisplayLength() + utility::_DigitNumberFloat(amount) + utility::_CharLength(description);
 }
 
 inline Date Transaction::_Date() const {
 	return this->date;
+}
+
+inline int Transaction::_Currency() const {
+	return this->currencyID;
+}
+
+inline float Transaction::_Amount() const {
+	return this->amount;
+}
+
+inline char* Transaction::_AmountChar() const {
+	return this->amountChar;
+}
+
+inline char* Transaction::_Description() const {
+	return this->description;
+}
+
+inline int Transaction::_Account() const {
+	return this->accountID;
+}
+
+inline int Transaction::_Category() const {
+	return this->categoryID;
 }

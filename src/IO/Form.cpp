@@ -680,7 +680,7 @@ FormField* Form::_SelectField(Field field_) {
 std::vector<FormField*> Form::_SelectFields(std::vector<Field> fields_) {
 	std::vector<FormField*> result;
 	FormField* field = fields[0];
-	for (int i = 0; i < fields_.size(); i++) {
+	for (size_t i = 0; i < fields_.size(); i++) {
 		do {
 			if (field->field == fields_.at(i))
 				result.push_back(field);
@@ -749,4 +749,32 @@ void DateField::_Show() {
 		parentForm->_ShowNextField(this);
 	}
 	else _SwitchField(inputField->control);
+}
+
+Form::Form(const Form& copy) {
+	this->status = copy.status;
+	this->activeFields = copy.activeFields;
+	this->hiddenFields = copy.hiddenFields;
+	this->fieldNum = copy.fieldNum;	
+	this->message = copy.message;
+	this->paused = copy.paused;
+	this->lastField = copy.lastField;
+	this->specialContentHeight = copy.specialContentHeight;
+	this->initialYpos = copy.initialYpos;
+	this->contentSpace = copy.contentSpace;
+	this->exit = copy.exit;	
+	this->eventStatus = copy.eventStatus;
+	this->eventEnabled = copy.eventEnabled;
+	this->eventNum = copy.eventNum;
+	this->moduler = copy.moduler;
+
+	this->fields = new FormField*[fieldNum];
+	for (int i = 0; i < fieldNum; i++)
+		fields[i] = copy.fields[i];
+
+	this->events = new std::function<void(Form&, FormField*)>[eventNum];
+	for (int i = 0; i < eventNum; i++)
+		events[i] = copy.events[i];
+
+	this->OComponent::componentType = ComponentType::form;
 }

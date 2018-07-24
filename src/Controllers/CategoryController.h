@@ -19,4 +19,5 @@ public:
 	void _AddNewCategory(Category& category, int profileID);	
 	std::vector<Category> _GetMainCategoryList();
 	bool _Exists(char* name);
+	Category* _GetCategory(int id);
 };

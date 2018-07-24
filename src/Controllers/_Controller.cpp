@@ -188,7 +188,7 @@ void Controller::_WriteNewModelHeader(fstream* stream, ModelHeader& header) {
 
 	if (freeSpace - writeSize < 0) {
 		// seek to next page
-		char* emptyBuff = new char[freeSpace];
+		char* emptyBuff = new char[(unsigned int)freeSpace];
 		stream->write(emptyBuff, freeSpace);
 		pos = stream->tellp();
 	}
@@ -262,7 +262,7 @@ void Controller::_WriteModel(fstream* stream, ModelHeader& header, char* buffer)
 
 	if (freeSpace - writeSize < 0) {
 		// seek to next page
-		char* emptyBuff = new char[freeSpace];
+		char* emptyBuff = new char[(unsigned int)freeSpace];
 		stream->write(emptyBuff, freeSpace);
 		pos = stream->tellp();
 	}

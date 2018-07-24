@@ -48,14 +48,29 @@ void Dashboard::_StartModule() {
 	latestTransactionTitle._SetPadding(2);
 	layout._Select("LatestTransactionsHeader")->_AddElements(latestTransactionTitle);
 
-	vector<Transaction>* latestTransactions = transactionController._GetLatestTransactions();
+	vector<Transaction>* LT = transactionController._GetLatestTransactions();
 	Frame* ltFrame = layout._Select("LatestTransactionsBody");
 	ltFrame->_AddLeftPadding(2);
-	Table table(layout._Select("LatestTransactionsBody"), latestTransactions->size(), 6);
-	for (int i = 0; i < latestTransactions->size(); i++) {
-		table.cells[i][0]->_AddElements(Label(latestTransactions->at(i)._ID()));
-		table.cells[i][1]->_AddElements(Label(latestTransactions->at(i)._Date()));
+	Table table(layout._Select("LatestTransactionsBody"), LT->size(), 6);
+	const int maxAmountLength = 15;
+	int highestAmountLength = 0;
+	for (size_t i = 0; i < LT->size(); i++) {
+		Transaction* TR = &LT->at(i);
+		table.cells[i][0]->_AddElements(TextBar(Label("ID"), Label(TR->_ID())));
+		table.cells[i][1]->_AddElements(Label(TR->_Date()));
+		table.cells[i][2]->_AddElements(TextBar(Label(TR->_AmountChar()), Label(exchangeRateController.currencies->at(TR->_Currency())._Name())));
+		table.cells[i][3]->_AddElements(Label(categoryController._GetCategory(TR->_Category())->_Name()));
+		table.cells[i][4]->_AddElements(Label(accountController.accounts->at(TR->_Account())._Name()));		
+		table.cells[i][5]->_AddElements(Label(TR->_Description()));
+		int amountLength = utility::_CharLength(TR->_AmountChar());
+		if (amountLength > highestAmountLength)
+			highestAmountLength = amountLength;
 	}
+	highestAmountLength = (highestAmountLength <= maxAmountLength) ? highestAmountLength : maxAmountLength;
+	table._SetColumnWidth(0, 4-1);
+	table._SetColumnWidth(1, 10+1);
+	table._SetColumnWidth(2, highestAmountLength + 5);
+
 	table._Show();
 	layout._ShowElements();
 

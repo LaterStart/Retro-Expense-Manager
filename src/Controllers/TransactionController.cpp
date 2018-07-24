@@ -49,7 +49,7 @@ void TransactionController::_LoadLatestTransactions() {
 	if (stream != nullptr) {
 		vector<char*>* buffer = _GetModels(stream, header, Query(Range::lastTen));
 		if (buffer != nullptr) {
-			for (int i = 0; i < buffer->size(); i++) {
+			for (size_t i = 0; i < buffer->size(); i++) {
 				Transaction transaction(buffer->at(i));
 				latestTransactions->push_back(transaction);
 				delete[]buffer->at(i);
