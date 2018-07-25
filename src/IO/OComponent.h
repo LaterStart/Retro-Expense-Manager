@@ -145,6 +145,13 @@ public:
 		~Container();		
 	};
 
+	struct Padding : public IOComponent {
+		short leftPadding;
+		short rightPadding;
+		short topPadding;
+		short bottomPadding;
+	};
+
 	short nextYpos = 0;
 	const char* IDname = nullptr;
 	Frame(Frame& parentFrame);
@@ -157,6 +164,7 @@ public:
 	void _ChangeCoordinates(Coordinates& coord);
 	Frame* _Select(const char* IDname);
 	Frame* _GetParentFrame();
+	Frame* _GetMainFrame();
 
 	Frame * parentFrame = nullptr;
 	Display* dsp = nullptr;
@@ -171,6 +179,7 @@ public:
 	void _ShowElements();
 	void _RemoveFrame();
 	std::vector<FrameElement*> _SelectElements(ComponentType type);
+	short _LeftPadding() const;
 
 	//	Add more FrameElements using variadic template
 	template <typename T>
@@ -203,6 +212,10 @@ inline Frame* Frame::_GetParentFrame() {
 
 inline void Frame::_SetDisplay(Display& dsp) {
 	this->dsp = &dsp;
+}
+
+inline short Frame::_LeftPadding() const {
+	return this->leftPadding;
 }
 
 class FrameElement : public OComponent {

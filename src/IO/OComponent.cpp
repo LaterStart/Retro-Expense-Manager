@@ -127,11 +127,11 @@ void Frame::_Split(unsigned short percent, const char* direction,  const char* f
 	}
 	//	If separator is y direction
 	else if (dir == 1) {
-		unsigned short splitPos = max_x * percent / 100;
-		Frame* newFrame = new Frame(*this, splitPos, min_x, max_y, min_y);
+		unsigned short splitPos = (max_x - min_x) * percent / 100;
+		Frame* newFrame = new Frame(*this, min_x + splitPos-1, min_x, max_y, min_y);
 		newFrame->IDname = firstID;
 		_AddFrame(newFrame);
-		newFrame = new Frame(*this, max_x, splitPos + 1, max_y, min_y);
+		newFrame = new Frame(*this, max_x, min_x + splitPos-1, max_y, min_y);
 		newFrame->IDname = secondID;
 		_AddFrame(newFrame);
 	}
@@ -631,4 +631,14 @@ void Table::_SetColumnWidth(int columnIndex, int newWidth) {
 			cells[i][columnIndex + 1]->_ChangeCoordinates(coord);
 		}
 	}
+}
+
+Frame* Frame::_GetMainFrame() {
+	Frame* selector = this;
+	while (true) {
+		if(selector->parentFrame!= nullptr)
+			selector = selector->parentFrame;
+		else break;
+	}
+	return selector;
 }

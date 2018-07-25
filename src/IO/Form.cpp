@@ -33,7 +33,7 @@ void FormField::_CreateInputFrame() {
 	fieldCoord.y1 = frameCoord.y1 + Ypos;
 	fieldCoord.y2 = fieldCoord.y1 + 1;
 	parentFrame->_CreateSubFrame(text, fieldCoord);
-	parentFrame->_Select(text)->_SetDisplay(*new Display);
+	parentFrame->_Select(text)->_SetDisplay(*new Display(parentFrame->_Select(text)));
 	inputField = new UserInput(type);
 	inputField->_SetParentFrame(parentFrame->_Select(text));
 }

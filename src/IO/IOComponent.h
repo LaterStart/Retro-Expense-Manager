@@ -146,6 +146,7 @@ private:
 
 	int activePosNum = 0;
 	ActivePos* activePositions = nullptr;
+	Frame* parentFrame = nullptr;
 
 	void _AddActivePosition(ActivePos);
 	void _ExtendRegister();
@@ -154,6 +155,9 @@ private:
 
 public:
 	Display() {
+		this->componentType = ComponentType::display;
+	}
+	Display(Frame* parentFrame) : parentFrame(parentFrame) {
 		this->componentType = ComponentType::display;
 	}
 	~Display();
@@ -187,11 +191,21 @@ public:
 	void _LockContent(Cursor &pos);
 	void _LockContent();
 	void _Loading();	
+	void _SetParentFrame(Frame* frame);
+	Frame* _ParentFrame() const;
 };
 
 inline bool Display::_IsEmpty() {
 	if (activePosNum == 0)
 		return true;
 	else return false;
+}
+
+inline void Display::_SetParentFrame(Frame* frame) {
+	this->parentFrame = frame;
+}
+
+inline Frame* Display::_ParentFrame() const {
+	return this->parentFrame;
 }
 #include "OComponent.h"

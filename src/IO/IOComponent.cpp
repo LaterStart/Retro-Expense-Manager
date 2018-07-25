@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <Windows.h>
 #include "IOComponent.h"
 #include "OComponent.h"
@@ -256,9 +257,26 @@ void Display::_Display(Cursor& pos, int num) {
 }
 
 void Display::_Display(Model& model, Cursor& pos) {
-	pos._SetCursorPosition();
-	cout << model;	
-	pos._SetCharacterNumber(model._DisplayLength());
+	int cut = 0;
+	if (parentFrame != nullptr) {
+		Frame::Coordinates coord = parentFrame->_GetCoordinates();
+		int width = coord.x2 - pos._GetX();
+		cut = model._DisplayLength() - width;
+		cut = (cut < 0) ? 0 : cut;	
+	}
+	if (cut > 0) {
+		std::ostringstream oss;
+		oss << model;
+		string str = oss.str();
+		Label lbl(str.c_str());
+		lbl.cut = cut;
+		_Display(&lbl, pos);		
+	}
+	else {
+		pos._SetCursorPosition();
+		cout << model;
+	}
+	pos._SetCharacterNumber(model._DisplayLength()-cut);
 	ActivePos apos(pos, -1);
 	_AddActivePosition(apos);
 }

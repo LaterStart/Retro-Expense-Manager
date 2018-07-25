@@ -52,24 +52,43 @@ void Dashboard::_StartModule() {
 	Frame* ltFrame = layout._Select("LatestTransactionsBody");
 	ltFrame->_AddLeftPadding(2);
 	Table table(layout._Select("LatestTransactionsBody"), LT->size(), 6);
-	const int maxAmountLength = 15;
-	int highestAmountLength = 0;
+	const int  maxAccountLength = 15, maxCategoryLength = 15;
+		int highestAmountLength = 0, highestAccountLength = 0, highestCategoryLength = 0;
+
 	for (size_t i = 0; i < LT->size(); i++) {
 		Transaction* TR = &LT->at(i);
+		Currency* CU = &exchangeRateController.currencies->at(TR->_Currency());
+		Account* AC = &accountController.accounts->at(TR->_Account());
+		Category* CA = categoryController._GetCategory(TR->_Category());
+
 		table.cells[i][0]->_AddElements(TextBar(Label("ID"), Label(TR->_ID())));
 		table.cells[i][1]->_AddElements(Label(TR->_Date()));
-		table.cells[i][2]->_AddElements(TextBar(Label(TR->_AmountChar()), Label(exchangeRateController.currencies->at(TR->_Currency())._Name())));
-		table.cells[i][3]->_AddElements(Label(categoryController._GetCategory(TR->_Category())->_Name()));
-		table.cells[i][4]->_AddElements(Label(accountController.accounts->at(TR->_Account())._Name()));		
+		table.cells[i][2]->_AddElements(TextBar(Label(TR->_AmountChar()), Label(CU->_Name())));
+		table.cells[i][3]->_AddElements(Label(AC->_Name()));
+		table.cells[i][4]->_AddElements(Label(CA->_Name()));				
 		table.cells[i][5]->_AddElements(Label(TR->_Description()));
+
 		int amountLength = utility::_CharLength(TR->_AmountChar());
+		int accountLength = utility::_CharLength(AC->_Name());
+		int categoryLength = utility::_CharLength(CA->_Name());
+		int descriptionLength = utility::_CharLength(TR->_Description());
+
 		if (amountLength > highestAmountLength)
 			highestAmountLength = amountLength;
+		if (accountLength > highestAccountLength)
+			highestAccountLength = accountLength;
+		if (categoryLength > highestCategoryLength)
+			highestCategoryLength = categoryLength;
 	}
-	highestAmountLength = (highestAmountLength <= maxAmountLength) ? highestAmountLength : maxAmountLength;
-	table._SetColumnWidth(0, 4-1);
+
+	highestAccountLength = (highestAccountLength < maxAccountLength) ? highestAccountLength : maxAccountLength;
+	highestCategoryLength = (highestCategoryLength < maxCategoryLength) ? highestCategoryLength : maxCategoryLength;
+
+	table._SetColumnWidth(0, 4-2);
 	table._SetColumnWidth(1, 10+1);
 	table._SetColumnWidth(2, highestAmountLength + 5);
+	table._SetColumnWidth(3 ,highestAccountLength + 1);
+	table._SetColumnWidth(4, highestCategoryLength + 1);
 
 	table._Show();
 	layout._ShowElements();

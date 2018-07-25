@@ -530,7 +530,7 @@ void ScrollDown<element>::_Show() {
 	}
 
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
-	Display dsp;
+	Display dsp(this->parentFrame);
 	Cursor pos(coord.x1, coord.y1);
 	Cursor sPos(pos);
 	pos._ChangeX(1);
@@ -732,6 +732,8 @@ void ScrollDown_2D<element>::_Show() {
 	if (!activated) {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
+		// scroll & subscroll display frames
+		parentForm->_ParentFrame()->_Split(55, "vertical", "Scroll", "SubScroll");
 	}
 	else if (hidden) {
 		hidden = false;
@@ -739,7 +741,7 @@ void ScrollDown_2D<element>::_Show() {
 	}
 
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
-	Display dsp;
+	Display dsp(parentForm->_ParentFrame()->_Select("Scroll"));
 	Cursor pos(coord.x1, coord.y1);
 	Cursor sPos(pos);
 	pos._ChangeX(1);
@@ -749,9 +751,12 @@ void ScrollDown_2D<element>::_Show() {
 	for (int i = scrollControl[items.size()][1]+1; i < scrollControl[items.size()][2]; i++) {		
 		if (items[i].at(0)._DisplayLength() > maxLength) {
 			maxLength = items[i].at(0)._DisplayLength();
-			index = i;
+			
 		}
 	}
+	Frame::Coordinates coord2 = parentForm->_ParentFrame()->_Select("Scroll")->_GetCoordinates();
+	int maxWidth = coord2.x2 - coord2.x1 - parentForm->_ParentFrame()->_LeftPadding() - 1;
+	maxLength = (maxLength < maxWidth) ? maxLength : maxWidth;	
 
 	for (int i = scrollControl[items.size()][1]; i < scrollControl[items.size()][2]; i++) {
 		if (i == scrollControl[items.size()][0] && !subSelect) {
@@ -764,9 +769,11 @@ void ScrollDown_2D<element>::_Show() {
 			Cursor subPos;
 			Cursor subSpos(subPos);
 			int distance;
+			int length = items[i].at(0)._DisplayLength();
+			length = (length > maxLength) ? maxLength : length;
 			if (i == index)
 				distance = 0;
-			else distance = maxLength - items[i].at(0)._DisplayLength();
+			else distance = maxLength - length;
 			if (items[i].size() > 1) {
 				Cursor chain(subSpos);
 				chain._ChangeX(1);
@@ -779,16 +786,18 @@ void ScrollDown_2D<element>::_Show() {
 			subPos._ChangeX(distance + 3);		
 			subSpos._ChangeX(distance + 2);
 
-			if (items[i].size() > 1) {
+			if (items[i].size() > 1) {				
+				dsp._SetParentFrame(parentForm->_ParentFrame()->_Select("SubScroll"));
 				for (int j = scrollControl[*sCurr][1]; j < scrollControl[*sCurr][2]; j++) {
 					if (j == scrollControl[*sCurr][0] && subSelect) {
 						subSpos._ChangeY(scrollControl[*sCurr][0] - scrollControl[*sCurr][1]);
 						subSpos._SetCursorPosition();
 						dsp._Display('>');
-					}
-					dsp._Display(items[*sCurr].at(j), subPos);
+					}					
+					dsp._Display(items[*sCurr].at(j), subPos);					
 					subPos._ChangeY(1);
 				}
+				dsp._SetParentFrame(parentForm->_ParentFrame()->_Select("Scroll"));
 			}
 		}
 		pos._ChangeY(1);
