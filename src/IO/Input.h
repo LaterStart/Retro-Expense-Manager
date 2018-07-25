@@ -714,6 +714,10 @@ public:
 		*sCurr = 0;
 	}
 
+	
+		// MAKE COPY CONSTRUCTOR!
+
+
 	void _Show() override;
 	FormField* _Store() override;
 	std::vector<std::vector<element>>& _Items() const;
@@ -721,6 +725,13 @@ public:
 	void _UpdateScrollControl(bool selectLastItem = true);
 	void _ToggleSubSelect(bool status, int parentID = 0);
 	element* _Value() const;
+
+	/*~ScrollDown_2D() {
+		for (size_t i = 0; i < initSize; i++)
+			delete[]scrollControl[i];
+		delete[]scrollControl;
+		delete sCurr;
+	}*/
 };
 
 template <typename element>

@@ -58,6 +58,9 @@ Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned shor
 
 //	Frame destructor
 Frame::~Frame() {
+	for (int i = 0; i < elNum; i++) {
+		delete elements[i];
+	}
 	delete[]elements;
 }
 
@@ -372,11 +375,11 @@ void Layout::_DefaultFrameTemplate(Display& dsp) {
 	frame->_Select("Content")->_Split(50, "vertical", "MainForm", "ExtensionForm");
 
 	frame->_Select("SelectionTitle")->_AddLeftPadding(4);
-	frame->_Select("ExtensionTitle")->_AddLeftPadding(4);
+	frame->_Select("ExtensionTitle")->_AddLeftPadding(2);
 	frame->_Select("Menu")->_AddLeftPadding(1);
 	frame->_Select("Content")->_AddLeftPadding(4);
 	frame->_Select("MainForm")->_AddLeftPadding(4);
-	frame->_Select("ExtensionForm")->_AddLeftPadding(4);
+	frame->_Select("ExtensionForm")->_AddLeftPadding(2);
 	frame->_Select("Footer")->_AddLeftPadding(1);
 
 	dsp._Display(menuLine);
@@ -481,19 +484,16 @@ void TextBar::_Show() {
 	}
 }
 
-TextBar::TextBar(TextBar& copy) : Label(copy), num(copy.num), spacing(copy.spacing) {
+TextBar::TextBar(TextBar& copy) : num(copy.num), spacing(copy.spacing) {
 	this->componentType = ComponentType::textBar;
 	items = new Label*[num];
 	for (int i = 0; i < num; i++)
 		items[i] = new Label(*copy.items[i]);
-	deleteItems = true;
 }
 
 TextBar::~TextBar() {
-	if (deleteItems) {
-		for (int i = 0; i < num; i++)
-			delete items[i];
-	}
+	for (int i = 0; i < num; i++)
+		delete items[i];
 	delete[]items;
 }
 
@@ -605,6 +605,7 @@ void Table::_Show() {
 Table::~Table() {
 	for (int i = 0; i < rowNum; i++) {
 		for (int j = 0; j < colNum; j++) {
+			delete[] cells[i][j]->IDname;
 			delete cells[i][j];
 		}
 		delete[]cells[i];
@@ -613,9 +614,10 @@ Table::~Table() {
 }
 
 FrameElement::~FrameElement() {
-	if (this->clone != nullptr) {
+	if (this->clone != nullptr) 
 		clone->original = nullptr;
-	}
+	else if (this->original != nullptr)
+		original->clone = nullptr;
 }
 
 void Table::_SetColumnWidth(int columnIndex, int newWidth) {

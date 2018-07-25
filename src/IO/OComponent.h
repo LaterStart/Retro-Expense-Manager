@@ -547,7 +547,6 @@ private:
 	Label** items = nullptr;
 	int num = 0;
 	int spacing = 1;
-	bool deleteItems = false;
 
 	void _AddItem(Label& item);
 

@@ -770,7 +770,7 @@ Form::Form(const Form& copy) {
 
 	this->fields = new FormField*[fieldNum];
 	for (int i = 0; i < fieldNum; i++)
-		fields[i] = copy.fields[i];
+		fields[i] = copy.fields[i]->_Store();
 
 	this->events = new std::function<void(Form&, FormField*)>[eventNum];
 	for (int i = 0; i < eventNum; i++)
