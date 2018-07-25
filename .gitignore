@@ -265,4 +265,4 @@ __pycache__/
 *.pyc
 
 # Raw binary data file
-.dat
+*.dat
