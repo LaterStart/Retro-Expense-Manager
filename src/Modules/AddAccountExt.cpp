@@ -38,7 +38,9 @@ void AddAccountExt::_StartModule() {
 	);
 	content->_AddElements(info, form);
 
-	//	Form event
+
+	//					FORM EVENT DISABLED - NEW ACCOUNT TYPES CAN BE ADDED THROUGH SETTINGS MODULE
+	/*//	Form event
 	//	New account type event - Provide option to add new account type
 	const function<void(Form&, FormField*)> newAccountTypeOptionEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(0) == false) {
@@ -77,7 +79,7 @@ void AddAccountExt::_StartModule() {
 			}
 		}
 	};
-	form._AddEvent(newAccountTypeEvent);	
+	form._AddEvent(newAccountTypeEvent);	*/
 
 	form._SetYpos(2);
 	info._Show();
