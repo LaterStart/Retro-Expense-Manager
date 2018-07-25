@@ -191,9 +191,12 @@ void Display::_Display(const char* text) {
 
 void Display::_Display(Label* label, Cursor& pos) {
 	pos._SetCursorPosition();
-	if(label->cut>0)
-		for (int i = 0; i < (label->length - label->cut);i++)
-			cout <<label->text[i];
+	if (label->cut > 0) {
+		for (int i = 0; i < (label->length - label->cut - 2); i++)
+			cout << label->text[i];
+		for (int i = 0; i < 2; i++)
+			cout << '.';
+	}
 	else cout << label->text;
 
 	pos._SetCharacterNumber((label->length - label->cut));

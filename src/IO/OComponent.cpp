@@ -538,6 +538,8 @@ Table::Table(Frame* parentFrame, int rowNum, int colNum) : rowNum(rowNum), colNu
 			cells[i][j] = new Frame(*parentFrame, cellX + cellWidth, cellX, cellY + 1, cellY);
 			cells[i][j]->IDname = utility::_CopyChar(cellName);
 			cellX = cellX + cellWidth;
+			if (j == colNum - 1) 
+				cells[i][j]->x2 = coord.x2-2;
 		}
 		cellY++;
 	}	
@@ -585,15 +587,16 @@ void Table::_Show() {
 		for (int j = 0; j < colNum; j++) {
 			if (showBorder)
 				cells[i][j]->_AddTopPadding(i);
-			else if (cellSeparator) {
+			else if(cellSeparator && j>0)
+				cells[i][j]->_AddLeftPadding(2);
+			cells[i][j]->_ShowElements();
+			if (cellSeparator && j<colNum-1) {
 				Frame::Coordinates coord = cells[i][j]->_GetCoordinates();
-				pos._SetXY(coord.x2-1, coord.y1);
+				pos._SetXY(coord.x2, coord.y1);
 				pos._SetCursorPosition();
 				dsp->_Display(::verticalLine);
-				if (j > 0)
-					cells[i][j]->_AddLeftPadding(1);
+				
 			}
-			cells[i][j]->_ShowElements();
 			pos._GetCursorPosition();
 		}
 	}
