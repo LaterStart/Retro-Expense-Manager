@@ -215,9 +215,9 @@ namespace utility {
 		return result;
 	}
 
-	char* _IntToChar(unsigned int number) {
+	char* _IntToChar(unsigned long long number) {
 		int z = 0;
-		unsigned int y = number;
+		unsigned long long y = number;
 		if (y == 0)
 			z++;
 		while (y > 0) {
@@ -234,14 +234,14 @@ namespace utility {
 		return myChar;
 	}
 
-	char* _FloatToChar(float number) {
-		float fractpart, intpart;		
+	char* _DoubleToChar(double number) {
+		double fractpart, intpart;		
 		fractpart = modf(number, &intpart);
-		fractpart = roundf(fractpart * 100) / 100;
+		fractpart = round(fractpart * 100) / 100;
 		fractpart *= 100;
 		
-		int a_num = (int)intpart;
-		int b_num = (int)fractpart;
+		unsigned long long a_num = (unsigned long long)intpart;
+		unsigned long long b_num = (unsigned long long)fractpart;
 
 		int anum = _DigitNumberInt(a_num);
 		int bnum = _DigitNumberInt(b_num);
@@ -257,7 +257,7 @@ namespace utility {
 		if (b_num < 10) {
 			BNUM = new char[2];
 			BNUM[0] = 0 + '0';
-			BNUM[1] = b_num + '0';
+			BNUM[1] = (int)b_num + '0';
 		}
 		else BNUM = _IntToChar(b_num);
 
@@ -272,13 +272,13 @@ namespace utility {
 		return init;
 	}
 
-	float _ConvertToFloat(char* text) {
+	double _ConvertToDouble(char* text) {
 		bool separatorFound = false;
 		int n = _CharLength(text);
 
-		long long number = 0;
-		long long decimal = 0;
-		int multiply = (int)pow(10,n-1);
+		unsigned long long number = 0;
+		unsigned long long decimal = 0;
+		unsigned long long multiply = (unsigned long long)pow(10,n-1);
 		int divide = 1;
 
 		for (int i = 0; i < n; i++) {
@@ -304,7 +304,7 @@ namespace utility {
 		}		
 
 		number /= divide;
-		float result = number + (0.1f * decimal / 100);
+		double result = number + (0.1 * decimal / 100);
 		return result;
 	}
 
@@ -409,7 +409,7 @@ namespace utility {
 		return ::currentDate;
 	}	
 
-	int _DigitNumberInt(int num) {
+	int _DigitNumberInt(unsigned long long num) {
 		if (num == 0)
 			return 1;
 		int count = 0;
@@ -420,11 +420,11 @@ namespace utility {
 		return count;
 	}
 
-	int _DigitNumberFloat(float num) {
+	int _DigitNumberDouble(double num) {
 		if (num == 0.00)
 			return 3;
 		int count = 2;
-		int intg = int(num);	
+		unsigned long long intg = unsigned long long(num);	
 		while (intg > 0) {
 			intg /= 10;
 			count++;

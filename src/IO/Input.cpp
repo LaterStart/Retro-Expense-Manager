@@ -228,6 +228,8 @@ int UserInput::_Verify_scrollDown(char& ch) {
 int UserInput::_Verify_value(char& ch) {
 	if (ch == 13)
 		return 3;
+	if (length == 9)
+		return 0;
 	else if (ch == 46) {
 		List* checker = node->previousNode;
 		int digitCount = 0;

@@ -44,8 +44,8 @@ namespace utility {
 	char* _ChopChar(char* arr, char* remove);
 	char* _ChopChar(char* arr, char* removeOne, char* removeTwo);	
 	char* _InsertChar(char* arr, char* insert);
-	char* _IntToChar(unsigned int number);
-	char* _FloatToChar(float numer);
+	char* _IntToChar(unsigned long long number);
+	char* _DoubleToChar(double numer);	
 	char* _ConcatenateChar(const char* myChar ...);
 	char* _CopyChar(char* char_in);
 	char* _CopyChar(const char* char_in);	
@@ -57,8 +57,8 @@ namespace utility {
 	int _CharSize(const char* arr);
 	int _ConvertToInteger(char* text);
 	int _ConvertToInteger(char* buffer, int size);
-	int _DigitNumberInt(int num);
-	int _DigitNumberFloat(float num);
+	int _DigitNumberInt(unsigned long long num);
+	int _DigitNumberDouble(double num);
 	int _Find(char* word, char* arr);
 	int _ReadAlign(const char* align);
 	int _ReadDirection(const char* direction);
@@ -71,7 +71,7 @@ namespace utility {
 	void _Countdown(int seconds);
 	void _XOR(char* &password);
 
-	float _ConvertToFloat(char* text);
+	double _ConvertToDouble(char* text);
 
 	template <typename T>
 	void _AddElement(T* &ptr, T &element, int &arrSize) {

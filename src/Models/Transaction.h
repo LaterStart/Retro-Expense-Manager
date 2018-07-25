@@ -10,7 +10,7 @@ private:
 	int categoryID = -1;
 	int currencyID = -1;
 	int descriptionSize = 0;
-	float amount = 0.0;
+	double amount = 0.0;
 	char* description = nullptr;	
 	char* amountChar = nullptr;
 	Date date;
@@ -26,7 +26,7 @@ public:
 	int _ID() const;
 	Date _Date() const;
 	int _Currency() const;
-	float _Amount() const;
+	double _Amount() const;
 	char* _AmountChar() const;
 	char* _Description() const;
 	int _Category() const;
@@ -47,7 +47,7 @@ inline int Transaction::_ID() const {
 }
 
 inline int Transaction::_DisplayLength() {
-	return date._DisplayLength() + utility::_DigitNumberFloat(amount) + utility::_CharLength(description);
+	return date._DisplayLength() + utility::_DigitNumberDouble(amount) + utility::_CharLength(description);
 }
 
 inline Date Transaction::_Date() const {
@@ -58,7 +58,7 @@ inline int Transaction::_Currency() const {
 	return this->currencyID;
 }
 
-inline float Transaction::_Amount() const {
+inline double Transaction::_Amount() const {
 	return this->amount;
 }
 

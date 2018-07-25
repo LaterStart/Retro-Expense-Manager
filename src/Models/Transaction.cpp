@@ -92,7 +92,7 @@ void Transaction::_BindData(Data* data) {
 		currencyID = data->input->selection;
 		break;
 	case Field::amount:
-		amount = utility::_ConvertToFloat(data->input->input);
+		amount = utility::_ConvertToDouble(data->input->input);
 		break;
 	case Field::description:
 		description = utility::_CopyChar(data->input->input);
@@ -109,7 +109,7 @@ void Transaction::_BindData(Data* data) {
 //	serialize category model
 char* Transaction::_Serialize() {
 	//	Total object size					 
-	int size = descriptionSize + 6*sizeof(int) + sizeof(float) + sizeof(Date);
+	int size = descriptionSize + 6*sizeof(int) + sizeof(double) + sizeof(Date);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -128,8 +128,8 @@ char* Transaction::_Serialize() {
 	}
 
 	//	store amount into buffer
-	std::memcpy(buffer, &amount, sizeof(float));
-	buffer += sizeof(float);
+	std::memcpy(buffer, &amount, sizeof(double));
+	buffer += sizeof(double);
 
 	//	store description into buffer
 	std::memcpy(buffer, &descriptionSize, sizeof(int));
@@ -155,8 +155,8 @@ void Transaction::_Deserialize(char* page) {
 		page += sizeof(int);
 	}
 
-	this->amount = *(float*)page;
-	page += sizeof(float);
+	this->amount = *(double*)page;
+	page += sizeof(double);
 
 	this->descriptionSize = *(int*)page;
 	page += sizeof(int);
@@ -180,7 +180,7 @@ Transaction::~Transaction() {
 }
 
 void Transaction::_AmountToChar() {
-	int size = utility::_DigitNumberFloat(amount) + 3;
+	int size = utility::_DigitNumberDouble(amount) + 3;
 	this->amountChar = new char[size];
 	switch (typeID) {
 	case 0:
@@ -198,7 +198,7 @@ void Transaction::_AmountToChar() {
 	default:
 		break;
 	}
-	char* tmp = utility::_FloatToChar(amount);
+	char* tmp = utility::_DoubleToChar(amount);
 	char* tmp2 = amountChar + 1;
 	std::memcpy(tmp2, tmp, utility::_CharSize(tmp));
 }
