@@ -34,7 +34,7 @@ private:
 	short min_x = 0;
 	short max_x = 0;
 	struct List {
-		char value;
+		char value = ::spaceKey;
 		List* nextNode = nullptr;
 		List* previousNode = nullptr;
 	};

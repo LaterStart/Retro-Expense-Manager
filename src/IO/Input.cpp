@@ -273,15 +273,15 @@ int UserInput::_Verify_date(char& ch) {
 	if (ch == 13) {
 		bool verify = false;
 		if (length == 10) {
-			char* temp = new char[length + 1];
-			temp[length] = '\0';
-			unsigned int z = length - 1;
-			List* tmp = node->previousNode;
+			char* temp = new char[length + 1];			
+			unsigned int z = 0;
+			List* tmp = initial;
 
 			while (tmp != nullptr) {
-				temp[z--] = tmp->value;
-				tmp = tmp->previousNode;
+				temp[z++] = tmp->value;
+				tmp = tmp->nextNode;
 			}
+			temp[length] = '\0';
 
 			verify = utility::_VerifyDate(temp);
 			delete[]temp;
@@ -446,6 +446,8 @@ int UserInput::_UpdateInput(int& control, char& ch) {
 				Cursor tmp;
 				dsp._Display(::spaceKey);
 				tmp._SetCursorPosition();
+				length = (node->value == ::spaceKey) ? length : length - 1;
+				node->value = ::spaceKey;
 				return 2;
 			}
 		}
