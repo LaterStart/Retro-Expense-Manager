@@ -93,11 +93,25 @@ bool FormField::_InputControl() {
 		parentForm->_UpdateHiddenFields(-1);
 	}
 	inputField->_ReadUserInput();
+	parentForm->_ClearMessage();
 
 	if (inputField->control == ControlKey::upArrow)
 		return false;
-	else if (inputField->control == ControlKey::downArrow)
+	else if (inputField->control == ControlKey::downArrow) {
+		if (inputField->_Type() == InputType::date) {
+			if (!utility::_VerifyDate(inputField->input)) {
+				parentForm->_DisplayMessage("Invalid Date.");
+				filled = false;
+			}
+		}
+		else if (mandatory && (inputField->selection < 0 && inputField->length < 1)) {
+			if (inputField->_Type() != InputType::scrollDown) {
+				parentForm->_DisplayMessage("This field cannot be blank.");
+				filled = false;
+			}
+		}
 		return false;
+	}
 	else if (inputField->control == ControlKey::esc)
 		return false;
 	else if (inputField->control == ControlKey::F1)
@@ -110,10 +124,9 @@ bool FormField::_InputControl() {
 			if (inputField->_Type() != InputType::scrollDown) {
 				parentForm->_DisplayMessage("This field cannot be blank.");
 				return false;
-			}
+			}			
 			else condition = true;
-		}
-		parentForm->_ClearMessage();
+		}		
 		return true;
 	}
 }

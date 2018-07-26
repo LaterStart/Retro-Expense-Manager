@@ -507,7 +507,7 @@ namespace utility {
 		int year = _ConvertToInteger(date);
 
 		Date current(::currentDate);
-		if (year > current.year)
+		if (year > current.year || year < 1900)
 			return false;
 
 		if (month > 12 || month < 1)
