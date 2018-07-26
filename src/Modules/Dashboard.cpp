@@ -92,9 +92,9 @@ void Dashboard::_StartModule() {
 	table._SetColumnWidth(2, highestAmountLength + 5);
 	table._SetColumnWidth(3 ,highestAccountLength + 1);
 	table._SetColumnWidth(4, highestCategoryLength + 1);
-
-	table._Show();
+	
 	layout._ShowElements();
+	table._Show();
 
 	//	User input
 	Cursor(2, ::height - 4);

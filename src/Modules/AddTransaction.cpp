@@ -153,6 +153,23 @@ void AddTransaction::_StartModule() {
 	};
 	form._AddEvent(newAccountEvent);
 
+	//	Check transfer accounts event - Can't transfer funds to same account
+	const function<void(Form&, FormField*)> checkTransferEvent = [](Form& form, FormField* currentField) {
+		if (form._EventStatus(0) == true) {
+			if (currentField->field == Field::account && utility::_CompareChar(currentField->text , (char*)"To Account:")) {
+				FormField* fromAcc = form._SelectField(Field::account);
+				if (fromAcc->inputField->selection == currentField->inputField->selection) {
+					ScrollDown<Account>* scroll = dynamic_cast<ScrollDown<Account>*>(currentField);
+					form._SetSpecialContentHeight(scroll->_Items().size()-1);
+					form._DisplayMessage("Can't transfer funds to same account.");
+					form._SetSpecialContentHeight(0);
+					currentField->_Show();
+				}
+			}
+		}
+	};
+	form._AddEvent(checkTransferEvent);
+
 	form._LinkModuler(this->moduler);
 	moduler->_SelectModule("AddCategoryExt")->_LinkLayout(layout);
 	moduler->_SelectModule("AddAccountExt")->_LinkLayout(layout);
