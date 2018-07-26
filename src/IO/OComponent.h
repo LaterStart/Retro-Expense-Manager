@@ -628,3 +628,19 @@ inline void Table::_ToggleCellSeparator(bool status) {
 	if (status)
 		this->showBorder = false;
 }
+
+class IDLabel : public Label {
+private:
+	int id;
+public:
+	IDLabel(const char* text, int id) : Label(text), id(id){}
+	void _Show() override;
+	virtual IDLabel* _Clone() override;
+};
+
+inline IDLabel* IDLabel::_Clone() {
+	IDLabel* clone = new IDLabel(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
+}

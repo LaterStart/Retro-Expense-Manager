@@ -644,3 +644,21 @@ Frame* Frame::_GetMainFrame() {
 	}
 	return selector;
 }
+
+void IDLabel::_Show() {
+	Label::_Show();
+	if (parentFrame != nullptr) {
+		Cursor pos;
+		pos._ChangeX(1);
+		Frame::Coordinates coord = parentFrame->_GetCoordinates();
+		int length = coord.x2 - pos._GetX();
+		int digitNum = utility::_DigitNumberInt(this->id);
+		length = length - digitNum;
+		Display* dsp = _GetDisplay();
+		for (int i = 0; i < length; i++) {
+			dsp->_Display(pos, 0);
+			pos._ChangeX(1);
+		}
+		dsp->_Display(pos, id);
+	}
+}
