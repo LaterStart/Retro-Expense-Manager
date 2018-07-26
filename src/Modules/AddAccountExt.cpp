@@ -81,6 +81,17 @@ void AddAccountExt::_StartModule() {
 	};
 	form._AddEvent(newAccountTypeEvent);	*/
 
+	// Validate account name - check if already exists
+	const function<void(Form&, FormField*)> validateAccountNameEvent = [](Form& form, FormField* currentField) {
+		if (currentField != nullptr && currentField->field == Field::accountName) {
+			if (accountController._Exists(currentField->inputField->input)) {
+				form._DisplayMessage("Account already exists");
+				currentField->_Show();
+			}
+		}
+	};
+	form._AddEvent(validateAccountNameEvent);
+
 	form._SetYpos(2);
 	info._Show();
 

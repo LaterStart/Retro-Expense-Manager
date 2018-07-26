@@ -21,4 +21,5 @@ public:
 	void _AddNewAccount(utility::LinkedList<Data*>*data, int profileID);
 	void _AddNewAccountType(utility::LinkedList<Data*>*data);
 	void _AddNewAccountType(char* name);
+	bool _Exists(char* name);
 };
