@@ -17,6 +17,7 @@ public:
 
 	bool _DownloadExchangeRate();
 	void _WriteExchangeRate();
+	Currency* _GetCurrency(int id);
 
 	std::vector<Currency>* currencies;		
 };

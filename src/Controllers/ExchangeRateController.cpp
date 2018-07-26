@@ -272,3 +272,11 @@ void ExchangeRateController::_WriteExchangeRate() {
 	}
 	delete stream;
 }
+
+//	Returns currency with the given id
+Currency* ExchangeRateController::_GetCurrency(int id) {
+	for (size_t i = 0; i < currencies->size(); i++) {
+		if (currencies->at(i)._ID() == id)
+			return &currencies->at(i);
+	}
+}

@@ -30,6 +30,7 @@ public:
 	void _Unlock();
 	bool _Locked() const;
 	int _DisplayLength();
+	int _DefaultCurrency() const;
 
 	Profile(utility::LinkedList<Data*>* data, int ID);
 	Profile(char* buffer);
@@ -74,4 +75,8 @@ inline bool Profile::_Locked() const {
 
 inline int Profile::_DisplayLength() {
 	return utility::_CharLength(username);
+}
+
+inline int Profile::_DefaultCurrency() const {
+	return this->defaultCurrencyID;
 }

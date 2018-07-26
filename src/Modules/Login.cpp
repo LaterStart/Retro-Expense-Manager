@@ -152,9 +152,16 @@ void Login::_StartModule() {
 			} while (true);
 		}	
 		// Profile is already loeaded
-		else moduler->_SetNextModule("Dashboard");
-
-		//	Set module name (link) as the next one to be opened in main.cpp game loop.
-		//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
+		else moduler->_SetNextModule("Dashboard");		
 	}
+
+	// If profile is loaded - add default currency at top of the currencies list
+	if (profile != nullptr) {
+		std::vector<Currency>* ccyList = exchangeRateController.currencies;
+		Currency* ccy = exchangeRateController._GetCurrency(profile->_DefaultCurrency());
+		ccyList->insert(ccyList->begin(), Currency(*ccy));
+	}
+
+	//	Set module name (link) as the next one to be opened in main.cpp game loop.
+	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 }
