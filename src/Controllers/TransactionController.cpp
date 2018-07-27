@@ -3,7 +3,7 @@
 using namespace std;
 
 //	transaction types
-vector<const char*> TransactionController::transactionType{ "Income", "Expense", "Transfer", "Refund" };
+vector<const char*> TransactionController::transactionType{ "Expense", "Income", "Transfer", "Refund" };
 
 //	static transaction model header
 ModelHeader TransactionController::header(ModelName::transaction);
@@ -18,7 +18,7 @@ TransactionController::TransactionController() {
 
 //	Add new transaction
 void TransactionController::_AddNewTransaction(utility::LinkedList<Data*>*data, int profileID) {
-	Transaction newTransaction(data, header._GiveID(), profileID);
+	Transaction newTransaction(data, header._GiveID(), profileID);	
 	fstream* stream = _OpenStream();
 
 	// check if model header exists
@@ -39,7 +39,7 @@ void TransactionController::_AddNewTransaction(utility::LinkedList<Data*>*data, 
 	}
 	
 	stream->close();
-	delete stream;
+	delete stream;	
 }
 
 //	Loads last ten transactions
@@ -63,4 +63,23 @@ void TransactionController::_LoadLatestTransactions() {
 //	Returns vector with max 10 transactions
 vector<Transaction>* TransactionController::_GetLatestTransactions() {
 	return this->latestTransactions;
+}
+
+//	Loads and returns transaction with the given id
+Transaction* TransactionController::_GetTransaction(int id) {
+	Transaction* transaction = nullptr;
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char* buffer = _GetModel(stream, this->header, id);
+		if (buffer != nullptr) 
+			transaction = new Transaction(buffer);
+		stream->close();
+	}
+	delete stream;
+	return transaction;
+}
+
+//	Returns most recent transaction
+Transaction* TransactionController::_GetLastTransaction() {
+	return _GetTransaction(header._LastID());
 }

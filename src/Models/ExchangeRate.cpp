@@ -136,7 +136,7 @@ Currency& Currency::operator=(Currency&& move) {
 //	serialize currency model
 char* Currency::_Serialize() {
 	//	Total object size					 
-	int size = nameSize + 3*sizeof(int) + sizeof(float);
+	int size = nameSize + 3*sizeof(int) + sizeof(double);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -148,8 +148,8 @@ char* Currency::_Serialize() {
 	buffer += sizeof(int);
 
 	//	store rate into buffer;
-	std::memcpy(buffer, &rate, sizeof(float));
-	buffer += sizeof(float);
+	std::memcpy(buffer, &rate, sizeof(double));
+	buffer += sizeof(double);
 
 	//	store name into buffer
 	std::memcpy(buffer, &nameSize, sizeof(int));
@@ -164,8 +164,8 @@ void Currency::_Deserialize(char* page) {
 	this->ID = *(int*)page;
 	page += sizeof(int);
 
-	this->rate = *(float*)page;
-	page += sizeof(float);
+	this->rate = *(double*)page;
+	page += sizeof(double);
 
 	this->nameSize = *(int*)page;
 	page += sizeof(int);

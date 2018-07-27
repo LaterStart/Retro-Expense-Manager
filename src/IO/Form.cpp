@@ -300,11 +300,12 @@ void SelectionField::_Show() {
 
 	if (_InputControl()) {
 		if (inputField->selection > 0 && inputField->selection <= (int)options.size()) {
+			inputField->selection--;
 			dsp._WipeContent();
 			Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
 			Cursor pos(coord.x1, coord.y1);
 			inputField->parentFrame->dsp->_WipeContent();
-			inputField->parentFrame->dsp->_Display(pos, options[inputField->selection - 1]);
+			inputField->parentFrame->dsp->_Display(pos, options[inputField->selection]);
 
 			filled = true;
 			parentForm->_SetSpecialContentHeight(0);
@@ -571,6 +572,15 @@ UserInput* Form::_GetData(Field field_) {
 	return nullptr;
 }
 
+void Form::_FindData_(std::vector<Data>& data, Field field_) {
+	FormField* field = fields[0];
+	while (field != nullptr) {
+		if (field != nullptr && field->field == field_) 
+			data.push_back(Data(field_, field->inputField));			
+		field = _GetNextField(field);
+	}
+}
+
 Frame::Coordinates Form::_GetSpecialContentCoord() {
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
 	specialContentHeight = (specialContentHeight > 0) ? specialContentHeight + 1 : 0;
@@ -693,9 +703,9 @@ FormField* Form::_SelectField(Field field_) {
 }
 
 std::vector<FormField*> Form::_SelectFields(std::vector<Field> fields_) {
-	std::vector<FormField*> result;
-	FormField* field = fields[0];
+	std::vector<FormField*> result;	
 	for (size_t i = 0; i < fields_.size(); i++) {
+		FormField* field = fields[0];
 		do {
 			if (field->field == fields_.at(i))
 				result.push_back(field);

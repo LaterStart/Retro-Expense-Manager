@@ -64,7 +64,7 @@ private:
 	int ID = -1;
 	int nameSize = 0;
 	char* name = nullptr;	
-	float rate = 0.0;	
+	double rate = 0.0;	
 
 	std::ostream& _Show(std::ostream& os);
 
@@ -75,9 +75,10 @@ public:
 	
 	int _ID() const;
 	char* _Name() const;	
-	void _SetRate(float rate);
+	void _SetRate(double rate);
 	void _SetID(int ID);
 	void _SetName(char* name);
+	double _Rate() const;
 
 	Currency() = default;
 	Currency(char* buffer);
@@ -101,7 +102,7 @@ inline int Currency::_DisplayLength() {
 	return nameSize;
 }
 
-inline void Currency::_SetRate(float rate) {
+inline void Currency::_SetRate(double rate) {
 	this->rate = rate;
 }
 
@@ -112,4 +113,8 @@ inline void Currency::_SetID(int ID) {
 inline void Currency::_SetName(char* name) {
 	this->name = utility::_CopyChar(name);
 	this->nameSize = utility::_CharSize(name);
+}
+
+inline double Currency::_Rate() const {
+	return this->rate;
 }

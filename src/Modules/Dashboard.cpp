@@ -57,8 +57,8 @@ void Dashboard::_StartModule() {
 	int maxID = 0;
 	for (size_t i = 0; i < LT->size(); i++) {
 		Transaction* TR = &LT->at(i);
-		Currency* CU = &exchangeRateController.currencies->at(TR->_Currency());
-		Account* AC = &accountController.accounts->at(TR->_Account());
+		Currency* CU = exchangeRateController._GetCurrency(TR->_Currency());
+		Account* AC = accountController._GetAccount(TR->_Account());
 		Category* CA = categoryController._GetCategory(TR->_Category());
 
 		table.cells[i][0]->_AddElements(IDLabel("ID", TR->_ID()));

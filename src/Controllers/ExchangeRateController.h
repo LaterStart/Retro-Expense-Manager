@@ -7,6 +7,7 @@ class ExchangeRateController : public Controller {
 private:
 	static ModelHeader header;
 	ExchangeRate* excRate;
+	bool defaultSet = false;
 
 	void _LoadExchangeRate();	
 	void _ParseJSON(char* buffer);	
@@ -18,6 +19,8 @@ public:
 	bool _DownloadExchangeRate();
 	void _WriteExchangeRate();
 	Currency* _GetCurrency(int id);
+	void _SetDefaultCurrency(Currency* currency);
+	double _ConvertCurrency(double amount, int fromID, int toID);
 
 	std::vector<Currency>* currencies;		
 };

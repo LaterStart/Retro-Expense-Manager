@@ -7,7 +7,16 @@ private:
 	int profileID = -1;	
 	int accountTypeID = -1;
 	int nameSize = 0;
+	int defaultCurrencyID = -1;
 	char* name = nullptr;	
+	bool multiCurrency = false;
+
+	struct AccountBalance {
+		int currencyID = -1;
+		float totalAmount = 0.0;
+	};
+	
+	std::vector<AccountBalance>* balance = nullptr;
 	
 	void _BindData(Data* data);
 	std::ostream& _Show(std::ostream& os);
@@ -19,7 +28,9 @@ public:
 	int _ID() const;
 	char* _Name() const;
 	int _Type() const;
+	int _DefaultCurrency() const;
 	int _DisplayLength();
+	bool _MultiCurrency() const;
 
 	Account() = default;
 	Account(utility::LinkedList<Data*>* data, int ID, int profileID);
@@ -45,5 +56,13 @@ inline int Account::_Type() const {
 }
 
 inline int Account::_DisplayLength() {
-	return nameSize;
+	return this-> nameSize;
+}
+
+inline int Account::_DefaultCurrency() const {
+	return this->defaultCurrencyID;
+}
+
+inline bool Account::_MultiCurrency() const {
+	return this->multiCurrency;
 }

@@ -23,11 +23,11 @@ Transaction::Transaction(char* buffer) {
 // transaction copy constructor
 Transaction::Transaction(const Transaction& copy) {
 	this->ID = copy.ID;
-	this->profileID = copy.profileID;
-	this->typeID = copy.typeID;
+	this->profileID = copy.profileID;	
 	this->accountID = copy.accountID;
 	this->categoryID = copy.categoryID;
 	this->currencyID = copy.currencyID;
+	this->type = copy.type;
 	this->amount = copy.amount;
 	this->date = copy.date;
 	this->descriptionSize = copy.descriptionSize;
@@ -39,11 +39,11 @@ Transaction::Transaction(const Transaction& copy) {
 // transaction move constructor
 Transaction::Transaction(Transaction&& move) {
 	this->ID = move.ID;
-	this->profileID = move.profileID;
-	this->typeID = move.typeID;
+	this->profileID = move.profileID;	
 	this->accountID = move.accountID;
 	this->categoryID = move.categoryID;
 	this->currencyID = move.currencyID;
+	this->type = move.type;
 	this->amount = move.amount;
 	this->date = move.date;
 	this->descriptionSize = move.descriptionSize;
@@ -60,11 +60,11 @@ Transaction& Transaction::operator=(Transaction&& move) {
 	delete[]description;
 
 	this->ID = move.ID;
-	this->profileID = move.profileID;
-	this->typeID = move.typeID;
+	this->profileID = move.profileID;	
 	this->accountID = move.accountID;
 	this->categoryID = move.categoryID;
 	this->currencyID = move.currencyID;
+	this->type = move.type;
 	this->amount = move.amount;
 	this->date = move.date;
 	this->descriptionSize = move.descriptionSize;
@@ -80,10 +80,10 @@ Transaction& Transaction::operator=(Transaction&& move) {
 void Transaction::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::account:
-		accountID = data->input->selection -1;		
+		accountID = data->input->selection;		
 		break;
 	case Field::transactionType:
-		typeID = data->input->selection -1;
+		type = static_cast<TransactionType>(data->input->selection);
 		break;
 	case Field::category:
 		categoryID = data->input->selection;
@@ -121,11 +121,15 @@ char* Transaction::_Serialize() {
 	buffer += sizeof(int);
 
 	//	store IDs into buffer
-	int* ptr[] = { &profileID, &accountID, &typeID, &categoryID, &currencyID };
+	int* ptr[] = { &profileID, &accountID, &categoryID, &currencyID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
 	}
+
+	//	store type into buffer
+	std::memcpy(buffer, &type, sizeof(int));
+	buffer += sizeof(int);
 
 	//	store amount into buffer
 	std::memcpy(buffer, &amount, sizeof(double));
@@ -149,11 +153,15 @@ void Transaction::_Deserialize(char* page) {
 	page += sizeof(int);
 
 	//	deserialize IDs
-	int* ptr[] = { &profileID, &accountID, &typeID, &categoryID, &currencyID };
+	int* ptr[] = { &profileID, &accountID, &categoryID, &currencyID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
 	}
+
+	//	deserialize type
+	type = *(TransactionType*)page;
+	page += sizeof(int);
 
 	this->amount = *(double*)page;
 	page += sizeof(double);
@@ -182,18 +190,16 @@ Transaction::~Transaction() {
 void Transaction::_AmountToChar() {
 	int size = utility::_DigitNumberDouble(amount) + 3;
 	this->amountChar = new char[size];
-	switch (typeID) {
-	case 0:
+	switch (type) {
+	case TransactionType::income:
+	case TransactionType::refund:
 		amountChar[0] = '+';
 		break;
-	case 1:
+	case TransactionType::expense:
 		amountChar[0] = '-';
 		break;
-	case 2:
+	case TransactionType::transfer:
 		amountChar[0] = '=';
-		break;
-	case 3:
-		amountChar[0] = '+';
 		break;
 	default:
 		break;

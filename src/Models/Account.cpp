@@ -12,6 +12,8 @@ Account::Account(utility::LinkedList<Data*>* data, int ID, int profileID){
 	this->ID = ID;
 	this->profileID = profileID;
 	data->_DeleteList();
+	
+	balance = new std::vector<AccountBalance>;
 }
 
 // construct account model using bufferered data
@@ -33,6 +35,8 @@ Account::Account(const Account& copy) {
 	this->accountTypeID = copy.accountTypeID;
 	this->name = utility::_CopyChar(copy.name);	
 	this->nameSize = copy.nameSize;
+	this->defaultCurrencyID = copy.defaultCurrencyID;
+	this->multiCurrency = copy.multiCurrency;
 }
 
 // account move constructor
@@ -43,6 +47,8 @@ Account::Account(Account&& move) {
 	this->name = move.name;
 	this->nameSize = move.nameSize;
 	move.name = nullptr;
+	this->defaultCurrencyID = move.defaultCurrencyID;
+	this->multiCurrency = move.multiCurrency;
 }
 
 // account move assignment
@@ -57,6 +63,8 @@ Account& Account::operator=(Account&& move) {
 	this->name = move.name;
 	this->nameSize = move.nameSize;
 	move.name = nullptr;
+	this->defaultCurrencyID = move.defaultCurrencyID;
+	this->multiCurrency = move.multiCurrency;
 
 	return *this;
 }
@@ -71,6 +79,12 @@ void Account::_BindData(Data* data) {
 	case Field::accountType:
 		accountTypeID = data->input->selection;
 		break;
+	case Field::currency:
+		defaultCurrencyID = data->input->selection;
+		break;
+	case Field::multiCurrency:
+		multiCurrency = data->input->check;
+		break;
 	default:
 		break;
 	}
@@ -79,7 +93,7 @@ void Account::_BindData(Data* data) {
 //	serialize account model
 char* Account::_Serialize() {
 	//	Total object size					 
-	int size = nameSize + 3*sizeof(int);
+	int size = nameSize + 4*sizeof(int) + sizeof(bool);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -91,11 +105,15 @@ char* Account::_Serialize() {
 	buffer += sizeof(int);
 
 	//	store IDs into buffer
-	int* ptr[] = { &profileID, &accountTypeID };
+	int* ptr[] = { &profileID, &accountTypeID, &defaultCurrencyID};
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
 	}
+
+	// store multi currency value into buffer
+	std::memcpy(buffer, &multiCurrency, sizeof(bool));
+	buffer += sizeof(bool);
 
 	//	store name into buffer
 	std::memcpy(buffer, &nameSize, sizeof(int));
@@ -111,11 +129,14 @@ void Account::_Deserialize(char* page) {
 	page += sizeof(int);
 
 	//	deserialize IDs
-	int* ptr[] = { &profileID, &accountTypeID };
+	int* ptr[] = { &profileID, &accountTypeID, &defaultCurrencyID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
 	}
+
+	this->multiCurrency = *(bool*)page;
+	page += sizeof(bool);
 	
 	this->nameSize = *(int*)page;
 	page += sizeof(int);
@@ -131,4 +152,5 @@ std::ostream& Account::_Show(std::ostream& os) {
 
 Account::~Account() {
 	delete[]name;
+	delete balance;
 }

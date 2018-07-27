@@ -4,23 +4,16 @@
 #include "../Models/_Header.h"
 
 const enum class Field {
-	none,
-	username,
-	pwStatus,
-	password,
-	currency,
-	transactionType,
-	categoryType,
-	account,
-	category,
-	amount,
-	date,
-	description,
-	categoryName,
-	parentCategory,
-	accountName,
-	accountType,
-	accountTypeName
+	none, username, pwStatus, password, currency, transactionType, categoryType, account, category, amount, date, description, categoryName, parentCategory,
+	accountName, accountType, accountTypeName, multiCurrency
+};
+
+const enum class CategoryType {
+	mainCategory, subCategory, temporary
+};
+
+const enum class TransactionType {
+	none = -1, expense, income, transfer, refund
 };
 
 const enum class Range {
@@ -32,11 +25,12 @@ const enum class Range {
 class UserInput;
 struct Data {
 	Field field;
-	UserInput* input;
+	UserInput* input;	
 
 public:
 	Data(Field field, UserInput* input) : field(field), input(input) {}
 	~Data() = default;
+
 };
 
 class ModelHeader;

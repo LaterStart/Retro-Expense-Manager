@@ -1,5 +1,6 @@
 #include <fstream>
 #include "AccountController.h"
+#include "../IO/Input.h"
 using namespace std;
 
 //	static account model header
@@ -147,4 +148,13 @@ bool AccountController::_Exists(char* name) {
 	}
 	delete stream;
 	return result;
+}
+
+//	Returns account with the given id
+Account* AccountController::_GetAccount(int id) {
+	for (size_t i = 0; i < accounts->size(); i++) {
+		if (accounts->at(i)._ID() == id)
+			return &accounts->at(i);
+	}
+	return nullptr;
 }

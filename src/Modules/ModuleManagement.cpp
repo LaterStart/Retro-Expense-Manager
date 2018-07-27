@@ -58,7 +58,7 @@ void ModuleManagement::_InitializeModules() {
 		deleter = classList;
 		classList = classList->nextNode;
 		delete deleter;
-	}	
+	}		
 }
 
 //	Open module from active modules list using module name

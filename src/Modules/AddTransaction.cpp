@@ -71,7 +71,7 @@ void AddTransaction::_StartModule() {
 	const function<void(Form&, FormField*)> transferEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(0) == false) {
 			FormField* cField = form._SelectField(Field::transactionType);
-			if (cField->inputField->selection == 3) {
+			if (cField->inputField->selection == 2) {
 				// remove one field at position 4
 				form._RemoveFields(4, 1);
 				form._InsertFields(
@@ -86,7 +86,7 @@ void AddTransaction::_StartModule() {
 		else {
 			//  If user changed his mind and wants not to select transfer as transaction type
 			FormField* cField = form._SelectField(Field::transactionType);
-			if (cField->inputField->selection != 3) {
+			if (cField->inputField->selection != 2) {
 				// remove two fields starting at position 4 and insert one new field at position 4
 				form._RemoveFields(4, 2);
 				form._InsertFields(tuple<ScrollDown<Account>&, int>{ ScrollDown<Account>("Account:", *accountController.accounts, Field::account), 4 });
@@ -177,15 +177,40 @@ void AddTransaction::_StartModule() {
 
 	do {
 	form:
-		form._Show();
+		form._Show();		
 		if (form._Status()) {
-			//	Get form data and pass it to controller
-			FormField* field = form._SelectField(Field::category);
-			ScrollDown_2D<Category>* categoryField = dynamic_cast<ScrollDown_2D<Category>*>(field);
+			//	Swap input selection with selected model IDs	
+			vector<FormField*> fields = form._SelectFields(vector<Field>{Field::category, Field::currency, Field::account});
+			ScrollDown_2D<Category>* categoryField = dynamic_cast<ScrollDown_2D<Category>*>(fields.at(0));
+			ScrollDown<Currency>* currencyField = dynamic_cast<ScrollDown<Currency>*>(fields.at(1));
+			ScrollDown<Account>* accountField = dynamic_cast<ScrollDown<Account>*>(fields.at(2));
 			Category* category = categoryField->_Value();
-			field->inputField->selection = category->_ID();
-			utility::LinkedList<Data*>* data = form._GetData();			
-			transactionController._AddNewTransaction(data, profileController._ActiveProfile()->_ID());
+			Currency* currency = &currencyField->_Items().at(currencyField->inputField->selection);
+			Account* account = &accountField->_Items().at(accountField->inputField->selection);
+			fields.at(0)->inputField->selection = category->_ID();
+			fields.at(1)->inputField->selection = currency->_ID();
+			fields.at(2)->inputField->selection = account->_ID();
+
+			//	Get form data and pass it to controller
+			utility::LinkedList<Data*>* data = form._GetData();	
+			transactionController._AddNewTransaction(data, profileController._ActiveProfile()->_ID());		
+
+			//	Update account balance
+			Transaction* transaction = transactionController._GetLastTransaction();
+			double amount = transaction->_Amount();
+			amount = (transaction->_Type() == TransactionType::expense) ? amount * -1.0 : amount;
+			if (!account->_MultiCurrency()) {
+				Currency* accCurrency = exchangeRateController._GetCurrency(account->_DefaultCurrency());
+				if (accCurrency->_ID() != currency->_ID()) {
+					amount = exchangeRateController._ConvertCurrency(amount, currency->_ID(), accCurrency->_ID());
+					int test = 0;
+				}
+				else {
+
+				}
+			}
+		
+			delete transaction;
 			moduler->_SetNextModule("Dashboard", this);
 			break;
 		}

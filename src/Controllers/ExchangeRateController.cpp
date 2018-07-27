@@ -237,7 +237,7 @@ void ExchangeRateController::_ParseJSON(char* buffer) {
 		z = 0;
 		while (buffer[pos] != ',' && buffer[pos] != '}')
 			rateBuffer[z++] = buffer[pos++];
-		ccy._SetRate((float)atof(rateBuffer));
+		ccy._SetRate(atof(rateBuffer));
 		delete[]rateBuffer;
 
 		ccy._SetID(header._GiveID());
@@ -279,4 +279,28 @@ Currency* ExchangeRateController::_GetCurrency(int id) {
 		if (currencies->at(i)._ID() == id)
 			return &currencies->at(i);
 	}
+	return nullptr;
+}
+
+// Set default currency at top of the currencies list
+void ExchangeRateController::_SetDefaultCurrency(Currency* currency) {
+	if (!defaultSet) {
+		currencies->insert(currencies->begin(), Currency(*currency));
+		defaultSet = true;
+	}
+	else if (currencies->at(0)._ID() != currency->_ID()) {
+		currencies->erase(currencies->begin());
+		currencies->insert(currencies->begin(), Currency(*currency));
+	}
+}
+
+// Converts value between two currencies
+double ExchangeRateController::_ConvertCurrency(double amount, int fromID, int toID) {
+	Currency* from = _GetCurrency(fromID);
+	Currency* to = _GetCurrency(toID);
+
+	amount /= from->_Rate();
+	amount *= to->_Rate();
+
+	return amount;
 }

@@ -341,6 +341,19 @@ private:
 
 	ModuleManagement* moduler = nullptr;
 
+	void _FindData_(std::vector<Data>& data, Field field);
+
+	template <typename T>
+	void _FindData(std::vector<Data>& data, T field) {
+		_FindData_(data, field);
+	}
+
+	template <typename T, typename ... TT>
+	void _FindData(std::vector<Data>& data, T field, TT ... nextFields) {
+		_FindData(data, field);
+		_FindData(data, nextFields...);
+	}
+
 public:
 	template <typename T>
 	void _AddFields(T& field) {
@@ -360,6 +373,13 @@ public:
 	void _InsertFields(T& field, TT& ... nextFields) {
 		_InsertField(field);
 		_InsertFields(nextFields...);
+	}
+
+	template <typename T, typename ... TT>
+	std::vector<Data> _GetData(T field, TT ... nextFields) {
+		std::vector<Data> data;
+		_FindData(data, field, nextFields...);
+		return data;
 	}
 
 	void _InitializeFields();
@@ -393,7 +413,7 @@ public:
 	void _Break();
 	FrameElement* _Clone() override;
 	utility::LinkedList<Data*>* _GetData();
-	UserInput* _GetData(Field field);
+	UserInput* _GetData(Field field);	
 	Frame::Coordinates _GetSpecialContentCoord();
 
 	FormField* _GetNextField(FormField* currentField);

@@ -42,7 +42,7 @@ void AddCategoryExt::_StartModule() {
 	const function<void(Form&, FormField*)> subCategoryEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(0) == false) {
 			FormField* cField = form._SelectField(Field::categoryType);
-			if (cField->inputField->selection == 2) {			
+			if (cField->inputField->selection == 1) {			
 				vector<Category>* mainCategories = new vector<Category>(categoryController._GetMainCategoryList());
 				// provide option to add new main category within sub category selection
 				mainCategories->insert(mainCategories->begin(), Category("New main category->", CategoryType::temporary));
@@ -56,7 +56,7 @@ void AddCategoryExt::_StartModule() {
 		else {
 			// If user changes his mind and wants to add new main category
 			FormField* cField = form._SelectField(Field::categoryType);
-			if (cField->inputField->selection == 1) {
+			if (cField->inputField->selection == 0) {
 				FormField* sField = form._SelectField(Field::parentCategory);
 				ScrollDown<Category>* scroll = dynamic_cast<ScrollDown<Category>*>(sField);
 				vector<Category>* items = &scroll->_Items();
@@ -73,7 +73,7 @@ void AddCategoryExt::_StartModule() {
 	const function<void(Form&, FormField*)> newMainCategoryEvent = [](Form& form, FormField* currentField) {
 		if (form._EventStatus(1) == false) {
 			FormField* cField = form._SelectField(Field::categoryType);			
-			if (form._EventStatus(0) == true && cField->inputField->selection == 2) {
+			if (form._EventStatus(0) == true && cField->inputField->selection == 1) {
 				if (currentField->field == Field::parentCategory && currentField->inputField->selection == 0) {
 					form._InsertFields(tuple<FormField&, int>{
 						FormField("Name:", InputType::text, Field::categoryName), 2
@@ -142,7 +142,7 @@ void AddCategoryExt::_StartModule() {
 			bool subCategory = false;
 			int mainIndex;
 			UserInput* field = form._GetData(Field::categoryType);
-			if (field->selection - 1 == 1) {
+			if (field->selection == 1) {
 				//	If subcategory - pass parent category ID
 				field = form._GetData(Field::parentCategory);
 				mainIndex = field->selection;

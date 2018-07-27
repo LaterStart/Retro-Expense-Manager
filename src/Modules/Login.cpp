@@ -45,13 +45,9 @@ void Login::_StartModule() {
 
 		//	Control menu
 		Menu controlMenu;
-		MenuItem F1("Menu");
-		MenuItem F2("Enter password");
-		F1._SetSpecialPrefix("[F1] ");
-		F2._SetSpecialPrefix("[F2] ");
-		F2._SetPadding(F1._Length() + 2);
-		F2._SetYpos(F1._Ypos());
-		controlMenu._AddItems(F1, F2);		
+		MenuItem F1("Menu");		
+		F1._SetSpecialPrefix("[F1] ");		
+		controlMenu._AddItems(F1);		
 
 		Frame* content = layout._Select("Content");
 
@@ -100,12 +96,11 @@ void Login::_StartModule() {
 			content->_AddElements(password, wrongPw, success, locked);
 			int loginTries = 5;
 			do {
-			passwordField:
-				F2._Hide();
+			passwordField:				
 				password._Show();
 				if (password.inputField->control == ControlKey::F1) {
 					// Menu selection
-					F2._Show();
+					controlMenu._ChangeItem("Menu", "Back");
 					wrongPw._Hide();
 					Cursor(2, ::height - 4);
 					UserInput select(InputType::select);
@@ -114,8 +109,10 @@ void Login::_StartModule() {
 					while (selection <  1 || selection > mainMenu.size) {
 						select._ReadUserInput();
 						selection = select.selection;
-						if (select.control == ControlKey::F2)
+						if (select.control == ControlKey::F1) {
+							controlMenu._ChangeItem("Back", "Menu");
 							goto passwordField;
+						}
 						select._ClearInput();
 					}
 					nextModule = mainMenu._GetLink(selection);
@@ -155,11 +152,10 @@ void Login::_StartModule() {
 		else moduler->_SetNextModule("Dashboard");		
 	}
 
-	// If profile is loaded - add default currency at top of the currencies list
-	if (profile != nullptr) {
-		std::vector<Currency>* ccyList = exchangeRateController.currencies;
+	// If profile is loaded - set default currency at top of the currencies list
+	if (profile != nullptr) {		
 		Currency* ccy = exchangeRateController._GetCurrency(profile->_DefaultCurrency());
-		ccyList->insert(ccyList->begin(), Currency(*ccy));
+		exchangeRateController._SetDefaultCurrency(ccy);
 	}
 
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.

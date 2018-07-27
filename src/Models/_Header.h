@@ -124,5 +124,5 @@ inline void ModelHeader::_ResetIDCounter() {
 }
 
 inline int ModelHeader::_LastID() const {
-	return this->idCount;
+	return this->idCount-1;
 }

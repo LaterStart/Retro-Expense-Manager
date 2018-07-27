@@ -72,7 +72,7 @@ void Category::_BindData(Data* data) {
 		nameSize = data->input->length + 1;
 		break;
 	case Field::categoryType:
-		type = static_cast<CategoryType>(data->input->selection - 1);
+		type = static_cast<CategoryType>(data->input->selection);
 		break;
 	case Field::parentCategory:
 		parentID = data->input->selection;

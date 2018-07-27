@@ -1,12 +1,6 @@
 #pragma once
 #include "_Model.h"
 
-const enum class CategoryType {
-	mainCategory,
-	subCategory,
-	temporary
-};
-
 class Category : public Model {
 private:	
 	int ID = -1;

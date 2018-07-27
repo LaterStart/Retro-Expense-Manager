@@ -5,14 +5,14 @@ class Transaction : public Model {
 private:	
 	int ID = -1;
 	int profileID = -1;
-	int accountID = -1;	
-	int typeID = -1;
+	int accountID = -1;		
 	int categoryID = -1;
 	int currencyID = -1;
 	int descriptionSize = 0;
 	double amount = 0.0;
 	char* description = nullptr;	
 	char* amountChar = nullptr;
+	TransactionType type = TransactionType::none;
 	Date date;
 	
 	void _BindData(Data* data);
@@ -32,6 +32,7 @@ public:
 	int _Category() const;
 	int _Account() const;
 	int _DisplayLength();
+	TransactionType _Type() const;
 
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Transaction(char* buffer);
@@ -76,4 +77,8 @@ inline int Transaction::_Account() const {
 
 inline int Transaction::_Category() const {
 	return this->categoryID;
+}
+
+inline TransactionType Transaction::_Type() const {
+	return this->type;
 }

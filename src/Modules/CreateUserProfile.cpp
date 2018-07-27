@@ -55,7 +55,7 @@ void CreateUserProfile::_StartModule() {
 	form._SetParentFrame(content);
 	form._AddFields(
 		UsernameField("Username:", this->profileController),
-		OptionField("Password protected?:", Field::pwStatus,
+		OptionField("Password protected? Y/N:", Field::pwStatus,
 			// add optional fields 
 			// true marks as key password field
 			PasswordField("Password:", true),	
@@ -108,6 +108,11 @@ void CreateUserProfile::_StartModule() {
 			break;
 		}
 	} while (true);	
+
+	// change default currency at top of the currencies list
+	Currency* ccy = exchangeRateController._GetCurrency(profileController._ActiveProfile()->_DefaultCurrency());
+	exchangeRateController._SetDefaultCurrency(ccy);
+
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 }

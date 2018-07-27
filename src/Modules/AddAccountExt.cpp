@@ -33,53 +33,14 @@ void AddAccountExt::_StartModule() {
 	form._AddFields(
 		ScrollDown<AccountType>("Type:", *accountController.accountTypes, Field::accountType),
 		FormField("Name:", InputType::text, Field::accountName),
-		ScrollDown<Currency>("Currency:", *exchangeRateController.currencies, Field::currency),
+		OptionField("Multi currency account? Y/N:", Field::multiCurrency,
+			ScrollDown<Currency>("Default currency:", *exchangeRateController.currencies, Field::currency)
+		),
 		ConfirmField("Save?:")
 	);
+	OptionField* optField = dynamic_cast<OptionField*>(form._SelectField(Field::multiCurrency));
+	optField->_SetCondition(false);
 	content->_AddElements(info, form);
-
-
-	//					FORM EVENT DISABLED - NEW ACCOUNT TYPES CAN BE ADDED THROUGH SETTINGS MODULE
-	/*//	Form event
-	//	New account type event - Provide option to add new account type
-	const function<void(Form&, FormField*)> newAccountTypeOptionEvent = [](Form& form, FormField* currentField) {
-		if (form._EventStatus(0) == false) {
-			ScrollDown<AccountType>* cField = dynamic_cast<ScrollDown<AccountType>*>(form._SelectField(Field::accountType));
-			// insert new element at beggining of account types 1D vector
-			vector<Category> newItem{ Category("Add new account type->", CategoryType::temporary) };
-			cField->_InsertItem(AccountType("Add new account type->", -1));
-			form._SetEventStatus(0, true);
-		}
-	};
-	form._AddEvent(newAccountTypeOptionEvent);
-
-	//	If user selects to add new account type event
-	const function<void(Form&, FormField*)> newAccountTypeEvent = [](Form& form, FormField* currentField) {
-		if (currentField != nullptr) {
-			if (form._EventStatus(1) == false && currentField->field == Field::accountType && currentField->inputField->selection == 0) {
-				form._InsertFields(tuple<FormField&, int>{
-					FormField("Type name:", InputType::text, Field::accountTypeName), 1
-				});
-				form._InitializeFields();
-				form._SetEventStatus(1, true);
-			}
-			else {
-				// update scrolldown & form
-				if (currentField->field == Field::accountTypeName) {
-					ScrollDown<AccountType>* cField = dynamic_cast<ScrollDown<AccountType>*>(form._SelectField(Field::accountType));
-					FormField* dField = form._SelectField(Field::accountTypeName);
-					accountController._AddNewAccountType(dField->inputField->input);
-
-					form._RemoveFields(1, 1);
-					form._InitializeFields();
-					form._SetEventStatus(1, false);
-					cField->_UpdateScrollDown();
-					cField->_Show();
-				}
-			}
-		}
-	};
-	form._AddEvent(newAccountTypeEvent);	*/
 
 	// Validate account name - check if already exists
 	const function<void(Form&, FormField*)> validateAccountNameEvent = [](Form& form, FormField* currentField) {
@@ -110,6 +71,12 @@ void AddAccountExt::_StartModule() {
 	form:
 		form._Show();
 		if (form._Status()) {
+			// Swap input selection with selected model IDs
+			vector<FormField*> field = form._SelectFields(vector<Field>{Field::currency});
+			ScrollDown<Currency>* currencyField = dynamic_cast<ScrollDown<Currency>*>(field.at(0));
+			Currency* currency = &currencyField->_Items().at(currencyField->inputField->selection);		
+			field.at(0)->inputField->selection = currency->_ID();
+
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
 			accountController._AddNewAccount(data, profileController._ActiveProfile()->_ID());	
