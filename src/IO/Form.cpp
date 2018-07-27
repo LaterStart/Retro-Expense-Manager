@@ -191,7 +191,7 @@ void UsernameField::_Show() {
 void OptionField::_Show() {
 	Label::_Show();
 	if (_InputControl()) {
-		if (inputField->check == true) {
+		if (inputField->check == condition) {
 			if (enabled == false)
 				parentForm->_EnableOptional(optFieldNum, this);
 			enabled = true;
@@ -626,8 +626,10 @@ FormField* UsernameField::_Store() {
 }
 
 OptionField::OptionField(const OptionField& copy) : FormField(copy) {
-	this->optionalFields = copy.optionalFields;
 	this->optFieldNum = copy.optFieldNum;
+	this->optionalFields = new FormField*[optFieldNum];
+	for (int i = 0; i < optFieldNum; i++) 
+		optionalFields[i] = copy.optionalFields[i]->_Store();	
 	this->enabled = copy.enabled;
 	this->OComponent::componentType = ComponentType::optionField;
 }

@@ -238,7 +238,7 @@ protected:
 public:
 	FrameElement(const FrameElement& copy);
 	FrameElement(const FrameElement& copy, Frame* parentFrame);
-	void _SetParentFrame(Frame* parentFrame);
+	virtual void _SetParentFrame(Frame* parentFrame);
 	
 	virtual void _Show();
 	virtual void _Hide();
@@ -251,6 +251,7 @@ public:
 	unsigned short _Ypos() const;
 	Frame* _ParentFrame() const;
 	FrameElement* _Original() const;
+	FrameElement* _Cloned() const;
 
 	virtual FrameElement* _Clone();
 	virtual ~FrameElement();
@@ -285,6 +286,10 @@ inline void FrameElement::_SetYpos(unsigned short y) {
 
 inline void FrameElement::_SetParentFrame(Frame* parentFrame) {
 	this->parentFrame = parentFrame;
+	if (original != nullptr)
+		original->parentFrame = parentFrame;
+	else if (clone != nullptr)
+		clone->parentFrame = parentFrame;
 }
 
 inline unsigned short FrameElement::_Ypos() const {
@@ -312,6 +317,10 @@ inline FrameElement* FrameElement::_Clone() {
 
 inline FrameElement* FrameElement::_Original() const {
 	return this->original;
+}
+
+inline FrameElement* FrameElement::_Cloned() const {
+	return this->clone;
 }
 
 class Separator : public FrameElement {
@@ -398,7 +407,7 @@ public:
 	virtual ~Label() {
 		if (deleteText)
 			delete[]text;
-	}
+	}	
 };
 
 inline short Label::_Length() const {
@@ -406,8 +415,30 @@ inline short Label::_Length() const {
 }
 
 inline void Label::_SetText(const char* text) {
+	if (deleteText) {
+		delete[]this->text;
+		deleteText = false;
+	}
 	this->text = (char*)text;
 	this->length = utility::_CharLength(text);
+	if (original != nullptr) {
+		Label* org = dynamic_cast<Label*>(original);
+		if (org->deleteText) {
+			delete[]org->text;
+			org->deleteText = false;
+		}
+		org->text = this->text;
+		org->length = this->length;
+	}
+	else if (clone != nullptr) {
+		Label* cln = dynamic_cast<Label*>(clone);
+		if (cln->deleteText) {
+			delete[]cln->text;
+			cln->deleteText = false;
+		}
+		cln->text = this->text;
+		cln->length = this->length;
+	}
 }
 
 inline Label* Label::_Clone() {
@@ -447,8 +478,7 @@ class MenuItem;
 class Menu : public FrameElement {
 private:
 	void _AddItem(MenuItem& item);
-	bool deleteItems = false;
-
+	
 public:
 	int size = 0;
 	int linkNum = 0;
@@ -469,6 +499,7 @@ public:
 	void _Show() override;
 	void _Hide() override;
 	virtual Menu* _Clone();
+	void _SetParentFrame(Frame* parentFrame) override;
 
 	Menu() {
 		this->componentType = ComponentType::menu;
@@ -498,7 +529,7 @@ public:
 		this->componentType = ComponentType::menuItem;
 	}
 	MenuItem(const char* text, Module* previousModule);
-	MenuItem(const MenuItem& copy) : Label(copy), prefix(copy.prefix), link(copy.link), orderNum(copy.orderNum) {
+	MenuItem(const MenuItem& copy) : Label(copy), prefix(copy.prefix), link(copy.link), orderNum(utility::_CopyChar(copy.orderNum)) {
 		this->componentType = ComponentType::menuItem;
 	}
 	void _SetOrderNumber(char* orderNum);
@@ -508,15 +539,28 @@ public:
 	void _Show() override;
 	virtual MenuItem* _Clone();
 
-	~MenuItem() = default;
+	~MenuItem() {
+		delete[]orderNum;
+	}
 };
 
 inline void MenuItem::_SetOrderNumber(char* orderNum) {
 	if(prefix==nullptr)
-		this->orderNum = orderNum;
+		this->orderNum = utility::_CopyChar(orderNum);
 	else {
-		this->orderNum = (char*)prefix;
+		delete[]this->orderNum;
+		this->orderNum = utility::_CopyChar((char*)prefix);
 	}	
+	if (this->original != nullptr) {
+		MenuItem* org = dynamic_cast<MenuItem*>(original);
+		delete[]org->orderNum;
+		org->orderNum = utility::_CopyChar(this->orderNum);
+	}
+	else if (clone != nullptr) {
+		MenuItem* cln = dynamic_cast<MenuItem*>(clone);
+		delete[]cln->orderNum;
+		cln->orderNum = utility::_CopyChar(this->orderNum);
+	}
 }
 
 inline const char* Menu::_GetLink(int selection) {
@@ -533,6 +577,10 @@ inline short MenuItem::_Length() const {
 
 inline void MenuItem::_SetLink(const char* moduleName) {
 	this->link = moduleName;
+	if (original != nullptr) 
+		dynamic_cast<MenuItem*>(original)->link = moduleName;
+	else if(clone != nullptr)
+		dynamic_cast<MenuItem*>(clone)->link = moduleName;
 }
 
 inline MenuItem* MenuItem::_Clone() {

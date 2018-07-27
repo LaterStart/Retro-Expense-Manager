@@ -233,6 +233,8 @@ FrameElement::FrameElement(const FrameElement& copy) : OComponent(copy){
 	this->padding = copy.padding;
 	this->Ypos = copy.Ypos;
 	this->parentFrame = copy.parentFrame;
+	this->original = copy.original;
+	this->clone = copy.clone;
 }
 
 //	FrameElement overloaded copy constructor
@@ -241,11 +243,13 @@ FrameElement::FrameElement(const FrameElement& copy, Frame* parentFrame) : OComp
 //	Find corresponding display for this frame element
 Display* FrameElement::_GetDisplay() {
 	Frame* select = parentFrame;
-	do {
-		if (select->dsp != nullptr)
-			return select->dsp;
-		select = select->parentFrame;
-	} while (select!=nullptr);
+	if (select != nullptr) {
+		do {
+			if (select->dsp != nullptr)
+				return select->dsp;
+			select = select->parentFrame;
+		} while (select != nullptr);
+	}
 	return nullptr;
 }
 
@@ -283,7 +287,9 @@ void Label::_Show() {
 
 void Label::_Hide() {
 	Display* dsp = _GetDisplay();
-	dsp->_HideContent(this->id);
+	if (dsp != nullptr) {
+		dsp->_HideContent(this->id);
+	}
 }
 
 MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
@@ -412,19 +418,16 @@ Layout::~Layout() {
 	delete frame;
 }
 
-Menu::Menu(const Menu& copy) : size(copy.size), linkNum(copy.linkNum){
+Menu::Menu(const Menu& copy) : FrameElement(copy), size(copy.size), linkNum(copy.linkNum){
 	this->componentType = ComponentType::menu;
 	items = new MenuItem*[size];
-	for (int i = 0; i < size; i++) 
-		items[i] = static_cast<MenuItem*>(copy.items[i]->MenuItem::_Clone());
-	deleteItems = true;
+	for (int i = 0; i < size; i++)
+		items[i] = new MenuItem(*copy.items[i]);
 }
 
 Menu::~Menu() {
-	if (deleteItems) {
-		for (int i = 0; i < size; i++)
-			delete items[i];
-	}
+	for (int i = 0; i < size; i++)
+		delete items[i];
 	delete[]items;
 }
 
@@ -432,7 +435,8 @@ Menu::~Menu() {
 void Menu::_AddItem(MenuItem& item) {
 	MenuItem** pp = new MenuItem*(nullptr);
 	utility::_AddElement(items,*pp, size);
-	items[size - 1] = &item;
+	items[size - 1] = item._Clone();
+	item._SetParentFrame(this->parentFrame);
 	delete pp;
 }
 
@@ -440,8 +444,9 @@ void Menu::_AddItem(MenuItem& item) {
 void Menu::_ChangeItem(const char* text, const char* newText, const char* newLink) {
 	for (int i = 0; i < size; i++) {
 		if (utility::_CompareChar(items[i]->text, (char*)text)) {
-			items[i]->text = (char*)newText;
+			items[i]->_SetText(newText);
 			items[i]->_SetLink(newLink);
+			
 			if(items[i]->_ParentFrame() != nullptr)
 				items[i]->_Show();
 		}
@@ -451,12 +456,21 @@ void Menu::_ChangeItem(const char* text, const char* newText, const char* newLin
 //	display menu items
 void Menu::_Show() {
 	char num[] = "[ ] ";
+	Menu* org = nullptr;
+	if (original != nullptr) 
+		org = dynamic_cast<Menu*>(original);
 	for (int i = 0; i < size; i++) {
 		num[1] = i + 1 + '0';
 		items[i]->_SetParentFrame(parentFrame);			
 		items[i]->_SetOrderNumber(num);
 		if(items[i]->_YposSet() == false)
 			items[i]->_SetYpos(i);
+		if (org != nullptr) {
+			org->items[i]->_SetParentFrame(parentFrame);
+			org->items[i]->_SetOrderNumber(num);
+			if (org->items[i]->_YposSet() == false)
+				org->items[i]->_SetYpos(i);
+		}		
 		items[i]->_Show();
 	}
 }
@@ -661,4 +675,10 @@ void IDLabel::_Show() {
 		}
 		dsp->_Display(pos, id);
 	}
+}
+
+void Menu::_SetParentFrame(Frame* parentFrame) {
+	FrameElement::_SetParentFrame(parentFrame);
+	for (int i = 0; i < size; i++)
+		items[i]->_SetParentFrame(parentFrame);
 }

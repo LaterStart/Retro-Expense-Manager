@@ -152,9 +152,10 @@ Display::~Display() {
 }
 
 void Display::_HideContent(int elementID) {
-	for (int i = 0; i < activePosNum; i++)
+	for (int i = 0; i < activePosNum; i++) {
 		if (activePositions[i].elementID == elementID)
 			activePositions[i]._ClearContent();
+	}
 }
 
 void Display::_Backspace() {
@@ -208,15 +209,25 @@ void Display::_Display(Label* label, Cursor& pos) {
 	}
 
 	ActivePos apos(pos, label->id);
+	if (label->_Original() != nullptr) {
+		ActivePos apos(pos, label->_Original()->id);
+		_AddActivePosition(apos);
+	}
 	_AddActivePosition(apos);
 }
 
 void Display::_Display(MenuItem* item, Cursor& pos) {
 	pos._SetCursorPosition();
-	cout << item->orderNum;	
+	if(item->orderNum!=nullptr)
+		cout << item->orderNum;	
 	_Display((Label*)item);	
 	pos._SetCharacterNumber(item->length);
+	if (item->_Original() != nullptr) {
+		ActivePos apos(pos, item->_Original()->id);
+		_AddActivePosition(apos);
+	}
 	ActivePos apos(pos, item->id);
+
 	_AddActivePosition(apos);
 }
 

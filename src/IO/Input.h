@@ -191,6 +191,7 @@ private:
 	FormField** optionalFields = nullptr;
 	int optFieldNum = 0;
 	bool enabled = true;
+	bool condition = true;
 
 	void _AddField(FormField& field);
 
@@ -214,6 +215,7 @@ public:
 
 	OptionField(const OptionField& copy);
 
+	void _SetCondition(bool conditionValue);
 	FormField* _GetField(int pos) const;
 	void _Show() override;
 	void _Hide() override;
@@ -230,6 +232,10 @@ public:
 
 inline FormField* OptionField::_GetField(int pos) const {
 	return optionalFields[pos];
+}
+
+inline void OptionField::_SetCondition(bool conditionValue) {
+	this->condition = conditionValue;
 }
 
 class SelectionField : public FormField {
