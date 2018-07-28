@@ -183,13 +183,21 @@ void AddTransaction::_StartModule() {
 			vector<FormField*> fields = form._SelectFields(vector<Field>{Field::category, Field::currency, Field::account});
 			ScrollDown_2D<Category>* categoryField = dynamic_cast<ScrollDown_2D<Category>*>(fields.at(0));
 			ScrollDown<Currency>* currencyField = dynamic_cast<ScrollDown<Currency>*>(fields.at(1));
-			ScrollDown<Account>* accountField = dynamic_cast<ScrollDown<Account>*>(fields.at(2));
+			ScrollDown<Account>* accountField1 = dynamic_cast<ScrollDown<Account>*>(fields.at(2));
+			ScrollDown<Account>* accountField2 = nullptr;
+			if(fields.size() > 3)
+				accountField2 = dynamic_cast<ScrollDown<Account>*>(fields.at(3));
 			Category* category = categoryField->_Value();
 			Currency* currency = &currencyField->_Items().at(currencyField->inputField->selection);
-			Account* account = &accountField->_Items().at(accountField->inputField->selection);
+			Account* account1 = &accountField1->_Items().at(accountField1->inputField->selection);
+			Account* account2 = nullptr;
+			if (accountField2 != nullptr)
+				account2 = &accountField2->_Items().at(accountField2->inputField->selection);
 			fields.at(0)->inputField->selection = category->_ID();
 			fields.at(1)->inputField->selection = currency->_ID();
-			fields.at(2)->inputField->selection = account->_ID();
+			fields.at(2)->inputField->selection = account1->_ID();
+			if (account2 != nullptr)
+				fields.at(3)->inputField->selection = account2->_ID();
 
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();	
@@ -198,18 +206,53 @@ void AddTransaction::_StartModule() {
 			//	Update account balance
 			Transaction* transaction = transactionController._GetLastTransaction();
 			double amount = transaction->_Amount();
-			amount = (transaction->_Type() == TransactionType::expense) ? amount * -1.0 : amount;
-			if (!account->_MultiCurrency()) {
-				Currency* accCurrency = exchangeRateController._GetCurrency(account->_DefaultCurrency());
-				if (accCurrency->_ID() != currency->_ID()) {
-					amount = exchangeRateController._ConvertCurrency(amount, currency->_ID(), accCurrency->_ID());
-					int test = 0;
+			if (transaction->_Type() == TransactionType::transfer) {
+				Currency* acc1ccy = exchangeRateController._GetCurrency(account1->_DefaultCurrency());
+				Currency* acc2ccy = exchangeRateController._GetCurrency(account2->_DefaultCurrency());
+				bool converted = false;
+
+				if (!account1->_MultiCurrency() && account1->_DefaultCurrency() != currency->_ID()) {
+					double amountCnv = exchangeRateController._ConvertCurrency(amount, currency->_ID(), acc1ccy->_ID());
+					account1->_UpdateBalance(amountCnv*-1.0);
+					converted = true;
+				}
+				else if(account1->_MultiCurrency())
+					account1->_UpdateBalance(amount*-1.0, currency->_ID());
+				else account1->_UpdateBalance(amount*-1.0);
+				accountController._UpdateAccount(account1);
+				
+				if (converted) {
+					if (!account2->_MultiCurrency() && account1->_DefaultCurrency() != account2->_DefaultCurrency()) {
+						amount = exchangeRateController._ConvertCurrency(amount, account1->_DefaultCurrency(), account2->_DefaultCurrency());
+						account2->_UpdateBalance(amount);
+					}
+					else if (account2->_MultiCurrency()) 
+						account2->_UpdateBalance(amount, currency->_ID());
+					else account2->_UpdateBalance(amount);
 				}
 				else {
-
+					if (!account2->_MultiCurrency() && currency->_ID() != account2->_DefaultCurrency()) {
+						amount = exchangeRateController._ConvertCurrency(amount, currency->_ID(), account2->_DefaultCurrency());
+						account2->_UpdateBalance(amount);
+					}
+					else if (account2->_MultiCurrency())
+						account2->_UpdateBalance(amount, currency->_ID());
+					else account2->_UpdateBalance(amount);
 				}
+				accountController._UpdateAccount(account2);
 			}
-		
+			else {
+				amount = (transaction->_Type() == TransactionType::expense) ? amount * -1.0 : amount;
+				if (!account1->_MultiCurrency()) {
+					Currency* accCurrency = exchangeRateController._GetCurrency(account1->_DefaultCurrency());
+					if (accCurrency->_ID() != currency->_ID())
+						amount = exchangeRateController._ConvertCurrency(amount, currency->_ID(), accCurrency->_ID());
+					account1->_UpdateBalance(amount);
+				}
+				else account1->_UpdateBalance(amount, currency->_ID());
+				accountController._UpdateAccount(account1);
+			}			
+
 			delete transaction;
 			moduler->_SetNextModule("Dashboard", this);
 			break;
