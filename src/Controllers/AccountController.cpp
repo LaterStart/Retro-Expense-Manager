@@ -158,3 +158,14 @@ Account* AccountController::_GetAccount(int id) {
 	}
 	return nullptr;
 }
+
+//	Updates account database record
+void AccountController::_UpdateAccount(Account* account) {
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char* buffer = account->_Serialize();
+		_UpdateModel(stream, accountHeader, account->_ID(), buffer);
+		stream->close();
+	}
+	delete stream;
+}
