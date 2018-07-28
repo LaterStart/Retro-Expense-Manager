@@ -73,9 +73,11 @@ void AddAccountExt::_StartModule() {
 		if (form._Status()) {
 			// Swap input selection with selected model IDs
 			vector<FormField*> field = form._SelectFields(vector<Field>{Field::currency});
-			ScrollDown<Currency>* currencyField = dynamic_cast<ScrollDown<Currency>*>(field.at(0));
-			Currency* currency = &currencyField->_Items().at(currencyField->inputField->selection);		
-			field.at(0)->inputField->selection = currency->_ID();
+			if (field.size() > 0) {
+				ScrollDown<Currency>* currencyField = dynamic_cast<ScrollDown<Currency>*>(field.at(0));
+				Currency* currency = &currencyField->_Items().at(currencyField->inputField->selection);
+				field.at(0)->inputField->selection = currency->_ID();
+			}
 
 			//	Get form data and pass it to controller
 			utility::LinkedList<Data*>* data = form._GetData();
