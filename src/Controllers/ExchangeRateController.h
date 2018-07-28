@@ -11,6 +11,7 @@ private:
 
 	void _LoadExchangeRate();	
 	void _ParseJSON(char* buffer);	
+	void _ChangeBase(Currency* currency);
 
 public:
 	ExchangeRateController();
@@ -21,6 +22,6 @@ public:
 	Currency* _GetCurrency(int id);
 	void _SetDefaultCurrency(Currency* currency);
 	double _ConvertCurrency(double amount, int fromID, int toID);
-
+	
 	std::vector<Currency>* currencies;		
 };

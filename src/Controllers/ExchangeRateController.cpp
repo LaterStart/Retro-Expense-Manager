@@ -21,20 +21,20 @@ void ExchangeRateController::_LoadExchangeRate() {
 
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
-		// load current exchange rate info
+		//	load current exchange rate info
 		if (header._Loaded() == true) {
 			excRate = new ExchangeRate(_GetModel(stream, header, -1));
 
-			// check if current excRate is older 
+			//	check if current excRate is older 
 			Date date(utility::_GetCurrentDate());
 			if (excRate->_Date() < date) {
 				ExchangeRate old(*excRate);
-				// Download new exchange rate
+				//	Download new exchange rate
 				this->header._ResetIDCounter();
 				_DownloadExchangeRate();
 
 				if (excRate->_CurrencyNumber() == old._CurrencyNumber()) {
-					// update existing exchange rate records
+					//	update existing exchange rate records
 					char* buffer = excRate->_Serialize();
 					_UpdateModel(stream, header, -1, buffer);
 					stream->clear();
@@ -51,7 +51,7 @@ void ExchangeRateController::_LoadExchangeRate() {
 				}
 			}
 			else {
-				// load current exchange rate
+				//	load current exchange rate
 				Query query(Range::all);
 				query._ExcludeIDs(-1);
 				vector<char*>* buffer = _GetModels(stream, this->header, query);
@@ -66,7 +66,7 @@ void ExchangeRateController::_LoadExchangeRate() {
 			}
 		}
 		else {
-			// if no exchange rate data was found - initiate download and save records into database
+			//	if no exchange rate data was found - initiate download and save records into database
 			_DownloadExchangeRate();
 			_WriteExchangeRate();
 		}
@@ -282,19 +282,22 @@ Currency* ExchangeRateController::_GetCurrency(int id) {
 	return nullptr;
 }
 
-// Set default currency at top of the currencies list
+//	Set default currency at top of the currencies list
 void ExchangeRateController::_SetDefaultCurrency(Currency* currency) {
+	int ID = currency->_ID();
 	if (!defaultSet) {
+		_ChangeBase(currency);
 		currencies->insert(currencies->begin(), Currency(*currency));
-		defaultSet = true;
+		defaultSet = true;	
 	}
 	else if (currencies->at(0)._ID() != currency->_ID()) {
+		_ChangeBase(currency);
 		currencies->erase(currencies->begin());
-		currencies->insert(currencies->begin(), Currency(*currency));
-	}
+		currencies->insert(currencies->begin(), Currency(*currency));			
+	}	
 }
 
-// Converts value between two currencies
+//	Converts value between two currencies
 double ExchangeRateController::_ConvertCurrency(double amount, int fromID, int toID) {
 	Currency* from = _GetCurrency(fromID);
 	Currency* to = _GetCurrency(toID);
@@ -303,4 +306,29 @@ double ExchangeRateController::_ConvertCurrency(double amount, int fromID, int t
 	amount *= to->_Rate();
 
 	return amount;
+}
+
+//	Change base rate
+void ExchangeRateController::_ChangeBase(Currency* currency) {
+	double newBaseRate = 1.0 / currency->_Rate();
+	for (size_t i = 0; i < currencies->size(); i++) {
+		double newRate = currencies->at(i)._Rate() * newBaseRate;
+		currencies->at(i)._SetRate(newRate);
+	}
+	this->excRate->_SetBaseID(currency->_ID());
+	currency->_SetRate(1.0);
+
+	//	update existing exchange rate records
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char* buffer = excRate->_Serialize();
+		_UpdateModel(stream, header, -1, buffer);
+		stream->clear();
+		for (size_t i = 0; i < currencies->size(); i++) {
+			buffer = currencies->at(i)._Serialize();
+			_UpdateModel(stream, header, currencies->at(i)._ID(), buffer);
+		}
+		stream->close();
+	}
+	delete stream;
 }
