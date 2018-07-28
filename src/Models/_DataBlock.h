@@ -10,10 +10,13 @@ private:
 	int bufferSize = 0;
 	int offset = -1;
 	std::streamoff nextNode = - 1;
+	std::streamoff previousNode = -1;
 	int modelID = -1;
+	int nextID = -1;
+	int previousID = -1;
+	bool empty = false;
 
-public:
-	bool empty = true;
+public:	
 	void _WrapData(char* &buffer, ModelName name, bool readID = true);	
 	int _BufferSize() const;
 	int _NodeSize() const;
@@ -22,8 +25,14 @@ public:
 	int _Offset() const;
 	int _PagePos() const;
 	std::streamoff _NextNode() const;
-	void _EditNextNode(std::streamoff pageNum);
+	void _EditNextNode(std::streamoff pageNum, int nextModelID);
+	std::streamoff _PreviousNode() const;
+	void _EditPreviousNode(std::streamoff pageNum, int previousModelID);
 	int _ID() const;
+	bool _Empty() const;
+	void _SetEmpty(bool status);
+	int _NextID() const;
+	int _PreviousID() const;
 
 	static int _BlockSize();
 	
@@ -59,8 +68,9 @@ inline std::streamoff DataBlock::_NextNode() const {
 	return this->nextNode;
 }
 
-inline void DataBlock::_EditNextNode(std::streamoff pageNum) {
+inline void DataBlock::_EditNextNode(std::streamoff pageNum, int nextModelID) {
 	this->nextNode = pageNum;
+	this->nextID = nextModelID;
 }
 
 inline int DataBlock::_NodeSize() const {
@@ -69,4 +79,29 @@ inline int DataBlock::_NodeSize() const {
 
 inline int DataBlock::_ID() const {
 	return this->modelID;
+}
+
+inline std::streamoff DataBlock::_PreviousNode() const {
+	return this->previousNode;
+}
+
+inline void DataBlock::_EditPreviousNode(std::streamoff pageNum, int previousModelID) {
+	this->previousNode = pageNum;
+	this->previousID = previousModelID;
+}
+
+inline bool DataBlock::_Empty() const {
+	return this->empty;
+}
+
+inline void DataBlock::_SetEmpty(bool status) {
+	this->empty = status;
+}
+
+inline int DataBlock::_NextID() const {
+	return this->nextID;
+}
+
+inline int DataBlock::_PreviousID() const {
+	return this->previousID;
 }
