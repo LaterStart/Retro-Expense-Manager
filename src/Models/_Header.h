@@ -30,6 +30,7 @@ public:
 	unsigned int _GiveID();
 	void _SetNodeCount(int nodeCount);
 	void _SetStartID(int startID);
+	int _LastID() const;
 
 	virtual ~Header() = default;
 };
@@ -90,6 +91,10 @@ inline void Header::_SetStartID(int startID) {
 	this->idCount = startID;
 }
 
+inline int Header::_LastID() const {
+	return this->idCount - 1;
+}
+
 class MainHeader : public Header {
 public:	
 	char* _Serialize();
@@ -111,8 +116,7 @@ public:
 	char* _Serialize();
 	void _Deserialize(char* page);
 	ModelName _Name() const;
-	void _ResetIDCounter();
-	int _LastID() const;
+	void _ResetIDCounter();	
 };
 
 inline ModelName ModelHeader::_Name() const {
@@ -121,8 +125,4 @@ inline ModelName ModelHeader::_Name() const {
 
 inline void ModelHeader::_ResetIDCounter() {
 	this->idCount = 0;
-}
-
-inline int ModelHeader::_LastID() const {
-	return this->idCount-1;
 }
