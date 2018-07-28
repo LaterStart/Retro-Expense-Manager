@@ -11,12 +11,14 @@ private:
 	char* name = nullptr;	
 	bool multiCurrency = false;
 
-	struct AccountBalance {
+	struct Balance {
 		int currencyID = -1;
-		float totalAmount = 0.0;
+		double totalAmount = 0.0;
+
+		Balance(int ccyID) : currencyID(ccyID){}
 	};
 	
-	std::vector<AccountBalance>* balance = nullptr;
+	std::vector<Balance>* balance = nullptr;
 	
 	void _BindData(Data* data);
 	std::ostream& _Show(std::ostream& os);
@@ -31,6 +33,8 @@ public:
 	int _DefaultCurrency() const;
 	int _DisplayLength();
 	bool _MultiCurrency() const;
+	void _UpdateBalance(double amount, int currencyID);
+	void _UpdateBalance(double amount);
 
 	Account() = default;
 	Account(utility::LinkedList<Data*>* data, int ID, int profileID);
