@@ -24,4 +24,5 @@ public:
 	bool _Exists(char* name);
 	Account* _GetAccount(int id);
 	void _UpdateAccount(Account* account);
+	Account* _DeserializeModel(char* buffer);
 };

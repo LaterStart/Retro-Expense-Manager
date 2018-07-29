@@ -12,8 +12,9 @@ ModelHeader CategoryController::header(ModelName::category);
 CategoryController::CategoryController() {
 	if (this->header._Loaded() == false) {
 		_LoadHeader(this->header);
+		header._LinkController(this);
 	}
-	this->_LoadCategoryList();
+	_LoadCategoryList();
 }
 
 //	Add new category
@@ -129,6 +130,7 @@ bool CategoryController::_Exists(char* name) {
 	delete stream;
 	return result;
 }
+
 //	Returns category with the given ID from 2D category list vector
 Category* CategoryController::_GetCategory(int id) {
 	for (size_t i = 0; i < categoryList->size(); i++) {
@@ -138,4 +140,9 @@ Category* CategoryController::_GetCategory(int id) {
 		}
 	}
 	return nullptr;
+}
+
+Category* CategoryController::_DeserializeModel(char* buffer) {
+	Category* category = new Category(buffer);
+	return category;
 }

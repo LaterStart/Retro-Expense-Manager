@@ -13,6 +13,8 @@ ModelHeader AccountController::accountTypeHeader(ModelName::accountType);
 AccountController::AccountController() {	
 	if (accountHeader._Loaded() == false) {
 		_LoadHeader(accountHeader);
+		accountHeader._LinkController(this);
+		accountTypeHeader._LinkController(this);
 	}
 	_LoadAccounts();
 	accountTypes = new vector<AccountType>{ 
@@ -168,4 +170,9 @@ void AccountController::_UpdateAccount(Account* account) {
 		stream->close();
 	}
 	delete stream;
+}
+
+Account* AccountController::_DeserializeModel(char* buffer) {
+	Account* account = new Account(buffer);
+	return account;
 }

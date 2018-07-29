@@ -20,4 +20,5 @@ public:
 	std::vector<Category> _GetMainCategoryList();
 	bool _Exists(char* name);
 	Category* _GetCategory(int id);
+	Category* _DeserializeModel(char* buffer);
 };

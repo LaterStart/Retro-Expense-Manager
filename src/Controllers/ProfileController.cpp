@@ -9,6 +9,7 @@ ModelHeader ProfileController::header(ModelName::profile);
 ProfileController::ProfileController() {
 	if (this->header._Loaded() == false) {
 		_LoadHeader(this->header);
+		header._LinkController(this);
 	}
 }
 
@@ -118,4 +119,9 @@ void ProfileController::_SwitchProfile(Profile* profile) {
 
 	stream->close();
 	delete stream;
+}
+
+Profile* ProfileController::_DeserializeModel(char* buffer) {
+	Profile* profile = new Profile(buffer);
+	return profile;
 }

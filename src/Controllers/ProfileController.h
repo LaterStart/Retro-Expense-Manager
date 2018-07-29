@@ -18,6 +18,7 @@ public:
 	Profile* _GetProfile(char* username);	
 	Profile* _GetLastUsedProfile();
 	Profile* _ActiveProfile();
+	Profile* _DeserializeModel(char* buffer);
 };
 
 inline Profile* ProfileController::_ActiveProfile() {
