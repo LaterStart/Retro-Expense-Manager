@@ -193,6 +193,11 @@ void Display::_Display(const char* text) {
 
 void Display::_Display(Label* label, Cursor& pos) {
 	pos._SetCursorPosition();
+	if (!label->symbolPos) {
+		if (label->symbol != 0)
+			cout << label->symbol;		
+	}
+
 	if (label->cut > 0) {
 		for (int i = 0; i < (label->length - label->cut - 2); i++)
 			cout << label->text[i];
@@ -202,10 +207,14 @@ void Display::_Display(Label* label, Cursor& pos) {
 	else cout << label->text;
 
 	pos._SetCharacterNumber((label->length - label->cut));
-
-	if (label->symbol != 0) {
-		cout << label->symbol;
+	if(!label->symbolPos)
 		pos._ChangeCharacterNumber(1);
+
+	if (label->symbolPos) {
+		if (label->symbol != 0) {
+			cout << label->symbol;
+			pos._ChangeCharacterNumber(1);
+		}
 	}
 
 	ActivePos apos(pos, label->id);
