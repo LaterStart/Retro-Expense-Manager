@@ -9,9 +9,10 @@ ModelHeader ExchangeRateController::header(ModelName::exchangeRate);
 
 //	exchange rate controller constructor - loads exchange rate from database
 ExchangeRateController::ExchangeRateController() {
-	if (header._Loaded() == false)
+	if (header._Loaded() == false) {
 		_LoadHeader(header);
-
+		header._LinkController(this);
+	}
 	_LoadExchangeRate();	
 }
 
@@ -331,4 +332,8 @@ void ExchangeRateController::_ChangeBase(Currency* currency) {
 		stream->close();
 	}
 	delete stream;
+}
+
+Model* ExchangeRateController::_DeserializeModel(char* buffer) {
+	return nullptr;
 }

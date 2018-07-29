@@ -22,6 +22,7 @@ public:
 	Currency* _GetCurrency(int id);
 	void _SetDefaultCurrency(Currency* currency);
 	double _ConvertCurrency(double amount, int fromID, int toID);
+	Model* _DeserializeModel(char* buffer);
 	
 	std::vector<Currency>* currencies;		
 };
