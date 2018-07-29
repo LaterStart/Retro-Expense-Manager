@@ -10,16 +10,9 @@ private:
 	~Initialize() = delete;
 
 	static bool consoleInit;
-	static bool controllerInit;
 
 public:
 	static Console* _Console();
-	static void _Controller();
-
-	class CtrlLoader {
-	public:
-		CtrlLoader();
-	};
 };
 
 struct Date {

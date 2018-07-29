@@ -8,7 +8,6 @@
 #include "Windows.h"
 
 bool Initialize::consoleInit = false;
-bool Initialize::controllerInit = false;
 
 Console* Initialize::_Console() {
 	if (!consoleInit) {
@@ -22,16 +21,6 @@ Console* Initialize::_Console() {
 	}
 	return nullptr;
 }
-
-void Initialize::_Controller() {
-	Controller instance(controllerInit);
-}
-
-Initialize::CtrlLoader::CtrlLoader() {
-	Initialize::_Controller();
-}
-
-Initialize::CtrlLoader _load;
 
 Date::Date(char* text) {
 	short* ptr[] = { &day, &month, &year };
@@ -521,9 +510,13 @@ namespace utility {
 			else if (day < 1 || day > 28)
 				return false;
 		}
-		else if (day < 1 || day >28)
-			return false;	
-
+		else {
+			int maxDay = 31;
+			if (month == 4 || month == 6 || month == 9 || month == 11)
+				maxDay = 30;
+			if (day < 1 || day > maxDay)
+				return false;
+		}
 		return true;
 	}
 }
