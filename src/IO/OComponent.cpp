@@ -260,17 +260,20 @@ Cursor Label::_Align() {
 	switch (utility::_ReadAlign(align)) {
 	case 1:
 		//	Left align
-		pos._SetXY(coord.x1+padding, coord.y1+Ypos);
+		pos._SetXY(coord.x1+padding+offset, coord.y1+Ypos);	
+		offset = pos._GetX() - coord.x1;
 		break;
 	case 2:
 		//	 Right align
-		pos._SetXY(coord.x2 - _Length()-padding, coord.y1+Ypos);
+		pos._SetXY(coord.x2 - _Length()-padding-offset, coord.y1+Ypos);
+		offset = pos._GetX() - coord.x1;
 		break;
 	case 3:
 		//	Center align
 		short frameSize = coord.x2 - coord.x1;
 		short margin = (frameSize- _Length())/2;
-		pos._SetXY(coord.x1+margin, coord.y1+Ypos);
+		pos._SetXY(coord.x1+margin+offset, coord.y1+Ypos);
+		offset = pos._GetX() - coord.x1;
 	}
 	return pos;
 }
@@ -451,6 +454,8 @@ void Menu::_ChangeItem(const char* text, const char* newText, const char* newLin
 				items[i]->_Show();
 		}
 	}
+	if (clone != nullptr) 
+		dynamic_cast<Menu*>(clone)->_ChangeItem(text, newText, newLink);
 }
 
 //	display menu items
@@ -489,17 +494,28 @@ void TextBar::_AddItem(Label& item) {
 }
 
 void TextBar::_Show() {
-	int padding = this->padding;
+	this->length = 0;
+	for (int i = 0; i < num; i++)
+		length += items[i]->length;
+	length += ((num - 1)*spacing);
+
+	Cursor pos = this->_Align();
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	int offset = pos._GetX() - coord.x1;
+	int padding = 0;
 	for (int i = 0; i < num; i++) {
-		items[i]->_SetParentFrame(this->parentFrame);
+		items[i]->_SetOffset(offset);
 		items[i]->_SetPadding(padding);
+		items[i]->_SetParentFrame(parentFrame);
+		items[i]->_SetYpos(this->Ypos);
 		items[i]->_Show();
-		padding += items[i]->length + spacing;
-	}
+		padding = items[i]->length + spacing;
+	}	
 }
 
 TextBar::TextBar(TextBar& copy) : num(copy.num), spacing(copy.spacing) {
 	this->componentType = ComponentType::textBar;
+	this->align = copy.align;
 	items = new Label*[num];
 	for (int i = 0; i < num; i++)
 		items[i] = new Label(*copy.items[i]);
@@ -564,10 +580,10 @@ Table::Table(const Table& copy) : rowNum(copy.rowNum), colNum(copy.colNum), show
 	cells = new Frame**[rowNum];
 	for (int i = 0; i < rowNum; i++) {
 		cells[i] = new Frame*[colNum];
-		for (int j = 0; j < colNum; j++) {
-			cells[i][j] = new Frame(*copy.cells[i][j]);
-		}
+		for (int j = 0; j < colNum; j++) 
+			cells[i][j] = copy.cells[i][j];			
 	}
+	deleteCells = false;
 }
 
 void Table::_DrawBorder() {
@@ -618,9 +634,11 @@ void Table::_Show() {
 
 Table::~Table() {
 	for (int i = 0; i < rowNum; i++) {
-		for (int j = 0; j < colNum; j++) {
-			delete[] cells[i][j]->IDname;
-			delete cells[i][j];
+		if (deleteCells) {
+			for (int j = 0; j < colNum; j++) {
+				delete[] cells[i][j]->IDname;
+				delete cells[i][j];
+			}
 		}
 		delete[]cells[i];
 	}

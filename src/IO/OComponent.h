@@ -350,7 +350,8 @@ inline Separator* Separator::_Clone() {
 class Label : public FrameElement {
 private:
 	bool deleteText = false;
-
+	short offset = 0;
+	
 protected:
 	Cursor _Align();	
 
@@ -359,6 +360,7 @@ public:
 	short length = 0;
 	unsigned char symbol = 0;
 	unsigned short cut = 0;
+	bool symbolPos = true;
 
 	Label() {
 		this->componentType = ComponentType::label;
@@ -367,20 +369,23 @@ public:
 		this->componentType = ComponentType::label;
 		deleteText = true;
 		this->align = copy.align;
+		this->symbolPos = copy.symbolPos;
 	}
-	Label(const char* text) : text((char*)text) { 
-		length = utility::_CharLength(text);
-		this->componentType = ComponentType::label;
-	}
-	Label(const char* text, const char* align) : text((char*)text) { 
+	Label(const char* text, const char* align = "left") : text((char*)text) { 
 		length = utility::_CharLength(text);
 		this->align = align;
 		this->componentType = ComponentType::label;
 	}
-	Label(const char* text, unsigned char symbol, const char* align) : text((char*)text), symbol(symbol) {
+	Label(const char* text, unsigned char symbol, const char* align = "left") : text((char*)text), symbol(symbol) {
 		length = utility::_CharLength(text) + 1;
 		this->align = align;
 		this->componentType = ComponentType::label;
+	}
+	Label(unsigned char symbol, const char* text, const char* align = "left") : text((char*)text), symbol(symbol) {
+		length = utility::_CharLength(text) + 1;
+		this->align = align;
+		this->componentType = ComponentType::label;
+		symbolPos = false;
 	}
 	Label(int num) : length(utility::_DigitNumberInt(num)) {
 		this->text = utility::_IntToChar(num);
@@ -398,6 +403,8 @@ public:
 	}
 
 	void _SetText(const char* text);
+	void _SetOffset(short offset);
+	short _Offset() const;
 
 	virtual short _Length() const;
 	virtual void _Show() override;
@@ -446,6 +453,14 @@ inline Label* Label::_Clone() {
 	clone->original = this;
 	this->clone = clone;
 	return clone;
+}
+
+inline short Label::_Offset() const {
+	return this->offset;
+}
+
+inline void Label::_SetOffset(short offset) {
+	this->offset = offset;
 }
 
 class Layout : public FrameElement {	
@@ -610,7 +625,15 @@ public:
 	}
 
 	template<typename ... TT>
-	TextBar(TT& ... items) {	
+	TextBar(TT& ... items) {
+		this->align = "left";
+		_AddItems(items ...);
+		this->componentType = ComponentType::textBar;
+	}
+
+	template<typename ... TT>
+	TextBar(const char* align, TT& ... items) {	
+		this->align = align;
 		_AddItems(items ...);
 		this->componentType = ComponentType::textBar;
 	}
@@ -640,6 +663,7 @@ class Table : public FrameElement {
 	int rowNum = 0;
 	int colNum = 0;
 	
+	bool deleteCells = true;
 	bool showBorder = false;
 	bool cellSeparator = true;
 
