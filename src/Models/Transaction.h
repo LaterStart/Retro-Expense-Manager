@@ -23,8 +23,7 @@ public:
 	char* _Serialize();
 	void _Deserialize(char* buffer);
 	
-	int _ID() const;
-	Date _Date() const;
+	int _ID() const;	
 	int _Currency() const;
 	double _Amount() const;
 	char* _AmountChar() const;
@@ -33,6 +32,7 @@ public:
 	int _Account() const;
 	int _DisplayLength();
 	TransactionType _Type() const;
+	Date _Date() override;
 
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Transaction(char* buffer);
@@ -51,7 +51,7 @@ inline int Transaction::_DisplayLength() {
 	return date._DisplayLength() + utility::_DigitNumberDouble(amount) + utility::_CharLength(description);
 }
 
-inline Date Transaction::_Date() const {
+inline Date Transaction::_Date() {
 	return this->date;
 }
 

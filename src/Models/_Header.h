@@ -104,9 +104,11 @@ public:
 	~MainHeader() = default;
 };
 
+class Controller;
 class ModelHeader : public Header{
 private:
-	ModelName model = ModelName::none;
+	ModelName model = ModelName::none;	
+	Controller* controller = nullptr;
 	
 public:	
 	ModelHeader(ModelName name) : Header(ModelName::modelHeader), model(name){}
@@ -117,6 +119,8 @@ public:
 	void _Deserialize(char* page);
 	ModelName _Name() const;
 	void _ResetIDCounter();	
+	Date _GetModelDate(char* buffer);
+	void _LinkController(Controller* controller);
 };
 
 inline ModelName ModelHeader::_Name() const {
@@ -125,4 +129,8 @@ inline ModelName ModelHeader::_Name() const {
 
 inline void ModelHeader::_ResetIDCounter() {
 	this->idCount = 0;
+}
+
+inline void ModelHeader::_LinkController(Controller* controller) {
+	this->controller = controller;
 }

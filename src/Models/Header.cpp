@@ -1,4 +1,5 @@
 #include "_Header.h"
+#include "_Model.h"
 
 char* MainHeader::_Serialize() {
 	int versionSize = utility::_CharSize(::version);
@@ -92,4 +93,11 @@ void ModelHeader::_Deserialize(char* page) {
 	this->firstNode = *(std::streamoff*)page;
 	page += sizeof(std::streamoff);
 	this->lastNode = *(std::streamoff*)page;
+}
+
+//	Reads date from buffered object
+Date ModelHeader::_GetModelDate(char* buffer) {
+	Model* model = this->controller->_DeserializeModel(buffer);
+	Date date = model->_Date();
+	return date;
 }

@@ -11,8 +11,14 @@ protected:
 public:
 	friend std::ostream& operator<<(std::ostream& os, Model& model);
 	virtual int _DisplayLength() = 0;
+	virtual Date _Date();
 };
 
 inline std::ostream& operator<<(std::ostream& os, Model& model) {
 	return model._Show(os);
+}
+
+inline Date Model::_Date() {
+	Date date;
+	return date;
 }
