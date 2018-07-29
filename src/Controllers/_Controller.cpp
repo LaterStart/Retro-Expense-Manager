@@ -7,17 +7,33 @@ using namespace std;
 MainHeader Controller::header;
 
 //	load main haeder from database
-Controller::Controller(bool& initialize) {
-	if (!header._Loaded()) {
-		_LoadHeader();
-		initialize = true;
+void Controller::_LoadHeader() {
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char* page = new char[clusterSize];
+		do {
+			streamoff pos = stream->tellg();
+			stream->read(page, clusterSize);
+			DataBlock block = _GetBlock(page, 0, ModelName::mainHeader);
+			if (!block._Empty()) {
+				page += block._Offset();
+				header._Deserialize(page);
+				header._SetPosition(pos + block._Offset() - block._BlockSize());
+				header._SetLoadStatus(true);
+				page -= block._Offset();
+				break;
+			}
+		} while (!stream->eof());
+		stream->close();
+		delete[]page;
 	}
+	delete stream;
 }
 
 //	create fstream instance for binary write and read mode
 fstream* Controller::_OpenStream() {
 	fstream* stream = new fstream;
-	stream->open(filePath, ios::binary | ios::out | ios::in);
+	stream->open(::database, ios::binary | ios::out | ios::in);
 	if (stream->is_open())
 		return stream;
 	else {
@@ -38,7 +54,7 @@ void Controller::_DeleteBuffers(char* &buffer, char* &dblock, bool containsID) {
 //	create database binary file
 bool Controller::_CreateDatabase() {	
 	ofstream stream;
-	stream.open(filePath);
+	stream.open(::database);
 	if (stream.is_open()) {
 		//serialize main header data		
 		char* buffer = header._Serialize();
@@ -79,30 +95,6 @@ DataBlock Controller::_GetBlock(char* page, int offset,  ModelName name) {
 	} while (offset < clusterSize);
 	DataBlock empty;
 	return empty;
-}
-
-//	load main header from database
-void Controller::_LoadHeader() {
-	fstream* stream = _OpenStream();	
-	if (stream != nullptr) {
-		char* page = new char[clusterSize];
-		do {
-			streamoff pos = stream->tellg();
-			stream->read(page, clusterSize);
-			DataBlock block = _GetBlock(page, 0, ModelName::mainHeader);			
-			if (!block._Empty()) {
-				page += block._Offset();
-				header._Deserialize(page);
-				header._SetPosition(pos + block._Offset() - block._BlockSize());
-				header._SetLoadStatus(true);
-				page -= block._Offset();				
-				break;
-			}	
-		} while (!stream->eof());		
-		stream->close();
-		delete[]page;
-	}	
-	delete stream;
 }
 
 //	load requested model header from database
@@ -302,14 +294,19 @@ vector<char*>* Controller::_GetModels(fstream* stream, ModelHeader& header, Quer
 			DataBlock block = _GetBlock(page, pagePos, header._Name());
 			pagePos = block._PagePos();
 			if (!block._Empty()) {
-				int ID = block._ID();
-				bool acceptItem = query._ValidateID(ID, header);
+				int ID = block._ID();				
+				 bool acceptItem = query._ValidateID(ID, header);
 				
 				if (acceptItem) {					
 					char* buff = new char[block._BufferSize() + sizeof(int)];
 					std::memcpy(buff, &ID, sizeof(int));
 					std::memcpy(buff + sizeof(int), page + block._Offset(), block._BufferSize());
-					buffer->push_back(buff);
+
+					if (query._DateRange()) 
+						acceptItem = query._ValidateDate(buff, header);
+					if(acceptItem)
+						buffer->push_back(buff);
+					else delete[]buff;
 				}
 
 				if (block._NextNode() > pageNum) {
@@ -496,6 +493,22 @@ bool Query::_ValidateID(int ID, ModelHeader& header) {
 			if (excludeIDs->at(i) == ID)
 				return false;
 		}
+	}
+	return true;
+}
+
+bool Query::_ValidateDate(char* buffer, ModelHeader& model) {
+	Date date = model._GetModelDate(buffer);	
+	Date currentDate(utility::_GetCurrentDate());
+	switch (range) {
+	case Range::thisMonth:
+		if (date.year != currentDate.year)
+			return false;
+		if (date.month != currentDate.month)
+			return false;
+		break;
+	default:
+		break;
 	}
 	return true;
 }

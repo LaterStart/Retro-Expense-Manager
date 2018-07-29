@@ -19,7 +19,8 @@ const enum class TransactionType {
 const enum class Range {
 	none,
 	all,
-	lastTen
+	lastTen,
+	thisMonth
 };
 
 class UserInput;
@@ -35,6 +36,8 @@ public:
 
 class ModelHeader;
 class Query {
+private:
+	bool dateRange = false;
 	Range range = Range::none;	
 	std::vector<int>* includeIDs = new std::vector<int>;
 	std::vector<int>* excludeIDs = new std::vector<int>;
@@ -66,13 +69,23 @@ public:
 	}
 
 	bool _ValidateID(int ID, ModelHeader& header);
+	bool _ValidateDate(char* buffer, ModelHeader& header);
+	bool _DateRange() const;
 
-	Query() = default;
-	Query(Range range) : range(range){}
+	Query() = delete;
+	Query(Range range) : range(range){
+		switch (range) {
+		case Range::thisMonth:
+			dateRange = true;
+		default:			
+			break;
+		}
+	}
 	Query(const Query& copy) {
 		this->range = copy.range;
 		this->excludeIDs = copy.excludeIDs;
 		this->includeIDs = copy.includeIDs;
+		this->dateRange = copy.dateRange;
 	}
 	~Query() {
 		delete includeIDs;
@@ -92,6 +105,10 @@ inline void Query::_ExcludeID(int id) {
 	excludeIDs->push_back(id);
 }
 
+inline bool Query::_DateRange() const {
+	return this->dateRange;
+}
+
 struct Buffer {
 	char* data = nullptr;
 	int size = 0;
@@ -100,39 +117,28 @@ struct Buffer {
 	~Buffer(){ delete[]data; }
 };
 
-class DataBlock; class Header; class MainHeader;
+class DataBlock; class Header; class MainHeader; class Model;
 class Controller {
-	friend void Initialize::_Controller();
 private:
-	const char* filePath = ::database;
-	const int clusterSize = 4096;
+	static const int clusterSize = 4096;
 	static MainHeader header;	
-	void _LoadHeader();	
+	static void _LoadHeader();	
+	static DataBlock _GetBlock(char* page, int offset, ModelName name);
 
-	DataBlock _GetBlock(char* page, int offset, ModelName name);
 	void _DeleteBuffers(char* &buffer, char* &dblock, bool containsID = true);
 	void _UpdateHeader(std::fstream* stream, Header& header);
-	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);	
-
-	Controller(bool& initialize);
+	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);		
 
 protected:		
-	std::fstream* _OpenStream();
+	static std::fstream* _OpenStream();
 	bool _CreateDatabase();
 	void _WriteNewModelHeader(std::fstream* stream, ModelHeader& header);
 	void _WriteModel(std::fstream* stream, ModelHeader& header, char* buffer);
 	void _LoadHeader(ModelHeader& header);	
 	char* _GetModel(std::fstream* stream, ModelHeader& header, int ID);
 	void _UpdateModel(std::fstream* stream, ModelHeader& header, int ID, char* buffer);
-	std::vector<char*>* _GetModels(std::fstream* stream, ModelHeader& header, Query& query);
-	
-	Controller() = default;
-	~Controller() = default;
+	std::vector<char*>* _GetModels(std::fstream* stream, ModelHeader& header, Query& query);	Controller* ptr;
 
-public:
-	void _SetFilePath(const char* filePath);
+public:	
+	virtual Model* _DeserializeModel(char* buffer) = 0;
 };
-
-inline void Controller::_SetFilePath(const char* filePath) {
-	this->filePath = filePath;
-}
