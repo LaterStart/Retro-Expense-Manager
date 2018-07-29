@@ -20,4 +20,6 @@ public:
 	std::vector<Transaction>* _GetLatestTransactions();	
 	Transaction* _GetTransaction(int id);
 	Transaction* _GetLastTransaction();
+	std::vector<Transaction> _GetTransactions(Query query);
+	Transaction* _DeserializeModel(char* buffer);
 };

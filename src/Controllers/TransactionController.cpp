@@ -12,6 +12,7 @@ ModelHeader TransactionController::header(ModelName::transaction);
 TransactionController::TransactionController() {
 	if (this->header._Loaded() == false) {
 		_LoadHeader(this->header);
+		header._LinkController(this);
 	}
 	_LoadLatestTransactions();
 }
@@ -82,4 +83,29 @@ Transaction* TransactionController::_GetTransaction(int id) {
 //	Returns most recent transaction
 Transaction* TransactionController::_GetLastTransaction() {
 	return _GetTransaction(header._LastID());
+}
+
+//	Returns transactions within selected query
+vector<Transaction> TransactionController::_GetTransactions(Query query) {
+	vector<Transaction> transactions;
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		vector<char*>* buffer = _GetModels(stream, header, query);
+		if (buffer != nullptr) {
+			for (size_t i = 0; i < buffer->size(); i++) {
+				Transaction transaction(buffer->at(i));
+				transactions.push_back(transaction);
+				delete[]buffer->at(i);
+			}
+			delete buffer;
+		}
+		stream->close();
+	}
+	delete stream;
+	return transactions;
+}
+
+Transaction* TransactionController::_DeserializeModel(char* buffer) {
+	Transaction* transaction = new Transaction(buffer);
+	return transaction;
 }
