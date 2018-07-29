@@ -56,7 +56,7 @@ void Login::_StartModule() {
 			//	Download exchange rate data for currency list
 			exchangeRateController._DownloadExchangeRate();
 
-			Label text1("No recent user profile was detected.");
+			Label text1("No recent user profile was found.");
 			Label text2("Please create new one or load existing.");			
 			content->_AddElements(text1, text2);
 			layout._ShowElements();	
