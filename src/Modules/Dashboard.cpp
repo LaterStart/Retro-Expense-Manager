@@ -34,6 +34,29 @@ void Dashboard::_StartModule() {
 	);
 	layout._Select("Menu")->_AddElements(mainMenu);
 
+	//	Control menu
+	Menu controlMenu;
+	MenuItem F1("Select Transaction");
+	MenuItem F2("Edit");
+	MenuItem DEL("Delete");
+	MenuItem ESC("Back");
+	F1._SetSpecialPrefix("[F1] ");
+	F2._SetSpecialPrefix("[F2] ");
+	F2._SetYpos(0);
+	F2._SetAutoDisplay(false);
+	ESC._SetSpecialPrefix("[ESC] ");
+	ESC._SetYpos(0);	
+	ESC._SetAutoDisplay(false);
+	DEL._SetSpecialPrefix("[DEL] ");
+	DEL._SetYpos(0);
+	DEL._SetAutoDisplay(false);
+	controlMenu._AddItems(F1, F2, ESC, DEL);
+
+	Label ETlabel("Enter transaction ID: ");
+	ETlabel._SetYpos(11);
+	ETlabel._SetPadding(-1);
+	ETlabel._SetAutoDisplay(false);
+
 	//	Split content frame
 	Frame* selector = layout._Select("Content");
 	Separator middleSplit(*layout._Select("Body"), selector->_X2() - selector->_X1() + 2, 0, selector->_X1() - 3, (selector->_Y2() / 2) - 1);
@@ -107,8 +130,12 @@ void Dashboard::_StartModule() {
 	display._Display(titleLine);
 
 	Label latestTransactionTitle("Latest Transactions ", ::headerSymbol, "left");
+	Label selectTransactionTitle("Transaction Details ", ::headerSymbol, "left");
+	selectTransactionTitle._SetYpos(0);
+	selectTransactionTitle._SetPadding(2);
 	latestTransactionTitle._SetPadding(2);
-	layout._Select("LatestTransactionsHeader")->_AddElements(latestTransactionTitle);
+	selectTransactionTitle._SetAutoDisplay(false);
+	layout._Select("LatestTransactionsHeader")->_AddElements(latestTransactionTitle, selectTransactionTitle);
 
 	vector<Transaction>* LT = transactionController._GetLatestTransactions();
 	Frame* ltFrame = layout._Select("LatestTransactionsBody");
@@ -116,10 +143,10 @@ void Dashboard::_StartModule() {
 
 	//	Latest transaction table - table instance should always be inside main module scope
 	Table table(layout._Select("LatestTransactionsBody"), LT->size(), 6);
+	int minID = transactionController._LastTransactionID(), maxID = 0;
 	if (LT->size() > 0) {		
 		const int  maxAccountLength = 15, maxCategoryLength = 15;
 		int highestAmountLength = 0, highestAccountLength = 0, highestCategoryLength = 0;
-		int maxID = 0;
 		for (size_t i = 0; i < LT->size(); i++) {
 			Transaction* TR = &LT->at(i);
 			Currency* CU = exchangeRateController._GetCurrency(TR->_Currency());
@@ -146,6 +173,8 @@ void Dashboard::_StartModule() {
 				highestCategoryLength = categoryLength;
 			if (TR->_ID() > maxID)
 				maxID = TR->_ID();
+			if (TR->_ID() < minID)
+				minID = TR->_ID();
 		}
 
 		highestAccountLength = (highestAccountLength < maxAccountLength) ? highestAccountLength : maxAccountLength;
@@ -158,7 +187,13 @@ void Dashboard::_StartModule() {
 		table._SetColumnWidth(3, highestAccountLength + 1);
 		table._SetColumnWidth(4, highestCategoryLength + 1);
 		
-		ltFrame->_AddElements(table);
+		ltFrame->_AddElements(table, ETlabel);
+		layout._Select("Footer")->_AddElements(controlMenu);
+
+		ltFrame->_Split(34, "vertical", "TransactionDetails", "TDSpec");
+		Frame* tdFrame = ltFrame->_Select("TransactionDetails");
+		tdFrame->_AddLeftPadding(2);
+		tdFrame->_AddTopPadding(1);
 	}
 	else {
 		Label text1("You have no recent transactions.");
@@ -166,17 +201,155 @@ void Dashboard::_StartModule() {
 		text2._SetYpos(2);
 		
 		ltFrame->_AddElements(text1, text2);
-	}
+	}	
 	layout._ShowElements();
-
-	//	User input
+		
+MainInput: 	
+	//	Main dashboard user input
 	Cursor(2, ::height - 4);
 	UserInput select(InputType::select);
 	int selection = 0;
+	bool selectTransaction = false;
 	while (selection <  1 || selection > mainMenu.size) {
 		select._ReadUserInput();
-		selection = select.selection;
+		selection = select.selection;		
+		if (select.control == ControlKey::F1 && LT->size() > 0) {	
+			controlMenu._ChangeItem("Select Transaction", "Menu");
+			selectTransaction = true;
+			select._ClearInput();
+			break;
+		}
 		select._ClearInput();
 	}
+	//	Select transaction input
+	if (selectTransaction) {
+SelectTransaction:
+		Cursor(ltFrame->_X1(), ltFrame->_Y2() - 1);
+		UserInput select(InputType::integer);
+		ETlabel._Show();
+		int selection = -1;
+		while (selection <  minID || selection > maxID) {
+			Cursor pos;
+			select._ReadUserInput();
+			selection = select.selection;
+			if (select.control == ControlKey::F1) {
+				controlMenu._ChangeItem("Menu", "Select Transaction");
+				select._ClearInput();
+				ETlabel._Hide();
+				goto MainInput;
+			}
+			select._ClearInput();
+			pos._SetCursorPosition();
+		}
+
+		//	Display selected transaction details
+		latestTransactionTitle._Hide();
+		table._Hide();
+		ETlabel._Hide();
+		selectTransactionTitle._Show();
+
+		F2._SetPadding(F1._Length() + 1);
+		DEL._SetPadding(F1._Length() + 1 + F2._Length() + 1);
+		ESC._SetPadding(F1._Length() + 1 + F2._Length() + 1 + DEL._Length() + 1);
+		F2._Show();	DEL._Show(); ESC._Show();
+
+		Transaction* tr = nullptr;
+		for (size_t i = 0; i < LT->size(); i++) {
+			if (LT->at(i)._ID() == selection)
+				tr = &LT->at(i);
+		}
+
+		Frame tdFrame(*ltFrame->_Select("TransactionDetails"));
+		Currency* cu = exchangeRateController._GetCurrency(tr->_Currency());
+		Account* ac = accountController._GetAccount(tr->_Account());
+		Category* ca = categoryController._GetCategory(tr->_Category());
+		std::vector<const char*>* types = &transactionController.transactionType;
+		int trType = static_cast<int>(tr->_Type());
+
+		TextBar t1(Label("Type:"), Label(types->at(trType)));
+		TextBar t2(Label("Date:"), Label(tr->_Date()));
+		TextBar t3(Label("Amount:"), Label(tr->_AmountChar()));
+		TextBar t4(Label("Currency:"), Label(cu->_Name()));
+		TextBar t5(Label("Account:"), Label(ac->_Name()));
+		TextBar t6(Label("Category:"), Label(ca->_Name()));
+		TextBar t7(Label("Description:"), Label(tr->_Description()));
+
+		tdFrame._AddElements(t1, t2, t3, t4, t5, t6, t7);
+		tdFrame._ShowElements();
+		
+		{	// User input
+		ViewTransaction:
+			Cursor(ltFrame->_X1(), ltFrame->_Y2() - 1);
+			UserInput select(InputType::select);		
+			while (true) {
+				select._ReadUserInput();
+				if (select.control == ControlKey::F1) {					
+					select._ClearInput();
+					controlMenu._ChangeItem("Back", "Cancel");
+					controlMenu._ChangeItem("Menu", "Back");
+					goto MenuInput;
+				}
+				else if (select.control == ControlKey::esc) {
+					F2._Hide();
+					DEL._Hide();
+					ESC._Hide();
+					tdFrame._HideElements();
+					selectTransactionTitle._Hide();
+					latestTransactionTitle._Show();
+					table._Show();
+					goto SelectTransaction;
+				}
+				else if (select.control == ControlKey::F2) {
+					vector<Container> formStore{
+						Container(trType),
+						Container(tr->_Date()),
+						Container(utility::_DoubleToChar(tr->_Amount())),
+						Container(cu->_ID()),
+						Container(ac->_ID()),
+						Container(ca->_ID()),
+						Container(tr->_Description())
+					};
+					Frame teFrame(*ltFrame->_Select("TransactionDetails"));
+					Form editTransaction;
+					editTransaction._SetParentFrame(&tdFrame);
+					editTransaction._AddFields(
+						SelectionField("Type:", transactionController.transactionType, Field::transactionType),
+						DateField("Date:", Field::date),
+						FormField("Amount:", InputType::value, Field::amount),
+						ScrollDown<Currency>("Currency:", *exchangeRateController.currencies, Field::currency),
+						ScrollDown<Account>("Account:", *accountController.accounts, Field::account),
+						ScrollDown_2D<Category>("Category:", *categoryController.categoryList, Field::category),											
+						FormField("Description:", InputType::text, Field::description),
+						ConfirmField("Save?:")
+					);
+					editTransaction._LoadStore(formStore);
+					editTransaction._SetSpecialContentPosition(Form::ContentPos::right);
+					editTransaction._SetSpecialContentFrame(ltFrame->_Select("TDSpec"));
+					editTransaction._Show();
+
+
+				}
+				select._ClearInput();
+			}
+		}	
+		MenuInput:
+		{
+			Cursor(2, ::height - 4);
+			UserInput select(InputType::select);
+			int selection = 0;
+			while (selection <  1 || selection > mainMenu.size) {
+				select._ReadUserInput();
+				selection = select.selection;
+				if (select.control == ControlKey::F1) {
+					select._ClearInput();
+					controlMenu._ChangeItem("Back", "Menu");
+					controlMenu._ChangeItem("Cancel", "Back");
+					goto ViewTransaction;	
+				}
+				select._ClearInput();
+			}
+		}
+	}
+
 	moduler->_SetNextModule(mainMenu._GetLink(selection), this);
 }
