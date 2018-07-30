@@ -11,7 +11,8 @@ const enum class InputType {
 	password,
 	value,
 	scrollDown,
-	date
+	date,
+	integer
 };
 
 const enum class ControlKey {
@@ -63,6 +64,7 @@ private:
 	int _Verify_scrollDown(char& ch);
 	int _Verify_value(char& ch);
 	int _Verify_date(char& ch);
+	int _Verify_integer(char& ch);
 	
 public:
 	int length = 0;
@@ -116,6 +118,7 @@ protected:
 	bool filled = false;
 	bool dataField = true;
 	bool hidden = false;
+	bool preLoad = false;
 
 	virtual bool _InputControl();		
 	void _SwitchField(ControlKey control);
@@ -134,6 +137,7 @@ public:
 	bool _GetActiveStatus() const;
 	bool _GetDataStatus() const;
 	void _SetParentForm(Form* parentForm);
+	void _SetPreLoad(bool status);
 
 	virtual void _CreateInputFrame();
 	virtual void _ShiftInputFrame(int num);
@@ -184,6 +188,10 @@ inline void FormField::_SetActiveStatus(bool status){
 
 inline void FormField::_SetFilledStatus(bool status) {
 	this->filled = status;
+}
+
+inline void FormField::_SetPreLoad(bool status) {
+	this->preLoad = status;
 }
 
 class OptionField : public FormField {
@@ -241,6 +249,7 @@ inline void OptionField::_SetCondition(bool conditionValue) {
 class SelectionField : public FormField {
 private:
 	std::vector<const char*>& options;
+	Cursor iPos;
 
 public:
 	SelectionField(const char* text, std::vector<const char*>& options, Field field) : FormField(text, InputType::select, field), options(options){
@@ -303,7 +312,7 @@ public:
 
 class DateField : public FormField {
 private:
-	bool currentDateDisplayed = false;
+	bool defaultDateDisplayed = false;
 public:
 	DateField(const char* text, Field field) : FormField(text, InputType::date, field) {
 		this->OComponent::componentType = ComponentType::dateField;
@@ -328,20 +337,21 @@ private:
 	int specialContentHeight = 0;
 	unsigned short initialYpos = 0;
 	unsigned short contentSpace = 1;
-
-	bool exit = false;
-	
-	void _AddField(FormField& field);
-	void _InsertField(std::tuple<FormField&, int>);		
-
-	std::function<void(Form&, FormField*)>* events = nullptr;
-	bool* eventStatus = nullptr;	
+	bool preLoad = false;
+	bool exit = false;	
+	bool* eventStatus = nullptr;
 	bool eventEnabled = false;
 	int eventNum = 0;
+	Frame* specContentFrame = nullptr;
 
 	ModuleManagement* moduler = nullptr;
+	std::vector<Container>* store = nullptr;
+	std::function<void(Form&, FormField*)>* events = nullptr;	
 
+	void _AddField(FormField& field);
+	void _InsertField(std::tuple<FormField&, int>);
 	void _FindData_(std::vector<Data>& data, Field field);
+	void _LoadStore();
 
 	template <typename T>
 	void _FindData(std::vector<Data>& data, T field) {
@@ -353,6 +363,14 @@ private:
 		_FindData(data, field);
 		_FindData(data, nextFields...);
 	}
+
+public:
+	const enum class ContentPos {
+		default, top, right, bottom, left
+	};
+
+private:
+	ContentPos specPos = ContentPos::bottom;
 
 public:
 	template <typename T>
@@ -414,7 +432,11 @@ public:
 	FrameElement* _Clone() override;
 	utility::LinkedList<Data*>* _GetData();
 	UserInput* _GetData(Field field);	
-	Frame::Coordinates _GetSpecialContentCoord();
+	Frame::Coordinates _GetSpecialContentCoord(ContentPos pos = ContentPos::default);
+	void _LoadStore(std::vector<Container>& store);
+	void _SetSpecialContentPosition(ContentPos pos);
+	void _SetSpecialContentFrame(Frame* frame);
+	Frame* _SpecialContentFrame() const;
 
 	FormField* _GetNextField(FormField* currentField);
 	FormField* _SelectField(Field field);
@@ -497,6 +519,18 @@ inline FrameElement* Form::_Clone() {
 	return clone;
 }
 
+inline void Form::_SetSpecialContentPosition(ContentPos pos) {
+	this->specPos = pos;
+}
+
+inline void Form::_SetSpecialContentFrame(Frame* frame) {
+	this->specContentFrame = frame;
+}
+
+inline Frame* Form::_SpecialContentFrame() const {
+	return this->specContentFrame;
+}
+
 class InputField : public FormField{
 private:
 	bool initialized = false;
@@ -543,6 +577,23 @@ public:
 template <typename element>
 void ScrollDown<element>::_Show() {
 	Label::_Show();
+	if (preLoad) {
+		for (size_t i = 0; i < items.size(); i++) {
+			if (items.at(i)._ID() == inputField->selection) {
+				Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+				Cursor pos(coord.x1, coord.y1);
+				inputField->parentFrame->dsp->_Display(items.at(i), pos);
+				sValue = i;
+				break;
+			}
+		}
+		_UpdateScrollDown(false);
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+		filled = true;
+		preLoad = false;
+		return;
+	}
 	if(items.size() == 0)
 		parentForm->_ShowNextField(this);
 
@@ -554,9 +605,14 @@ void ScrollDown<element>::_Show() {
 		hidden = false;
 		parentForm->_UpdateHiddenFields(-1);
 	}
+	
+	Frame* specFrame = nullptr;
+	if (parentForm->_SpecialContentFrame() == nullptr)
+		specFrame = this->parentFrame;
+	else specFrame = parentForm->_SpecialContentFrame();
 
+	Display dsp(specFrame);
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
-	Display dsp(this->parentFrame);
 	Cursor pos(coord.x1, coord.y1);
 	Cursor sPos(pos);
 	pos._ChangeX(1);
@@ -576,8 +632,7 @@ void ScrollDown<element>::_Show() {
 	coord = inputField->parentFrame->_GetCoordinates();
 	Cursor iPos(coord.x1, coord.y1);
 	inputField->parentFrame->dsp->_WipeContent();
-	inputField->parentFrame->dsp->_Display(items.at(sValue), iPos);
-	
+	inputField->parentFrame->dsp->_Display(items.at(sValue), iPos);	
 
 	if (_InputControl()) {
 		if (inputField->control == ControlKey::pageUp) {
@@ -673,7 +728,9 @@ std::vector<element>& ScrollDown<element>::_Items() const {
 template <typename element>
 void ScrollDown<element>::_UpdateScrollDown(bool selectLastItem) {
 	sMax = items.size();
-	sLast = (sValue + 5 > sMax) ? sMax : sValue + 5;
+	//sFirst = (sValue - 2 > 0) ? sValue - 2 : 0;
+	//sLast = (sValue + 3 > sMax) ? sMax : sValue + 3;
+
 	if (selectLastItem) {
 		sValue = sMax - 1;
 		sFirst = (sValue - 4 > 0) ? sValue - 4 : 0;
@@ -751,6 +808,7 @@ public:
 	void _UpdateScrollControl(bool selectLastItem = true);
 	void _ToggleSubSelect(bool status, int parentID = 0);
 	element* _Value() const;
+	void _InitializeScrollControl(int itemID);
 
 	/*~ScrollDown_2D() {
 		for (size_t i = 0; i < initSize; i++)
@@ -763,6 +821,16 @@ public:
 template <typename element>
 void ScrollDown_2D<element>::_Show() {
 	Label::_Show();
+	if (preLoad) {					
+		if(parentForm->_SpecialContentFrame() == nullptr)
+			parentForm->_ParentFrame()->_Split(55, "vertical", "Scroll", "SubScroll");
+		_InitializeScrollControl(inputField->selection);
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+		filled = true;
+		preLoad = false;
+		return;
+	}
 	if (items.size() == 0)
 		parentForm->_ShowNextField(this);
 
@@ -778,7 +846,12 @@ void ScrollDown_2D<element>::_Show() {
 	}
 
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();
-	Display dsp(parentForm->_ParentFrame()->_Select("Scroll"));
+	Frame* specFrame = nullptr;
+	if (parentForm->_SpecialContentFrame() == nullptr)
+		specFrame = parentForm->_ParentFrame()->_Select("Scroll");
+	else specFrame = parentForm->_SpecialContentFrame();
+
+	Display dsp(specFrame);
 	Cursor pos(coord.x1, coord.y1);
 	Cursor sPos(pos);
 	pos._ChangeX(1);
@@ -791,7 +864,7 @@ void ScrollDown_2D<element>::_Show() {
 			
 		}
 	}
-	Frame::Coordinates coord2 = parentForm->_ParentFrame()->_Select("Scroll")->_GetCoordinates();
+	Frame::Coordinates coord2 = specFrame->_GetCoordinates();
 	int maxWidth = coord2.x2 - coord2.x1 - parentForm->_ParentFrame()->_LeftPadding() - 1;
 	maxLength = (maxLength < maxWidth) ? maxLength : maxWidth;	
 
@@ -823,8 +896,10 @@ void ScrollDown_2D<element>::_Show() {
 			subPos._ChangeX(distance + 3);		
 			subSpos._ChangeX(distance + 2);
 
-			if (items[i].size() > 1) {				
-				dsp._SetParentFrame(parentForm->_ParentFrame()->_Select("SubScroll"));
+			if (items[i].size() > 1) {		
+				if (parentForm->_SpecialContentFrame() == nullptr)
+					specFrame = parentForm->_ParentFrame()->_Select("SubScroll");				
+				dsp._SetParentFrame(specFrame);
 				for (int j = scrollControl[*sCurr][1]; j < scrollControl[*sCurr][2]; j++) {
 					if (j == scrollControl[*sCurr][0] && subSelect) {
 						subSpos._ChangeY(scrollControl[*sCurr][0] - scrollControl[*sCurr][1]);
@@ -1106,4 +1181,45 @@ void ScrollDown_2D<element>::_ToggleSubSelect(bool status, int parentID) {
 template <typename element>
 element* ScrollDown_2D<element>::_Value() const {
 	return this->value;
+}
+
+template <typename element>
+void ScrollDown_2D<element>::_InitializeScrollControl(int itemID) {
+	for (size_t i = 0; i < items.size(); i++) {
+		for (size_t j = 0; j < items.at(i).size(); j++) {
+			if (items.at(i).at(j)._ID() == itemID) {
+				Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+				Cursor pos(coord.x1, coord.y1);
+				inputField->parentFrame->dsp->_Display(items.at(i).at(j), pos);
+				*sCurr = i;
+
+				sValue = &scrollControl[items.size()][0];
+				sFirst = &scrollControl[items.size()][1];
+				sLast = &scrollControl[items.size()][2];
+				sMin = &scrollControl[items.size()][3];
+				sMax = &scrollControl[items.size()][4];
+
+				int diff = 3;
+				*sValue = *sCurr;
+				*sLast = *sCurr + diff;
+				*sLast = (*sLast < 5) ? 5 : *sLast;
+				*sLast = (*sLast > *sMax) ? *sMax : *sLast;
+				*sFirst = *sLast - 5;
+				*sFirst = (*sFirst < *sMin) ? *sMin : *sFirst;
+
+				if (j > 0) {
+					this->subSelect = true;
+					sHeight = 4;
+					int size = items[*sCurr].size();
+					scrollControl[*sCurr][0] = size - 1;
+					scrollControl[*sCurr][1] = (size - sHeight < 1) ? 1 : size - sHeight;
+					scrollControl[*sCurr][2] = scrollControl[*sCurr][4];
+
+
+				}
+				else this->subSelect = false;
+				break;
+			}
+		}
+	}
 }

@@ -69,6 +69,9 @@ void UserInput::_Conclude() {
 	node = initial;
 	delete[]buffer;
 	buffer = nullptr;
+
+	if (type == InputType::integer) 
+		this->selection = utility::_ConvertToInteger(input);
 }
 
 void UserInput::_ReadUserInput() {
@@ -174,6 +177,8 @@ int UserInput::_VerifyInput(char& ch) {
 			return _Verify_value(ch);
 		case InputType::date:
 			return _Verify_date(ch);
+		case InputType::integer:
+			return _Verify_integer(ch);
 		default:
 			return 0;
 		}
@@ -299,6 +304,22 @@ int UserInput::_Verify_date(char& ch) {
 	else if (length == 10)
 		return 0;
 	else return 16;
+}
+
+int UserInput::_Verify_integer(char& ch) {
+	if (ch == 13) {
+		if (length > 0) 
+			return 3;		
+		else return 0;
+	}
+	else if (ch < 48 || ch > 57)
+		return 0;
+	else if (ch == 48) {
+		if (length > 0)
+			return 2;
+		else return 0;
+	}
+	else return 2;
 }
 
 int UserInput::_UpdateInput(int& control, char& ch) {	
@@ -575,7 +596,7 @@ void UserInput::_ClearInput() {
 	delete[]input;
 	delete[]buffer;
 	length = 0;	
-	selection = 0;
+	selection = -1;
 	input = nullptr;
 	buffer = nullptr;
 	first = nullptr;

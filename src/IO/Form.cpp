@@ -116,7 +116,15 @@ bool FormField::_InputControl() {
 		return false;
 	else if (inputField->control == ControlKey::F1)
 		return false;
+	else if (inputField->_Type() != InputType::scrollDown) {
+		if (inputField->control == ControlKey::pageDown)
+			return false;
+		else if (inputField->control == ControlKey::pageUp)
+			return false;
+		goto other;
+	}
 	else {
+	other:
 		bool condition;
 		if (inputField->_ControlKey())
 			condition = true;
@@ -128,7 +136,7 @@ bool FormField::_InputControl() {
 			else condition = true;
 		}		
 		return true;
-	}
+	}	
 }
 
 void FormField::_SwitchField(ControlKey control) {
@@ -156,6 +164,16 @@ void FormField::_SwitchField(ControlKey control) {
 
 void FormField::_Show() {
 	Label::_Show();
+	if (preLoad) {
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+		Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+		Cursor pos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_Display(pos, inputField->input);
+		filled = true;
+		preLoad = false;
+		return;
+	}
 	if (_InputControl()) {
 		filled = true;
 		parentForm->_ShowNextField(this);
@@ -190,6 +208,20 @@ void UsernameField::_Show() {
 
 void OptionField::_Show() {
 	Label::_Show();
+	if (preLoad) {
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+		if (inputField->check == condition) {
+			parentForm->_EnableOptional(optFieldNum, this);
+			enabled = true;
+		}
+		Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+		Cursor pos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_Display(pos, inputField->input);
+		filled = true;
+		preLoad = false;
+		return;
+	}
 	if (_InputControl()) {
 		if (inputField->check == condition) {
 			if (enabled == false)
@@ -274,6 +306,16 @@ bool PasswordField::_VerifyPassword() {
 
 void SelectionField::_Show() {
 	Label::_Show();
+	if (preLoad) {
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+		Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+		Cursor pos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_Display(pos, options[inputField->selection]);
+		filled = true;
+		preLoad = false;
+		return;
+	}
 	if (!activated) {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
@@ -281,7 +323,7 @@ void SelectionField::_Show() {
 	else if (hidden) {
 		hidden = false;
 		parentForm->_UpdateHiddenFields(-1);
-	}
+	}	
 
 	Frame::Coordinates coord = parentForm->_GetSpecialContentCoord();	
 	Cursor pos(coord.x1, coord.y1);
@@ -294,9 +336,16 @@ void SelectionField::_Show() {
 	}
 	parentForm->_SetSpecialContentHeight(options.size());
 	coord = inputField->parentFrame->_GetCoordinates();
-	if(inputField->selection > 0)
-		Cursor iPos(coord.x1 + utility::_CharLength(options[inputField->selection -1]), coord.y1);	
-	else Cursor iPos(coord.x1, coord.y1);
+
+	if (inputField->selection >= 0 && inputField->selection < (int)options.size()) {
+		Cursor iPos(coord.x1 + utility::_CharLength(options[inputField->selection]), coord.y1);
+		this->iPos = iPos;
+	}
+	else if (inputField->selection == -1) {
+		Cursor iPos(coord.x1, coord.y1);
+		this->iPos = iPos;
+	}
+	else iPos._SetCursorPosition();
 
 	if (_InputControl()) {
 		if (inputField->selection > 0 && inputField->selection <= (int)options.size()) {
@@ -311,7 +360,7 @@ void SelectionField::_Show() {
 			parentForm->_SetSpecialContentHeight(0);
 			parentForm->_ShowNextField(this);
 		}
-		else {
+		else {			
 			if (inputField->control != ControlKey::esc)
 				dsp._WipeContent();
 			_SwitchField(inputField->control);
@@ -352,11 +401,12 @@ void ConfirmField::_Show() {
 void FormField::_Clear() {
 	Label::_Hide();
 	this->inputField->_ClearInput();	
+	this->inputField->parentFrame->dsp->_WipeContent();
 }
 
 void Form::_DisplayMessage(const char* message) {
 	_ClearMessage();
-	Frame::Coordinates coord = _GetSpecialContentCoord();	
+	Frame::Coordinates coord = _GetSpecialContentCoord(ContentPos::bottom);	
 	Cursor mssgPos(coord.x1, coord.y1);
 	this->message._Display(mssgPos, message);
 }
@@ -396,6 +446,8 @@ void Form::_Show() {
 	}
 	else {
 		_InitializeFields();
+		if (preLoad)
+			_LoadStore();
 		_ShowNextField(nullptr);		
 	}
 }
@@ -581,11 +633,24 @@ void Form::_FindData_(std::vector<Data>& data, Field field_) {
 	}
 }
 
-Frame::Coordinates Form::_GetSpecialContentCoord() {
+Frame::Coordinates Form::_GetSpecialContentCoord(Form::ContentPos specPos) {
+	if (specPos == Form::ContentPos::default)
+		specPos = this->specPos;
 	Frame::Coordinates coord = parentFrame->_GetCoordinates();
-	specialContentHeight = (specialContentHeight > 0) ? specialContentHeight + 1 : 0;
-	coord.x1 += padding;	
-	coord.y1 += initialYpos + activeFields - hiddenFields + contentSpace + specialContentHeight;
+	switch (specPos) {
+	case ContentPos::bottom:
+		if (this->specPos != Form::ContentPos::bottom)
+			specialContentHeight = 0;
+		specialContentHeight = (specialContentHeight > 0) ? specialContentHeight + 1 : 0;
+		coord.x1 += padding;
+		coord.y1 += initialYpos + activeFields - hiddenFields + contentSpace + specialContentHeight;
+		break;
+	case ContentPos::right:		
+		coord.x1 = coord.x2;
+		break;
+	default:
+		break;
+	}
 
 	return coord;
 }
@@ -765,9 +830,20 @@ DateField::DateField(const DateField& copy) : FormField(copy) {
 
 void DateField::_Show() {
 	Label::_Show();
-	if (currentDateDisplayed == false){		
+	if (preLoad) {	
+		activated = true;
+		parentForm->_UpdateActiveFields(1);
+		defaultDateDisplayed = true;
+		Frame::Coordinates coord = inputField->parentFrame->_GetCoordinates();
+		Cursor pos(coord.x1, coord.y1);
+		inputField->parentFrame->dsp->_Display(pos, inputField->input);
+		filled = true;
+		preLoad = false;
+		return;
+	}
+	if (defaultDateDisplayed == false){		
 		this->inputField->_SetDefaultInput(::currentDate);
-		currentDateDisplayed = true;
+		defaultDateDisplayed = true;
 	}
 	if (_InputControl()) {
 		filled = true;
@@ -802,4 +878,34 @@ Form::Form(const Form& copy) {
 		events[i] = copy.events[i];
 
 	this->OComponent::componentType = ComponentType::form;
+}
+
+void Form::_LoadStore(std::vector<Container>& store) {
+	this->store = &store;
+	this->preLoad = true;
+}
+
+void Form::_LoadStore() {
+	FormField* field = fields[0];
+	for (size_t i = 0; i < store->size(); i++) {
+		if (field->_GetDataStatus()) {
+			switch (store->at(i).type) {
+			case 1:
+				field->inputField->selection = store->at(i).iValue;
+				break;
+			case 2:
+				field->inputField->check = store->at(i).bValue;
+				break;
+			case 3:
+				field->inputField->_SetDefaultInput(store->at(i).cValue);
+				break;
+			}
+			field->_SetPreLoad(true);
+			field->inputField->parentFrame->_ClearFrame();
+			field->_Show();
+		}
+		else i--;
+		field = _GetNextField(field);
+	}
+	this->preLoad = false;
 }
