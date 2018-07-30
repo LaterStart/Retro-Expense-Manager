@@ -153,8 +153,10 @@ Display::~Display() {
 
 void Display::_HideContent(int elementID) {
 	for (int i = 0; i < activePosNum; i++) {
-		if (activePositions[i].elementID == elementID)
+		if (activePositions[i].elementID == elementID) {
 			activePositions[i]._ClearContent();
+			utility::_RemoveElement(activePositions, i, activePosNum);
+		}
 	}
 }
 
@@ -178,6 +180,8 @@ void Display::_Show(const char* content, unsigned char symbol) {
 void Display::_Display(char ch) {
 	Cursor pos;
 	cout << ch;
+	if (ch == ::spaceKey)
+		return;
 	pos._SetCharacterNumber(1);
 	ActivePos apos(pos, -1);
 	_AddActivePosition(apos);
@@ -227,16 +231,17 @@ void Display::_Display(Label* label, Cursor& pos) {
 
 void Display::_Display(MenuItem* item, Cursor& pos) {
 	pos._SetCursorPosition();
-	if(item->orderNum!=nullptr)
-		cout << item->orderNum;	
+	if (item->orderNum != nullptr) {
+		cout << item->orderNum;
+		pos._SetCharacterNumber(utility::_CharLength(item->orderNum));
+	}		
 	_Display((Label*)item);	
-	pos._SetCharacterNumber(item->length);
+	
 	if (item->_Original() != nullptr) {
 		ActivePos apos(pos, item->_Original()->id);
 		_AddActivePosition(apos);
 	}
 	ActivePos apos(pos, item->id);
-
 	_AddActivePosition(apos);
 }
 

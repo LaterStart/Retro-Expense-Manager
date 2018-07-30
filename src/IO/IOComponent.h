@@ -208,4 +208,32 @@ inline void Display::_SetParentFrame(Frame* frame) {
 inline Frame* Display::_ParentFrame() const {
 	return this->parentFrame;
 }
+
+struct Container {
+	int type = 0;
+	int iValue = 0;
+	bool bValue = false;
+	char* cValue = nullptr;
+
+	Container(int selection) : iValue(selection), type(1) {}
+	Container(bool check) : bValue(check), type(2) {}
+	Container(char* input) : cValue(utility::_CopyChar(input)), type(3) {}
+	Container(Date date) : cValue(date._DateChar()), type(3) {}
+	~Container() {
+		delete[]cValue;
+	}
+	Container(const Container& copy) {
+		this->type = copy.type;
+		this->iValue = copy.iValue;
+		this->bValue = copy.bValue;
+		this->cValue = utility::_CopyChar(copy.cValue);
+	}
+	Container(Container&& move) {
+		this->type = move.type;
+		this->iValue = move.iValue;
+		this->bValue = move.bValue;
+		this->cValue = move.cValue;
+		move.cValue = nullptr;
+	}
+};
 #include "OComponent.h"
