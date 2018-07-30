@@ -248,6 +248,12 @@ namespace utility {
 			BNUM[0] = 0 + '0';
 			BNUM[1] = (int)b_num + '0';
 		}
+		else if (b_num > 99) {
+			while (b_num > 99) {
+				b_num /= 10;
+			}
+			BNUM = _IntToChar(b_num);
+		}
 		else BNUM = _IntToChar(b_num);
 
 		std::memcpy(result, ANUM, anum);
@@ -414,6 +420,8 @@ namespace utility {
 			return 3;
 		int count = 2;
 		unsigned long long intg = unsigned long long(num);	
+		if (intg == 0)
+			count++;
 		while (intg > 0) {
 			intg /= 10;
 			count++;
