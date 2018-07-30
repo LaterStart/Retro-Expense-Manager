@@ -353,6 +353,8 @@ char* Controller::_GetModel(fstream* stream, ModelHeader& header, int ID) {
 			else if (!block._Empty() && block._NextNode() > pageNum) {
 				pagePos = 0;
 				stream->seekg(block._NextNode() * clusterSize, ios::beg);
+				pos = stream->tellg();
+				pageNum = pos / clusterSize;
 				stream->read(page, clusterSize);
 			}
 			else if (block._NextNode() < 0)
@@ -478,7 +480,7 @@ void Controller::_UpdateModel(fstream* stream, ModelHeader& header, int ID, char
 
 bool Query::_ValidateID(int ID, ModelHeader& header) {
 	if (this->range == Range::lastTen) {
-		if (ID < header._LastID() - 10)
+		if (ID < header._LastID() - 9)
 			return false;
 	}
 	if (includeIDs->size() > 0) {
