@@ -22,4 +22,9 @@ public:
 	Transaction* _GetLastTransaction();
 	std::vector<Transaction> _GetTransactions(Query query);
 	Transaction* _DeserializeModel(char* buffer);
+	int _LastTransactionID() const;
 };
+
+inline int TransactionController::_LastTransactionID() const {
+	return this->header._LastID();
+}
