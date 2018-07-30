@@ -8,9 +8,12 @@ OComponent::OComponent(const unsigned short max_x, const unsigned short min_x, c
 }
 
 //	OComponent overloaded copy constructor
-OComponent::OComponent(const OComponent& parentFrame) :
-	max_x(parentFrame.max_x), min_x(parentFrame.min_x), max_y(parentFrame.max_y), min_y(parentFrame.min_y ) {
-	_SetInitialCoordinates();
+OComponent::OComponent(const OComponent& copy) :
+	max_x(copy.max_x), min_x(copy.min_x), max_y(copy.max_y), min_y(copy.min_y ) {
+	x1 = copy.x1;
+	x2 = copy.x2;
+	y1 = copy.y1;
+	y2 = copy.y2;
 }
 
 OComponent::OComponent(OComponent* null) : max_x(0), min_x(0), max_y(0), min_y(0) {
@@ -48,6 +51,7 @@ Frame::Frame(const unsigned short max_x, const unsigned short min_x, const unsig
 Frame::Frame(Frame& copy) :
 	OComponent(copy), parentFrame(&copy) , container(copy.container), IDname(copy.IDname){
 	this->componentType = ComponentType::frame;
+	this->leftPadding = copy.leftPadding;
 }
 
 //	Frame constructor Used within split method setting new values using splitters
@@ -58,7 +62,7 @@ Frame::Frame(Frame& parentFrame, const unsigned short max_x, const unsigned shor
 
 //	Frame destructor
 Frame::~Frame() {
-	for (int i = 0; i < elNum; i++) {
+	for (int i = 0; i < elNum; i++) {	
 		delete elements[i];
 	}
 	delete[]elements;
@@ -166,32 +170,33 @@ void Frame::_ShowElements() {
 	for (int i = 0; i < elNum; i++) {
 		if(elements[i]->_YposSet() == false)
 			elements[i]->_SetYpos(nextYpos++);
-		elements[i]->_Show();
+		if(elements[i]->_AutoDisplay() == true)
+			elements[i]->_Show();
 	}
 }
 
 //	Add frame padding
-void Frame::_AddPadding(unsigned short padding) {
+void Frame::_AddPadding(short padding) {
 	x1 += padding;
 	x2 -= padding;
 	y1 += padding;
 	y2 -= padding;
 }
 
-void Frame::_AddLeftPadding(unsigned short padding) {
+void Frame::_AddLeftPadding(short padding) {
 	x1 += padding;
 	this->leftPadding = padding;
 }
 
-void Frame::_AddRightPadding(unsigned short padding) {
+void Frame::_AddRightPadding(short padding) {
 	x2 -= padding;
 }
 
-void Frame::_AddTopPadding(unsigned short padding) {
+void Frame::_AddTopPadding(short padding) {
 	y1 += padding;
 }
 
-void Frame::_AddBottomPadding(unsigned short padding) {
+void Frame::_AddBottomPadding(short padding) {
 	y2 -= padding;
 }
 
@@ -235,6 +240,7 @@ FrameElement::FrameElement(const FrameElement& copy) : OComponent(copy){
 	this->parentFrame = copy.parentFrame;
 	this->original = copy.original;
 	this->clone = copy.clone;
+	this->autoDisplay = copy.autoDisplay;
 }
 
 //	FrameElement overloaded copy constructor
@@ -261,19 +267,16 @@ Cursor Label::_Align() {
 	case 1:
 		//	Left align
 		pos._SetXY(coord.x1+padding+offset, coord.y1+Ypos);	
-		offset = pos._GetX() - coord.x1;
 		break;
 	case 2:
 		//	 Right align
-		pos._SetXY(coord.x2 - _Length()-padding-offset, coord.y1+Ypos);
-		offset = pos._GetX() - coord.x1;
+		pos._SetXY(coord.x2 - _Length()-padding-offset, coord.y1+Ypos);		
 		break;
 	case 3:
 		//	Center align
 		short frameSize = coord.x2 - coord.x1;
 		short margin = (frameSize- _Length())/2;
-		pos._SetXY(coord.x1+margin+offset, coord.y1+Ypos);
-		offset = pos._GetX() - coord.x1;
+		pos._SetXY(coord.x1+margin+offset, coord.y1+Ypos);		
 	}
 	return pos;
 }
@@ -286,6 +289,7 @@ void Label::_Show() {
 	cut = ((pos._GetX() + _Length()) > max_x) ? ((pos._GetX() + _Length())-max_x) : 0;
 
 	dsp->_Display(this, pos);
+	this->visible = true;
 }
 
 void Label::_Hide() {
@@ -293,6 +297,7 @@ void Label::_Hide() {
 	if (dsp != nullptr) {
 		dsp->_HideContent(this->id);
 	}
+	this->visible = false;
 }
 
 MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
@@ -308,6 +313,7 @@ void MenuItem::_Show() {
 	cut = ((pos._GetX() + _Length()) > max_x) ? ((pos._GetX() + _Length()) - max_x) : 0;
 	
 	dsp->_Display(this, pos);
+	this->visible = true;
 }
 
 //	draw line - 0 = x spawn direction, 1 = y spawn direction
@@ -439,23 +445,31 @@ void Menu::_AddItem(MenuItem& item) {
 	MenuItem** pp = new MenuItem*(nullptr);
 	utility::_AddElement(items,*pp, size);
 	items[size - 1] = item._Clone();
+	items[size - 1]->_SetParentMenu(this);
 	item._SetParentFrame(this->parentFrame);
+	item._SetParentMenu(this);
 	delete pp;
 }
 
 // Change menu item using label text
-void Menu::_ChangeItem(const char* text, const char* newText, const char* newLink) {
+void Menu::_ChangeItem(const char* text, const char* newText, const char* newLink, bool recursionFlag) {
 	for (int i = 0; i < size; i++) {
 		if (utility::_CompareChar(items[i]->text, (char*)text)) {
 			items[i]->_SetText(newText);
 			items[i]->_SetLink(newLink);
 			
-			if(items[i]->_ParentFrame() != nullptr)
+			if (items[i]->_ParentFrame() != nullptr) {				
+				items[i]->_Hide();
 				items[i]->_Show();
+			}
 		}
 	}
-	if (clone != nullptr) 
-		dynamic_cast<Menu*>(clone)->_ChangeItem(text, newText, newLink);
+	if (!recursionFlag) {
+		if (clone != nullptr)
+			dynamic_cast<Menu*>(clone)->_ChangeItem(text, newText, newLink, true);
+		else if (original != nullptr)
+			dynamic_cast<Menu*>(original)->_ChangeItem(text, newText, newLink, true);
+	}	
 }
 
 //	display menu items
@@ -475,15 +489,18 @@ void Menu::_Show() {
 			org->items[i]->_SetOrderNumber(num);
 			if (org->items[i]->_YposSet() == false)
 				org->items[i]->_SetYpos(i);
-		}		
-		items[i]->_Show();
+		}
+		if(items[i]->_AutoDisplay())
+			items[i]->_Show();
 	}
+	this->visible = true;
 }
 
 //	hide menu items
 void Menu::_Hide() {
 	for (int i = 0; i < size; i++)
 		items[i]->_Hide();
+	this->visible = false;
 }
 
 void TextBar::_AddItem(Label& item) {
@@ -510,7 +527,8 @@ void TextBar::_Show() {
 		items[i]->_SetYpos(this->Ypos);
 		items[i]->_Show();
 		padding = items[i]->length + spacing;
-	}	
+	}
+	this->visible = true;
 }
 
 TextBar::TextBar(TextBar& copy) : num(copy.num), spacing(copy.spacing) {
@@ -573,6 +591,7 @@ Table::Table(Frame* parentFrame, int rowNum, int colNum) : rowNum(rowNum), colNu
 		}
 		cellY++;
 	}	
+	borderPos = new std::vector<Cursor>;
 }
 
 Table::Table(const Table& copy) : rowNum(copy.rowNum), colNum(copy.colNum), showBorder(copy.showBorder) {
@@ -584,6 +603,7 @@ Table::Table(const Table& copy) : rowNum(copy.rowNum), colNum(copy.colNum), show
 			cells[i][j] = copy.cells[i][j];			
 	}
 	deleteCells = false;
+	borderPos = new std::vector<Cursor>(*copy.borderPos);
 }
 
 void Table::_DrawBorder() {
@@ -625,11 +645,17 @@ void Table::_Show() {
 				pos._SetXY(coord.x2, coord.y1);
 				pos._SetCursorPosition();
 				dsp->_Display(::verticalLine);
-				
+				pos._SetCharacterNumber(1);
+				borderPos->push_back(pos);				
 			}
+			if(cellSeparator && j>0)
+				cells[i][j]->_AddLeftPadding(-2);
+			if(showBorder)
+				cells[i][j]->_AddTopPadding(-i);
 			pos._GetCursorPosition();
 		}
 	}
+	this->visible = true;
 }
 
 Table::~Table() {
@@ -643,6 +669,7 @@ Table::~Table() {
 		delete[]cells[i];
 	}
 	delete[]cells;
+	delete borderPos;
 }
 
 FrameElement::~FrameElement() {
@@ -693,10 +720,50 @@ void IDLabel::_Show() {
 		}
 		dsp->_Display(pos, id);
 	}
+	this->visible = true;
 }
 
 void Menu::_SetParentFrame(Frame* parentFrame) {
 	FrameElement::_SetParentFrame(parentFrame);
 	for (int i = 0; i < size; i++)
 		items[i]->_SetParentFrame(parentFrame);
+}
+
+void Frame::_HideElements() {
+	for (int i = 0; i < elNum; i++)
+		elements[i]->_Hide();
+}
+
+void Table::_Hide() {
+	for (int i = 0; i < rowNum; i++) {
+		for (int j = 0; j < colNum; j++) 
+			cells[i][j]->_HideElements();
+	}
+	for (size_t i = 0; i < borderPos->size(); i++)
+		borderPos->at(i)._ClearText();
+	if (clone != nullptr) 
+		dynamic_cast<Table*>(clone)->_Hide();
+	this->visible = false;
+}
+
+void TextBar::_Hide() {
+	for (int i = 0; i < num; i++)
+		items[i]->_Hide();
+	this->visible = false;
+}
+
+void IDLabel::_Hide() {
+	Display* dsp = _GetDisplay();
+	Cursor pos(parentFrame->_X1(), parentFrame->_Y1());
+	for (int i = 0; i < parentFrame->_Width(); i++)
+		dsp->_Display(::spaceKey);
+	this->visible = false;
+}
+
+void Frame::_ClearFrame() {
+	for (int i = 0; i < _Width(); i++) {
+		for (int j = 0; j < _Height(); j++) {
+			dsp->_Display(::spaceKey);
+		}
+	}
 }

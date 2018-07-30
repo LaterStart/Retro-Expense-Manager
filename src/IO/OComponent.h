@@ -171,15 +171,17 @@ public:
 	FrameElement** elements = nullptr;
 	int elNum = 0;		
 
-	void _AddPadding(unsigned short padding);
-	void _AddLeftPadding(unsigned short padding);
-	void _AddRightPadding(unsigned short padding);
-	void _AddTopPadding(unsigned short padding);
-	void _AddBottomPadding(unsigned short padding);
+	void _AddPadding(short padding);
+	void _AddLeftPadding(short padding);
+	void _AddRightPadding(short padding);
+	void _AddTopPadding(short padding);
+	void _AddBottomPadding(short padding);
 	void _ShowElements();
+	void _HideElements();
 	void _RemoveFrame();
 	std::vector<FrameElement*> _SelectElements(ComponentType type);
 	short _LeftPadding() const;
+	void _ClearFrame();
 
 	//	Add more FrameElements using variadic template
 	template <typename T>
@@ -226,11 +228,13 @@ protected:
 	bool paddingSet = false;
 	bool yposSet = false;
 	const char* align = "left";
-	unsigned short padding = 0;
+	short padding = 0;
 	unsigned short Ypos = 0;
 	Frame* parentFrame;
 	FrameElement();
 	FrameElement(Frame* parentFrame);	
+	bool autoDisplay = true;
+	bool visible = false;
 
 	Display* _GetDisplay();
 	virtual Cursor _Align();
@@ -244,7 +248,7 @@ public:
 	virtual void _Hide();
 	virtual void _SetYpos(unsigned short y);
 	void _SetAlign(const char* align);	
-	void _SetPadding(unsigned short padding);
+	virtual void _SetPadding(short padding);
 	bool _PaddingSet() const;
 	bool _YposSet() const;
 	unsigned short _Padding() const;
@@ -252,6 +256,9 @@ public:
 	Frame* _ParentFrame() const;
 	FrameElement* _Original() const;
 	FrameElement* _Cloned() const;
+	void _SetAutoDisplay(bool status);
+	bool _AutoDisplay() const;
+	bool _Visible() const;
 
 	virtual FrameElement* _Clone();
 	virtual ~FrameElement();
@@ -269,9 +276,17 @@ inline bool FrameElement::_YposSet() const {
 	return this->yposSet;
 }
 
-inline void FrameElement::_SetPadding(unsigned short padding) {
+inline void FrameElement::_SetPadding(short padding) {
 	this->padding = padding;
 	this->paddingSet = true;
+	if (clone != nullptr) {
+		clone->padding = padding;
+		clone->paddingSet = true;
+	}
+	else if (original != nullptr) {
+		original->padding = padding;
+		original->paddingSet = true;
+	}
 }
 
 inline Cursor FrameElement::_Align() {
@@ -321,6 +336,18 @@ inline FrameElement* FrameElement::_Original() const {
 
 inline FrameElement* FrameElement::_Cloned() const {
 	return this->clone;
+}
+
+inline void FrameElement::_SetAutoDisplay(bool status) {
+	this->autoDisplay = status;
+}
+
+inline bool FrameElement::_AutoDisplay() const {
+	return this->autoDisplay;
+}
+
+inline bool FrameElement::_Visible() const {
+	return this->visible;
 }
 
 class Separator : public FrameElement {
@@ -510,11 +537,12 @@ public:
 		_AddItems(nextItems...);
 	}
 	const char* _GetLink(int selection);
-	void _ChangeItem(const char* text, const char* newText, const char* newLink = nullptr);
+	void _ChangeItem(const char* text, const char* newText, const char* newLink = nullptr, bool recursionFlag = false);
 	void _Show() override;
 	void _Hide() override;
 	virtual Menu* _Clone();
 	void _SetParentFrame(Frame* parentFrame) override;
+	MenuItem* _GetItem(const char* text) const;
 
 	Menu() {
 		this->componentType = ComponentType::menu;
@@ -532,12 +560,13 @@ inline Menu* Menu::_Clone(){
 
 class Module;
 class MenuItem : public Label {
-private:
+private:	
 	friend const char* Menu::_GetLink(int selection);
 
 	const char* prefix = nullptr;
 	const char* link = nullptr;
 
+	Menu* parentMenu = nullptr;
 public:
 	char* orderNum = nullptr;
 	MenuItem(const char* text, const char* moduleName = nullptr) : Label(text), link(moduleName){
@@ -553,6 +582,9 @@ public:
 	short _Length() const override;
 	void _Show() override;
 	virtual MenuItem* _Clone();
+	void _SetParentMenu(Menu* parentMenu);
+	Menu* _ParentMenu() const;
+	void _SetPadding(short padding) override;
 
 	~MenuItem() {
 		delete[]orderNum;
@@ -605,6 +637,31 @@ inline MenuItem* MenuItem::_Clone() {
 	return clone;
 }
 
+inline void MenuItem::_SetParentMenu(Menu* parentMenu) {
+	this->parentMenu = parentMenu;
+}
+
+inline Menu* MenuItem::_ParentMenu() const {
+	return this->parentMenu;
+}
+
+inline MenuItem* Menu::_GetItem(const char* text) const {
+	for (int i = 0; i < size; i++) {
+		if (utility::_CompareChar(text, items[i]->text))
+			return items[i];
+	}
+	return nullptr;
+}
+
+inline void MenuItem::_SetPadding(short padding) {
+	FrameElement::_SetPadding(padding);
+	if (parentMenu != nullptr) {
+		Menu* cloneMenu = dynamic_cast<Menu*>(parentMenu->_Cloned());
+		MenuItem* clone = cloneMenu->_GetItem(this->text);
+		clone->_SetPadding(padding);
+	}		
+}
+
 class TextBar : public Label {
 private:
 	Label** items = nullptr;
@@ -640,6 +697,7 @@ public:
 
 	void _SetSpacing(int spacing);
 	void _Show() override;
+	void _Hide() override;
 	virtual TextBar* _Clone();
 
 	// copy constructor without const - gives advantage over variadic template
@@ -660,6 +718,7 @@ inline TextBar* TextBar::_Clone() {
 }
 
 class Table : public FrameElement {
+private:
 	int rowNum = 0;
 	int colNum = 0;
 	
@@ -667,12 +726,15 @@ class Table : public FrameElement {
 	bool showBorder = false;
 	bool cellSeparator = true;
 
+	std::vector<Cursor>* borderPos;
+
 	void _DrawBorder();
 public:
 	void _ToggleBorder(bool status);
 	void _ToggleCellSeparator(bool status);
 	void _SetColumnWidth(int columnIndex, int width);
 	void _Show() override;
+	void _Hide() override;
 	virtual Table* _Clone();
 
 	Frame*** cells = nullptr;
@@ -707,6 +769,7 @@ private:
 public:
 	IDLabel(const char* text, int id) : Label(text), id(id){}
 	void _Show() override;
+	void _Hide() override;
 	virtual IDLabel* _Clone() override;
 };
 
