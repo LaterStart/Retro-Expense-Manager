@@ -156,6 +156,16 @@ void Display::_HideContent(int elementID) {
 		if (activePositions[i].elementID == elementID) {
 			activePositions[i]._ClearContent();
 			utility::_RemoveElement(activePositions, i, activePosNum);
+			i--;
+		}
+	}
+}
+
+void Display::_RemoveID(int elementID) {
+	for (int i = 0; i < activePosNum; i++) {
+		if (activePositions[i].elementID == elementID) {
+			utility::_RemoveElement(activePositions, i, activePosNum);
+			i--;
 		}
 	}
 }

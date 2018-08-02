@@ -193,6 +193,7 @@ public:
 	void _Loading();	
 	void _SetParentFrame(Frame* frame);
 	Frame* _ParentFrame() const;
+	void _RemoveID(int elementID);
 };
 
 inline bool Display::_IsEmpty() {
