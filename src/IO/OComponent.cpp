@@ -289,7 +289,7 @@ void Label::_Show() {
 	cut = ((pos._GetX() + _Length()) > max_x) ? ((pos._GetX() + _Length())-max_x) : 0;
 
 	dsp->_Display(this, pos);
-	this->visible = true;
+	this->_SetVisible(true);
 }
 
 void Label::_Hide() {
@@ -297,7 +297,40 @@ void Label::_Hide() {
 	if (dsp != nullptr) {
 		dsp->_HideContent(this->id);
 	}
-	this->visible = false;
+	this->_SetVisible(false);
+
+	if (clone != nullptr) {
+		dsp = clone->_GetDisplay();
+		dsp->_HideContent(clone->id);
+	}
+	else if (original != nullptr) {
+		dsp = original->_GetDisplay();
+		dsp->_HideContent(original->id);
+	}
+}
+
+void MenuItem::_Hide() {
+	Label::_Hide();
+	if (parentMenu != nullptr) {
+		Menu* clonedMenu = dynamic_cast<Menu*>(parentMenu->_Cloned());
+		if (clonedMenu != nullptr) {
+			MenuItem* clone = clonedMenu->_GetItem(this->text);
+			if (clone != nullptr) {
+				clone->_SetVisible(false);
+				Display* dsp = clone->_GetDisplay();
+				dsp->_RemoveID(clone->id);
+			}
+		}
+		Menu* originalMenu = dynamic_cast<Menu*>(parentMenu->_Original());
+		if (originalMenu != nullptr) {
+			MenuItem* original = originalMenu->_GetItem(this->text);
+			if (original != nullptr) {
+				original->_SetVisible(false);
+				Display* dsp = original->_GetDisplay();
+				dsp->_RemoveID(original->id);
+			}
+		}
+	}
 }
 
 MenuItem::MenuItem(const char* text, Module* previousModule) : Label(text) {
@@ -312,8 +345,34 @@ void MenuItem::_Show() {
 	Display* dsp = _GetDisplay();
 	cut = ((pos._GetX() + _Length()) > max_x) ? ((pos._GetX() + _Length()) - max_x) : 0;
 	
+	if (id == 2137) {
+		int test = 0;
+	}
+
 	dsp->_Display(this, pos);
 	this->visible = true;
+
+	if (clone != nullptr)
+		clone->_SetVisible(true);
+	else if (original != nullptr)
+		original->_SetVisible(true);
+
+	if (parentMenu != nullptr) {
+		Menu* clonedMenu = dynamic_cast<Menu*>(parentMenu->_Cloned());
+		if (clonedMenu != nullptr) {
+			MenuItem* clone = clonedMenu->_GetItem(this->text);
+			if (clone != nullptr) {
+				clone->_SetVisible(true);
+			}
+		}
+		Menu* originalMenu = dynamic_cast<Menu*>(parentMenu->_Original());
+		if (originalMenu != nullptr) {
+			MenuItem* original = originalMenu->_GetItem(this->text);
+			if (original != nullptr) {
+				original->_SetVisible(true);
+			}
+		}
+	}
 }
 
 //	draw line - 0 = x spawn direction, 1 = y spawn direction
@@ -455,10 +514,14 @@ void Menu::_AddItem(MenuItem& item) {
 void Menu::_ChangeItem(const char* text, const char* newText, const char* newLink, bool recursionFlag) {
 	for (int i = 0; i < size; i++) {
 		if (utility::_CompareChar(items[i]->text, (char*)text)) {
+			if (items[i]->id == 2137) {
+				int test = 0;
+			}
+
 			items[i]->_SetText(newText);
 			items[i]->_SetLink(newLink);
 			
-			if (items[i]->_ParentFrame() != nullptr) {				
+			if (items[i]->_ParentFrame() != nullptr && items[i]->_Visible()) {				
 				items[i]->_Hide();
 				items[i]->_Show();
 			}
@@ -474,26 +537,44 @@ void Menu::_ChangeItem(const char* text, const char* newText, const char* newLin
 
 //	display menu items
 void Menu::_Show() {
-	char num[] = "[ ] ";
-	Menu* org = nullptr;
-	if (original != nullptr) 
-		org = dynamic_cast<Menu*>(original);
-	for (int i = 0; i < size; i++) {
-		num[1] = i + 1 + '0';
-		items[i]->_SetParentFrame(parentFrame);			
-		items[i]->_SetOrderNumber(num);
-		if(items[i]->_YposSet() == false)
-			items[i]->_SetYpos(i);
-		if (org != nullptr) {
-			org->items[i]->_SetParentFrame(parentFrame);
-			org->items[i]->_SetOrderNumber(num);
-			if (org->items[i]->_YposSet() == false)
-				org->items[i]->_SetYpos(i);
+	if (this->visible == false) {
+		char num[] = "[ ] ";
+		Menu* org = nullptr;
+		Menu* clon = nullptr;
+		if (original != nullptr)
+			org = dynamic_cast<Menu*>(original);
+		else if (clone != nullptr)
+			clon = dynamic_cast<Menu*>(clone);
+		for (int i = 0; i < size; i++) {
+			num[1] = i + 1 + '0';
+			items[i]->_SetParentFrame(parentFrame);
+			items[i]->_SetOrderNumber(num);
+			if (items[i]->_YposSet() == false)
+				items[i]->_SetYpos(i);
+			if (org != nullptr) {
+				org->items[i]->_SetParentFrame(parentFrame);
+				org->items[i]->_SetOrderNumber(num);
+				if (org->items[i]->_YposSet() == false)
+					org->items[i]->_SetYpos(i);
+				
+			}
+			if (clon != nullptr) {
+				clon->items[i]->_SetParentFrame(parentFrame);
+				clon->items[i]->_SetOrderNumber(num);
+				if (clon->items[i]->_YposSet() == false)
+					clon->items[i]->_SetYpos(i);
+			
+			}
+			if (items[i]->_AutoDisplay()) {
+				items[i]->_Show();
+				if(clon != nullptr)
+					clon->items[i]->_SetVisible(true);
+				if(org != nullptr)
+					org->items[i]->_SetVisible(true);
+			}
 		}
-		if(items[i]->_AutoDisplay())
-			items[i]->_Show();
+		this->visible = true;
 	}
-	this->visible = true;
 }
 
 //	hide menu items
@@ -629,33 +710,35 @@ void Table::_DrawBorder() {
 }
 
 void Table::_Show() {
-	Display*dsp = _GetDisplay();
-	Cursor pos;
-	if (showBorder) 
-		_DrawBorder();
-	for (int i = 0; i < rowNum; i++) {
-		for (int j = 0; j < colNum; j++) {
-			if (showBorder)
-				cells[i][j]->_AddTopPadding(i);
-			else if(cellSeparator && j>0)
-				cells[i][j]->_AddLeftPadding(2);
-			cells[i][j]->_ShowElements();
-			if (cellSeparator && j<colNum-1) {
-				Frame::Coordinates coord = cells[i][j]->_GetCoordinates();
-				pos._SetXY(coord.x2, coord.y1);
-				pos._SetCursorPosition();
-				dsp->_Display(::verticalLine);
-				pos._SetCharacterNumber(1);
-				borderPos->push_back(pos);				
+	if (this->visible == false) {
+		Display*dsp = _GetDisplay();
+		Cursor pos;
+		if (showBorder)
+			_DrawBorder();
+		for (int i = 0; i < rowNum; i++) {
+			for (int j = 0; j < colNum; j++) {
+				if (showBorder)
+					cells[i][j]->_AddTopPadding(i);
+				else if (cellSeparator && j > 0)
+					cells[i][j]->_AddLeftPadding(2);
+				cells[i][j]->_ShowElements();
+				if (cellSeparator && j < colNum - 1) {
+					Frame::Coordinates coord = cells[i][j]->_GetCoordinates();
+					pos._SetXY(coord.x2, coord.y1);
+					pos._SetCursorPosition();
+					dsp->_Display(::verticalLine);
+					pos._SetCharacterNumber(1);
+					borderPos->push_back(pos);
+				}
+				if (cellSeparator && j > 0)
+					cells[i][j]->_AddLeftPadding(-2);
+				if (showBorder)
+					cells[i][j]->_AddTopPadding(-i);
+				pos._GetCursorPosition();
 			}
-			if(cellSeparator && j>0)
-				cells[i][j]->_AddLeftPadding(-2);
-			if(showBorder)
-				cells[i][j]->_AddTopPadding(-i);
-			pos._GetCursorPosition();
 		}
+		this->visible = true;
 	}
-	this->visible = true;
 }
 
 Table::~Table() {

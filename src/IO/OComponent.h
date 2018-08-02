@@ -235,8 +235,7 @@ protected:
 	FrameElement(Frame* parentFrame);	
 	bool autoDisplay = true;
 	bool visible = false;
-
-	Display* _GetDisplay();
+	
 	virtual Cursor _Align();
 
 public:
@@ -259,6 +258,8 @@ public:
 	void _SetAutoDisplay(bool status);
 	bool _AutoDisplay() const;
 	bool _Visible() const;
+	void _SetVisible(bool status);
+	Display* _GetDisplay();
 
 	virtual FrameElement* _Clone();
 	virtual ~FrameElement();
@@ -348,6 +349,14 @@ inline bool FrameElement::_AutoDisplay() const {
 
 inline bool FrameElement::_Visible() const {
 	return this->visible;
+}
+
+inline void FrameElement::_SetVisible(bool status) {
+	this->visible = status;
+	if (clone != nullptr)
+		clone->visible = status;
+	else if (original != nullptr)
+		original->visible = status;
 }
 
 class Separator : public FrameElement {
@@ -581,6 +590,7 @@ public:
 	void _SetLink(const char* moduleName);
 	short _Length() const override;
 	void _Show() override;
+	void _Hide() override;
 	virtual MenuItem* _Clone();
 	void _SetParentMenu(Menu* parentMenu);
 	Menu* _ParentMenu() const;
@@ -607,6 +617,23 @@ inline void MenuItem::_SetOrderNumber(char* orderNum) {
 		MenuItem* cln = dynamic_cast<MenuItem*>(clone);
 		delete[]cln->orderNum;
 		cln->orderNum = utility::_CopyChar(this->orderNum);
+	}
+
+	if (parentMenu != nullptr) {
+		Menu* clonedMenu = dynamic_cast<Menu*>(parentMenu->_Cloned());
+		if (clonedMenu != nullptr) {
+			MenuItem* clone = clonedMenu->_GetItem(this->text);
+			if (clone != nullptr) {
+				clone->_SetOrderNumber(orderNum);
+			}
+		}
+		Menu* originalMenu = dynamic_cast<Menu*>(parentMenu->_Original());
+		if (originalMenu != nullptr) {
+			MenuItem* original = originalMenu->_GetItem(this->text);
+			if (original != nullptr) {
+				original->_SetOrderNumber(orderNum);
+			}
+		}
 	}
 }
 
@@ -658,7 +685,8 @@ inline void MenuItem::_SetPadding(short padding) {
 	if (parentMenu != nullptr) {
 		Menu* cloneMenu = dynamic_cast<Menu*>(parentMenu->_Cloned());
 		MenuItem* clone = cloneMenu->_GetItem(this->text);
-		clone->_SetPadding(padding);
+		if(clone != nullptr)
+			clone->_SetPadding(padding);
 	}		
 }
 
