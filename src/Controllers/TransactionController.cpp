@@ -109,3 +109,16 @@ Transaction* TransactionController::_DeserializeModel(char* buffer) {
 	Transaction* transaction = new Transaction(buffer);
 	return transaction;
 }
+
+//	Update transaction using form data
+void TransactionController::_EditTransaction(utility::LinkedList<Data*>*data, int modelID, int profileID) {
+	Transaction edited(data, modelID, profileID);
+
+	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		char* buffer = edited._Serialize();
+		_UpdateModel(stream, header, modelID, buffer);
+		stream->close();
+	}
+	delete stream;
+}
