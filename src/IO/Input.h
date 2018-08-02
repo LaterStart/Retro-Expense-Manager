@@ -728,8 +728,12 @@ std::vector<element>& ScrollDown<element>::_Items() const {
 template <typename element>
 void ScrollDown<element>::_UpdateScrollDown(bool selectLastItem) {
 	sMax = items.size();
-	//sFirst = (sValue - 2 > 0) ? sValue - 2 : 0;
-	//sLast = (sValue + 3 > sMax) ? sMax : sValue + 3;
+
+	sLast = sValue + 3;
+	sLast = (sLast < 5) ? 5 : sLast;
+	sLast = (sLast > sMax) ? sMax : sLast;
+	sFirst = sLast - 5;
+	sFirst = (sFirst < sMin) ? sMin : sFirst;
 
 	if (selectLastItem) {
 		sValue = sMax - 1;
