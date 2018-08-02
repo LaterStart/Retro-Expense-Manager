@@ -136,7 +136,7 @@ bool AccountController::_Exists(char* name) {
 	if (stream != nullptr) {
 		vector<char*>* buffer = _GetModels(stream, this->accountHeader, Query(Range::all));
 		if (buffer != nullptr) {
-			for (unsigned int i = 0; i < accountHeader._NodeCount(); i++) {
+			for (unsigned int i = 0; i < buffer->size(); i++) {
 				Account temporary(buffer->at(i));
 				delete[]buffer->at(i);
 				if (utility::_CompareChar(temporary._Name(), name)) {
