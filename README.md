@@ -1,5 +1,5 @@
 # Retro-Expense-Manager
-my final year project in progress - prototype rewrite
+my final year project in progress
 
 Idea was to build complex CMD application from scratch without help of any external libraries, for educational purposes.
 Retro Expense Manager is "simulated" financial application, that helps user to track his everyday financial transactions.
