@@ -237,7 +237,7 @@ void Dashboard::_StartModule() {
 				ETlabel._Show();
 				int selection = -1;
 				bool mainInput = false;
-				while (selection <  minID || selection > maxID) {
+				while (selection <  minID || selection > maxID || select._ControlKey()) {
 					Cursor pos;
 					select._ReadUserInput();
 					selection = select.selection;
@@ -248,6 +248,8 @@ void Dashboard::_StartModule() {
 						mainInput = true;
 						break;
 					}
+					else if (select._ControlKey())
+						continue;
 					select._ClearInput();
 					pos._SetCursorPosition();
 					selectedID = selection;
@@ -311,9 +313,15 @@ void Dashboard::_StartModule() {
 						UserInput select(InputType::select);
 						select._ReadUserInput();
 						if (select.control == ControlKey::F1) {
+							F2._Hide();
+							DEL._Hide();
+							ESC._Hide();
 							select._ClearInput();
 							controlMenu._ChangeItem("Back", "Cancel");
 							controlMenu._ChangeItem("Menu", "Back");
+							ESC._SetPadding(F1._Length() + 1);
+							ESC._Show();
+							selection = 0;
 							// Menu input					
 							while (selection <  1 || selection > mainMenu.size) {
 								Cursor(2, ::height - 4);
@@ -321,8 +329,13 @@ void Dashboard::_StartModule() {
 								select._ReadUserInput();
 								selection = select.selection;
 								if (select.control == ControlKey::F1) {
+									ESC._Hide();
 									controlMenu._ChangeItem("Back", "Menu");
 									controlMenu._ChangeItem("Cancel", "Back");
+									F2._Show();
+									DEL._Show();
+									ESC._SetPadding(F1._Length() + F2._Length() + DEL._Length() + 3);
+									ESC._Show();
 									select._ClearInput();
 									break;
 								}	
@@ -512,11 +525,8 @@ void Dashboard::_StartModule() {
 			}
 			select._ClearInput();
 		}
-		else {
-			moduler->_SetNextModule(mainMenu._GetLink(selection), this);
-			break;
-		}	
 		if (endMainLoop)
 			break;
 	}
+	moduler->_SetNextModule(mainMenu._GetLink(selection), this);		
 }
