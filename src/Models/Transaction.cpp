@@ -33,6 +33,7 @@ Transaction::Transaction(const Transaction& copy) {
 	this->descriptionSize = copy.descriptionSize;
 	this->description = utility::_CopyChar(copy.description);
 	this->amountChar = utility::_CopyChar(copy.amountChar);
+	this->fromAccountID = copy.fromAccountID;
 
 }
 
@@ -51,6 +52,7 @@ Transaction::Transaction(Transaction&& move) {
 	move.description = nullptr;
 	this->amountChar = move.amountChar;
 	move.amountChar = nullptr;
+	this->fromAccountID = move.fromAccountID;
 }
 
 // transaction move assignment
@@ -72,6 +74,7 @@ Transaction& Transaction::operator=(Transaction&& move) {
 	move.description = nullptr;
 	this->amountChar = move.amountChar;
 	move.amountChar = nullptr;
+	this->fromAccountID = move.fromAccountID;
 
 	return *this;
 }
@@ -80,6 +83,8 @@ Transaction& Transaction::operator=(Transaction&& move) {
 void Transaction::_BindData(Data* data) {
 	switch (data->field) {
 	case Field::account:
+		if (accountID > -1) 
+			fromAccountID = accountID;
 		accountID = data->input->selection;		
 		break;
 	case Field::transactionType:
@@ -109,7 +114,7 @@ void Transaction::_BindData(Data* data) {
 //	serialize category model
 char* Transaction::_Serialize() {
 	//	Total object size					 
-	int size = descriptionSize + 6*sizeof(int) + sizeof(double) + sizeof(Date);
+	int size = descriptionSize + 7*sizeof(int) + sizeof(double) + sizeof(Date);
 
 	//	insert object size info and ID at buffer start
 	char* buffer = new char[size+2*sizeof(int)];
@@ -121,7 +126,7 @@ char* Transaction::_Serialize() {
 	buffer += sizeof(int);
 
 	//	store IDs into buffer
-	int* ptr[] = { &profileID, &accountID, &categoryID, &currencyID };
+	int* ptr[] = { &profileID, &accountID, &categoryID, &currencyID, &fromAccountID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		std::memcpy(buffer, *&ptr[i], sizeof(int));
 		buffer += sizeof(int);
@@ -153,7 +158,7 @@ void Transaction::_Deserialize(char* page) {
 	page += sizeof(int);
 
 	//	deserialize IDs
-	int* ptr[] = { &profileID, &accountID, &categoryID, &currencyID };
+	int* ptr[] = { &profileID, &accountID, &categoryID, &currencyID, &fromAccountID };
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);

@@ -14,6 +14,7 @@ private:
 	char* amountChar = nullptr;
 	TransactionType type = TransactionType::none;
 	Date date;
+	int fromAccountID = -1;
 	
 	void _BindData(Data* data);
 	std::ostream& _Show(std::ostream& os);
@@ -33,6 +34,7 @@ public:
 	int _DisplayLength();
 	TransactionType _Type() const;
 	Date _Date() override;
+	int _FromAccount() const;
 
 	Transaction(utility::LinkedList<Data*>* data, int ID, int profileID);
 	Transaction(char* buffer);
@@ -81,4 +83,8 @@ inline int Transaction::_Category() const {
 
 inline TransactionType Transaction::_Type() const {
 	return this->type;
+}
+
+inline int Transaction::_FromAccount() const {
+	return this->fromAccountID;
 }
