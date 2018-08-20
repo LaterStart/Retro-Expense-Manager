@@ -240,7 +240,7 @@ int UserInput::_Verify_value(char& ch) {
 				return 0;
 			checker = checker->previousNode;
 		}
-		return 0;
+		return 2;
 	}	
 	else if ((length == 11 || length == 12) && (ch >= 48 && ch <= 57)) 
 		return 2;
@@ -321,11 +321,11 @@ int UserInput::_Verify_integer(char& ch) {
 	}
 	else if (ch < 48 || ch > 57)
 		return 0;
-	else if (ch == 48) {
+	/*else if (ch == 48) {
 		if (length > 0)
 			return 2;
 		else return 0;
-	}
+	}*/
 	else return 2;
 }
 
