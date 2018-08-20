@@ -352,6 +352,7 @@ private:
 	void _InsertField(std::tuple<FormField&, int>);
 	void _FindData_(std::vector<Data>& data, Field field);
 	void _LoadStore();
+	void _ShowFields();
 
 	template <typename T>
 	void _FindData(std::vector<Data>& data, T field) {
@@ -832,6 +833,9 @@ void ScrollDown_2D<element>::_Show() {
 		activated = true;
 		parentForm->_UpdateActiveFields(1);
 		filled = true;
+		if (subSelect)
+			this->value = &items[*sCurr].at(scrollControl[scrollControl[items.size()][0]][0]);
+		else this->value = &items[scrollControl[items.size()][0]].at(0);
 		preLoad = false;
 		return;
 	}
