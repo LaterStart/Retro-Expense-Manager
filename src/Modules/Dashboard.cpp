@@ -146,23 +146,31 @@ void Dashboard::_StartModule() {
 	Table table(layout._Select("LatestTransactionsBody"), LT->size(), 6);
 	int minID = transactionController._LastTransactionID(), maxID = 0;
 	if (LT->size() > 0) {
-		const int  maxAccountLength = 15, maxCategoryLength = 15;
+		const int  maxAccountLength = 18, maxCategoryLength = 15;
 		int highestAmountLength = 0, highestAccountLength = 0, highestCategoryLength = 0;
 		for (size_t i = 0; i < LT->size(); i++) {
 			Transaction* TR = &LT->at(i);
 			Currency* CU = exchangeRateController._GetCurrency(TR->_Currency());
 			Account* AC = accountController._GetAccount(TR->_Account());
+			Account* AC_from = nullptr;
 			Category* CA = categoryController._GetCategory(TR->_Category());
 
 			table.cells[i][0]->_AddElements(IDLabel("ID", TR->_ID()));
 			table.cells[i][1]->_AddElements(Label(TR->_Date()));
 			table.cells[i][2]->_AddElements(TextBar(Label(TR->_AmountChar()), Label(CU->_Name())));
-			table.cells[i][3]->_AddElements(Label(AC->_Name()));
+			if (TR->_Type() == TransactionType::transfer) {
+				AC_from = accountController._GetAccount(TR->_FromAccount());				
+				table.cells[i][3]->_AddElements(TransferBar(Label(AC_from->_Name()), Label(AC->_Name())));
+			}
+			else table.cells[i][3]->_AddElements(Label(AC->_Name()));			
 			table.cells[i][4]->_AddElements(Label(CA->_Name()));
 			table.cells[i][5]->_AddElements(Label(TR->_Description()));
 
 			int amountLength = utility::_CharLength(TR->_AmountChar());
-			int accountLength = utility::_CharLength(AC->_Name());
+			int accountLength;
+			if (TR->_Type() == TransactionType::transfer) 
+				accountLength = utility::_CharLength(AC->_Name()) + utility::_CharLength(AC_from->_Name()) + 3;			
+			else accountLength = utility::_CharLength(AC->_Name());			 
 			int categoryLength = utility::_CharLength(CA->_Name());
 			int descriptionLength = utility::_CharLength(TR->_Description());
 
@@ -187,14 +195,14 @@ void Dashboard::_StartModule() {
 		table._SetColumnWidth(2, highestAmountLength + 5);
 		table._SetColumnWidth(3, highestAccountLength + 1);
 		table._SetColumnWidth(4, highestCategoryLength + 1);
-
+		
 		ltFrame->_AddElements(table, ETlabel);
 		layout._Select("Footer")->_AddElements(controlMenu);
 
-		ltFrame->_Split(34, "vertical", "TransactionDetails", "TDSpec");
-		Frame* tdFrame = ltFrame->_Select("TransactionDetails");
-		tdFrame->_AddLeftPadding(2);
-		tdFrame->_AddTopPadding(1);
+		ltFrame->_Split(36, "vertical", "EditTransaction", "ETSpec");	
+		Frame* etFrame = ltFrame->_Select("EditTransaction");
+		etFrame->_AddLeftPadding(2);
+		etFrame->_AddTopPadding(1);
 	}
 	else {
 		Label text1("You have no recent transactions.");
@@ -206,6 +214,7 @@ void Dashboard::_StartModule() {
 
 	//	Main dashboard user input
 	int selection = 0;
+	bool endMainLoop = false;
 	while (selection <  1 || selection > mainMenu.size) {
 		if (LT->size() > 0)
 			controlMenu._Show();
@@ -263,22 +272,34 @@ void Dashboard::_StartModule() {
 							tr = &LT->at(i);
 					}
 
-					Frame tdFrame(*ltFrame->_Select("TransactionDetails"));
+					Frame tdFrame(*ltFrame);
+					tdFrame._AddTopPadding(1);
 					Currency* cu = exchangeRateController._GetCurrency(tr->_Currency());
 					Account* ac = accountController._GetAccount(tr->_Account());
 					Category* ca = categoryController._GetCategory(tr->_Category());
 					std::vector<const char*>* types = &transactionController.transactionType;
 					int trType = static_cast<int>(tr->_Type());
+					Account* from_ac = accountController._GetAccount(tr->_FromAccount());
 
 					TextBar t1(Label("Type:"), Label(types->at(trType)));
 					TextBar t2(Label("Date:"), Label(tr->_Date()));
 					TextBar t3(Label("Amount:"), Label(tr->_AmountChar()));
 					TextBar t4(Label("Currency:"), Label(cu->_Name()));
-					TextBar t5(Label("Account:"), Label(ac->_Name()));
+					TextBar* t5 = nullptr;
+					TextBar* t8 = nullptr;
+					if (tr->_Type() == TransactionType::transfer) {
+						t5 = new TextBar(Label("From Account:"), Label(from_ac->_Name()));
+						t8 = new TextBar(Label("To Account:"), Label(ac->_Name()));
+					}
+					else t5 = new TextBar(Label("Account:"), Label(ac->_Name()));
 					TextBar t6(Label("Category:"), Label(ca->_Name()));
 					TextBar t7(Label("Description:"), Label(tr->_Description()));
 
-					tdFrame._AddElements(t1, t2, t3, t4, t5, t6, t7);
+					if(tr->_Type() == TransactionType::transfer)
+						tdFrame._AddElements(t1, t2, t3, t4, *t5, *t8 ,t6, t7);
+					else tdFrame._AddElements(t1, t2, t3, t4, *t5, t6, t7);
+					delete t5;
+					delete t8;
 
 					// show transaction details					
 					while (true) {
@@ -323,6 +344,7 @@ void Dashboard::_StartModule() {
 							break;
 						}
 						else if (select.control == ControlKey::F2) {
+							tdFrame._HideElements();
 							controlMenu._ChangeItem("Back", "Cancel");
 							F2._Hide();
 							DEL._Hide();
@@ -338,10 +360,14 @@ void Dashboard::_StartModule() {
 								Container(ac->_ID()),
 								Container(ca->_ID()),
 								Container(tr->_Description())
-							};
-							Frame teFrame(*ltFrame->_Select("TransactionDetails"));
+							};		
+
+							if (tr->_Type() == TransactionType::transfer)
+								formStore.insert(formStore.begin() + 4, Container(from_ac->_ID()));
+
+							Frame etFrame(*ltFrame->_Select("EditTransaction"));
 							Form editTransaction;
-							editTransaction._SetParentFrame(&tdFrame);
+							editTransaction._SetParentFrame(&etFrame);
 							editTransaction._AddFields(
 								SelectionField("Type:", transactionController.transactionType, Field::transactionType),
 								DateField("Date:", Field::date),
@@ -354,16 +380,72 @@ void Dashboard::_StartModule() {
 							);
 							editTransaction._LoadStore(formStore);
 							editTransaction._SetSpecialContentPosition(Form::ContentPos::right);
-							editTransaction._SetSpecialContentFrame(ltFrame->_Select("TDSpec"));
+							editTransaction._SetSpecialContentFrame(ltFrame->_Select("ETSpec"));
+
+							//	Transfer event - If user selects transfer as transaction type, change account field
+							const function<void(Form&, FormField*)> transferEvent = [](Form& form, FormField* currentField) {
+								if (form._EventStatus(0) == false) {
+									FormField* cField = form._SelectField(Field::transactionType);
+									if (cField->inputField->selection == 2) {
+										// remove one field at position 4
+										form._RemoveFields(4, 1);
+										form._InsertFields(
+											//	Adds two new fields at position 4 and 5
+											tuple<ScrollDown<Account>&, int>{ ScrollDown<Account>("From Account:", *accountController.accounts, Field::account), 4 },
+											tuple<ScrollDown<Account>&, int>{ ScrollDown<Account>("To Account:", *accountController.accounts, Field::account), 5 }
+										);
+										form._InitializeFields();
+										form._SetEventStatus(0, true);
+									}
+								}
+								else {
+									//  If user changed his mind and wants not to select transfer as transaction type
+									FormField* cField = form._SelectField(Field::transactionType);
+									if (cField->inputField->selection != 2) {
+										// remove two fields starting at position 4 and insert one new field at position 4
+										form._RemoveFields(4, 2);
+										form._InsertFields(tuple<ScrollDown<Account>&, int>{ ScrollDown<Account>("Account:", *accountController.accounts, Field::account), 4 });
+										form._InitializeFields();
+										form._SetEventStatus(0, false);
+									}
+								}
+							};
+							editTransaction._AddEvent(transferEvent);	
 
 							while (true) {
 								// start form 
 								editTransaction._Show();
 								if (editTransaction._Status()) {
 									// if form is completed - update transaction
+									//	Swap input selection with selected model IDs	
+									vector<FormField*> fields = editTransaction._SelectFields(vector<Field>{Field::category, Field::currency, Field::account});
+									ScrollDown_2D<Category>* categoryField = dynamic_cast<ScrollDown_2D<Category>*>(fields.at(0));
+									ScrollDown<Currency>* currencyField = dynamic_cast<ScrollDown<Currency>*>(fields.at(1));
+									ScrollDown<Account>* accountField1 = dynamic_cast<ScrollDown<Account>*>(fields.at(2));
+									ScrollDown<Account>* accountField2 = nullptr;
+									if (fields.size() > 3)
+										accountField2 = dynamic_cast<ScrollDown<Account>*>(fields.at(3));
+									Category* category = categoryField->_Value();
+									Currency* currency = &currencyField->_Items().at(currencyField->inputField->selection);
+									Account* account1 = &accountField1->_Items().at(accountField1->inputField->selection);
+									Account* account2 = nullptr;
+									if (accountField2 != nullptr)
+										account2 = &accountField2->_Items().at(accountField2->inputField->selection);
+									fields.at(0)->inputField->selection = category->_ID();
+									fields.at(1)->inputField->selection = currency->_ID();
+									fields.at(2)->inputField->selection = account1->_ID();
+									if (account2 != nullptr)
+										fields.at(3)->inputField->selection = account2->_ID();
+
+									//	Get form data and pass it to controller
 									utility::LinkedList<Data*>* data = editTransaction._GetData();
 									transactionController._EditTransaction(data, selectedID, profileController._ActiveProfile()->_ID());
+
+									//	Update latest transactions list									
+									transactionController._LoadLatestTransactions();
 									cancel = true;
+									endMainLoop = true;
+									moduler->_SetNextModule("Dashboard");
 									break;
 								}
 								else if (editTransaction._IsPaused()) {
@@ -413,11 +495,9 @@ void Dashboard::_StartModule() {
 									break;
 								}
 							}
-							if (cancel) {
-								tdFrame._HideElements();								
+							if (cancel) 							
 								break;
-							}
-						}
+						}						
 						if (cancel) {				
 							tdFrame._HideElements();
 							F2._Hide(); DEL._Hide(); ESC._Hide();
@@ -426,7 +506,7 @@ void Dashboard::_StartModule() {
 							break;
 						}
 					}
-					if (mainInput)
+					if (mainInput || endMainLoop)
 						break;
 				}
 			}
@@ -435,6 +515,8 @@ void Dashboard::_StartModule() {
 		else {
 			moduler->_SetNextModule(mainMenu._GetLink(selection), this);
 			break;
-		}		
+		}	
+		if (endMainLoop)
+			break;
 	}
 }
