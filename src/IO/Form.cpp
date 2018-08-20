@@ -446,8 +446,10 @@ void Form::_Show() {
 	}
 	else {
 		_InitializeFields();
-		if (preLoad)
-			_LoadStore();
+		if (preLoad) {			
+			_LoadStore();			
+			_ShowFields();
+		}
 		_ShowNextField(nullptr);		
 	}
 }
@@ -669,6 +671,7 @@ FormField::~FormField() {
 		}
 		delete inputField;
 	}
+	Label::_Hide();
 }
 
 OptionField::~OptionField() {
@@ -739,6 +742,7 @@ void Form::_Hide() {
 	for (int i = 0; i < fieldNum; i++)
 		fields[i]->_Hide();	
 	contentSpace = 0;
+
 }
 
 void FormField::_Hide() {
@@ -900,12 +904,20 @@ void Form::_LoadStore() {
 				field->inputField->_SetDefaultInput(store->at(i).cValue);
 				break;
 			}
-			field->_SetPreLoad(true);
-			field->inputField->parentFrame->_ClearFrame();
-			field->_Show();
+			field->_SetPreLoad(true);			
 		}
 		else i--;
+		_RunEvents(field);
 		field = _GetNextField(field);
 	}
 	this->preLoad = false;
+}
+
+void Form::_ShowFields() {
+	FormField* field = fields[0];
+	while (field != nullptr) {
+		if (field->_GetDataStatus())
+			field->_Show();
+		field = _GetNextField(field);
+	}
 }
