@@ -29,6 +29,7 @@ public:
 	unsigned int _NodeCount() const;
 	unsigned int _GiveID();
 	void _SetNodeCount(int nodeCount);
+	void _SetIDCount(int idCount);
 	void _SetStartID(int startID);
 	int _LastID() const;
 
@@ -95,6 +96,10 @@ inline int Header::_LastID() const {
 	return this->idCount - 1;
 }
 
+inline void Header::_SetIDCount(int idCount) {
+	this->idCount = idCount;
+}
+
 class MainHeader : public Header {
 public:	
 	char* _Serialize();
@@ -109,6 +114,7 @@ class ModelHeader : public Header{
 private:
 	ModelName model = ModelName::none;	
 	Controller* controller = nullptr;
+	int firstID = -1;
 	
 public:	
 	ModelHeader(ModelName name) : Header(ModelName::modelHeader), model(name){}
@@ -121,6 +127,8 @@ public:
 	void _ResetIDCounter();	
 	Date _GetModelDate(char* buffer);
 	void _LinkController(Controller* controller);
+	int _FirstID() const;
+	void _SetFirstID(int firstID);
 };
 
 inline ModelName ModelHeader::_Name() const {
@@ -133,4 +141,12 @@ inline void ModelHeader::_ResetIDCounter() {
 
 inline void ModelHeader::_LinkController(Controller* controller) {
 	this->controller = controller;
+}
+
+inline int ModelHeader::_FirstID() const {
+	return this->firstID;
+}
+
+inline void ModelHeader::_SetFirstID(int firstID) {
+	this->firstID = firstID;
 }
