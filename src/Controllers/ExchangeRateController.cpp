@@ -34,6 +34,23 @@ void ExchangeRateController::_LoadExchangeRate() {
 				this->header._ResetIDCounter();
 				_DownloadExchangeRate();
 
+				//	If download was unsucessfull
+				if (currencies->size() == 0) {
+					//	load current exchange rate
+					Query query(Range::all);
+					query._ExcludeIDs(-1);
+					vector<char*>* buffer = _GetModels(stream, this->header, query);
+					if (buffer != nullptr) {
+						for (unsigned int i = 0; i < buffer->size(); i++) {
+							Currency currency(buffer->at(i));
+							currencies->push_back(currency);
+							delete[]buffer->at(i);
+						}
+						delete buffer;
+					}
+					return;
+				}
+
 				if (excRate->_CurrencyNumber() == old._CurrencyNumber()) {
 					//	update existing exchange rate records
 					char* buffer = excRate->_Serialize();
@@ -267,6 +284,7 @@ void ExchangeRateController::_WriteExchangeRate() {
 		// write currencies (rates) into database
 		for (size_t i = 0; i < currencies->size(); i++) {
 			buffer = currencies->at(i)._Serialize();
+			header._SetIDCount(i+1);
 			_WriteModel(stream, header, buffer);
 		}
 		stream->close();
