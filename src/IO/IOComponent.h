@@ -3,7 +3,7 @@
 
 const enum class ComponentType {
 	none, console, cursor, link, display, frame, coordinates, container, separator, label, menu, menuItem, textBar, form, formField, userInput,
-	optionField, selectionField, usernameField, passwordField, confirmField, inputField, scrollDown, scrollDown_2D, dateField, table, layout, IDLabel
+	optionField, selectionField, usernameField, passwordField, confirmField, inputField, scrollDown, scrollDown_2D, dateField, table, layout, IDLabel, transferBar
 };
 
 class IOComponent {	
@@ -235,6 +235,14 @@ struct Container {
 		this->bValue = move.bValue;
 		this->cValue = move.cValue;
 		move.cValue = nullptr;
+	}
+	Container& operator=(const Container& copy) {
+		this->type = copy.type;
+		this->iValue = copy.iValue;
+		this->bValue = copy.bValue;
+		this->cValue = utility::_CopyChar(copy.cValue);
+
+		return *this;
 	}
 };
 #include "OComponent.h"
