@@ -182,6 +182,7 @@ public:
 	std::vector<FrameElement*> _SelectElements(ComponentType type);
 	short _LeftPadding() const;
 	void _ClearFrame();
+	void _ShowSubFrameElements();
 
 	//	Add more FrameElements using variadic template
 	template <typename T>
@@ -803,6 +804,38 @@ public:
 
 inline IDLabel* IDLabel::_Clone() {
 	IDLabel* clone = new IDLabel(*this);
+	clone->original = this;
+	this->clone = clone;
+	return clone;
+}
+
+class TransferBar : public Label {
+private:
+	Label** items = nullptr;
+	const int num = 2;
+	const int spacing = 1;
+	const unsigned char symbol = '>';
+public:
+	TransferBar(Label& first, Label& second) {
+		items = new Label*[2];
+		items[0] = new Label(first);
+		items[1] = new Label(second);
+	}
+
+	~TransferBar(){
+		delete items[0];
+		delete items[1];
+		delete[]items;
+	}
+
+	void _Show() override;
+	void _Hide() override;
+	virtual TransferBar* _Clone() override;
+	TransferBar(const TransferBar& copy);
+};
+
+inline TransferBar* TransferBar::_Clone() {
+	TransferBar* clone = new TransferBar(*this);
 	clone->original = this;
 	this->clone = clone;
 	return clone;

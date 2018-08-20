@@ -607,7 +607,7 @@ void TextBar::_Show() {
 		items[i]->_SetParentFrame(parentFrame);
 		items[i]->_SetYpos(this->Ypos);
 		items[i]->_Show();
-		padding = items[i]->length + spacing;
+		padding += items[i]->length + spacing;
 	}
 	this->visible = true;
 }
@@ -849,4 +849,69 @@ void Frame::_ClearFrame() {
 			dsp->_Display(::spaceKey);
 		}
 	}
+}
+
+void Frame::_ShowSubFrameElements() {
+	for (int i = 0; i < container.frameNum; i++) 
+		container.frames[i]->_ShowElements();	
+}
+
+void TransferBar::_Show() {
+	this->length = 0;
+	for (int i = 0; i < num; i++)
+		length += items[i]->length;
+	length += 2;
+
+	Cursor pos = this->_Align();
+	Frame::Coordinates coord = parentFrame->_GetCoordinates();
+	int offset = pos._GetX() - coord.x1;
+	
+	int width = parentFrame->_Width();
+	int maxw = (width - 3) / 2;
+
+	char* a = new char[maxw + 1];
+	char* b = new char[maxw + 1];
+
+	for (int i = 0; i < maxw; i++) {
+		a[i] = items[0]->text[i];
+		b[i] = items[1]->text[i];
+	}
+	a[maxw] = '\0';
+	b[maxw] = '\0';
+
+	if (items[0]->length > maxw)
+		a[maxw - 1] = '.';
+	if (items[1]->length > maxw)
+		b[maxw - 1] = '.';
+
+	
+	Display* dsp = _GetDisplay();
+	pos._SetCursorPosition();
+	dsp->_Display(a);
+	pos._GetCursorPosition();
+	pos._ChangeX(1);
+	pos._SetCursorPosition();
+	dsp->_Display(this->symbol);
+	pos._GetCursorPosition();
+	pos._ChangeX(1);
+	pos._SetCursorPosition();
+	dsp->_Display(b);
+
+	delete[]a;
+	delete[]b;
+}
+
+TransferBar::TransferBar(const TransferBar& copy) {
+	items = new Label*[2];
+	for (int i = 0; i < num; i++)
+		items[i] = new Label(*copy.items[i]);
+}
+
+void TransferBar::_Hide() {
+	int width = parentFrame->_Width();
+	Cursor pos = this->_Align();
+	Display* dsp = _GetDisplay();
+	pos._SetCursorPosition();
+	for (int i = 0; i < width; i++)
+		dsp->_Display(::spaceKey);
 }
