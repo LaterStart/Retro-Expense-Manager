@@ -71,6 +71,7 @@ void ModuleManagement::_OpenModule(const char* name) {
 			moduleList[i].module->name = name;
 			this->currentModule = moduleList[i].module;
 			moduleList[i].module->_StartModule();
+			break;
 		}
 }
 
@@ -85,6 +86,7 @@ void ModuleManagement::_OpenModule(const char* name, Module* mainModule) {
 			this->currentModule = moduleList[i].module;
 			moduleList[i].module->_StartModule();
 			this->currentModule = mainModule;
+			break;
 		}
 }
 
