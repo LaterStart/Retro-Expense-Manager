@@ -46,7 +46,8 @@ void TransactionController::_AddNewTransaction(utility::LinkedList<Data*>*data, 
 //	Loads last ten transactions
 void TransactionController::_LoadLatestTransactions() {
 	fstream* stream = _OpenStream();
-	this->latestTransactions = new vector<Transaction>;
+	delete latestTransactions;
+	latestTransactions = new vector<Transaction>;
 	if (stream != nullptr) {
 		vector<char*>* buffer = _GetModels(stream, header, Query(Range::lastTen));
 		if (buffer != nullptr) {

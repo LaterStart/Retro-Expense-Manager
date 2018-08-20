@@ -6,9 +6,7 @@ class Transaction; class ModelHeader;
 class TransactionController : public Controller {
 private:
 	static ModelHeader header;	
-	std::vector<Transaction>* latestTransactions = nullptr;
-
-	void _LoadLatestTransactions();	
+	std::vector<Transaction>* latestTransactions = nullptr;	
 
 public:
 	TransactionController();
@@ -24,6 +22,7 @@ public:
 	Transaction* _DeserializeModel(char* buffer);
 	int _LastTransactionID() const;
 	void _EditTransaction(utility::LinkedList<Data*>*data, int modelID, int profileID);
+	void _LoadLatestTransactions();
 };
 
 inline int TransactionController::_LastTransactionID() const {
