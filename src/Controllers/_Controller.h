@@ -127,7 +127,8 @@ private:
 
 	void _DeleteBuffers(char* &buffer, char* &dblock, bool containsID = true);
 	void _UpdateHeader(std::fstream* stream, Header& header);
-	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);		
+	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);	
+	std::fstream* _RestartStream(std::fstream* stream);
 
 protected:		
 	static std::fstream* _OpenStream();
