@@ -63,7 +63,7 @@ void MainHeader::_Deserialize(char* page) {
 
 //	serialize model header object
 char* ModelHeader::_Serialize() {
-	int size = sizeof(int) + 2* sizeof(std::streamoff) + 2*sizeof(unsigned int);
+	int size = 2*sizeof(int) + 2* sizeof(std::streamoff) + 2*sizeof(unsigned int);
 	char* buffer = new char[size+sizeof(int)];
 	char* firstByte = buffer;
 
@@ -78,6 +78,8 @@ char* ModelHeader::_Serialize() {
 	std::memcpy(buffer, &this->firstNode, sizeof(std::streamoff));
 	buffer += sizeof(std::streamoff);
 	std::memcpy(buffer, &this->lastNode, sizeof(std::streamoff));
+	buffer += sizeof(std::streamoff);
+	std::memcpy(buffer, &this->firstID, sizeof(int));
 
 	return firstByte;
 }
@@ -93,6 +95,9 @@ void ModelHeader::_Deserialize(char* page) {
 	this->firstNode = *(std::streamoff*)page;
 	page += sizeof(std::streamoff);
 	this->lastNode = *(std::streamoff*)page;
+	page += sizeof(std::streamoff);
+	this->firstID = *(int*)page;
+
 }
 
 //	Reads date from buffered object
