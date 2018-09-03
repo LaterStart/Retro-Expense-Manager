@@ -16,6 +16,7 @@ class Module {
 	template<class T>
 	friend class ModuleRegistrar;
 	friend class ModuleManagement;
+	friend class ModuleInitializer;
 
 protected:
 	virtual void _StartModule() = 0;
@@ -137,8 +138,8 @@ class ModuleInitializer {
 	//	register modules into registry
 	void _RegisterModule(std::string moduleName, std::function<Module*(void)> moduleInitializer);
 
-	//	creates instance of requested module at run time
-	std::shared_ptr<Module>ModuleInitializer::_CreateInstance(std::string name);	
+	//	creates instances of registered modules at run time
+	void ModuleInitializer::_CreateInstances(ModuleManagement* moduler);
 };
 
 //	storage class - compile time register

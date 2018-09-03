@@ -27,38 +27,21 @@ ModuleInitializer& ModuleInitializer::_GetInstance(){
 }
 
 //	Create instance of module at run time
-shared_ptr<Module>ModuleInitializer::_CreateInstance(string name) {
-	Module* instance = nullptr;
-
-	//	find name in the registry and call factory method.
-	auto it = moduleRegistry.find(name);
-	if (it != moduleRegistry.end())
-		instance = it->second();
-
-	//	wrap instance in a shared ptr and return
-	if (instance != nullptr)
-		return shared_ptr<Module>(instance);
-	else
-		return nullptr;
+void ModuleInitializer::_CreateInstances(ModuleManagement* moduler) {
+	Module* registar = nullptr;
+	string name;
+	for (auto it = moduleRegistry.begin(); it != moduleRegistry.end(); it++)	{
+		name = it->first;
+		registar = it->second();
+		Module& ref = registar->_GetInstance();
+		moduler->_AddModule(ref, name);
+	}
 }
 
-//	Find existing module classes and initialize singleton instances
+//	Initialize registered modules at run time
 void ModuleManagement::_InitializeModules() {
 	ModuleInitializer& initializer = initializer._GetInstance();
-	ModuleController modCtrl;
-	utility::LinkedList<string>* classList = modCtrl._ReadModules();
-	utility::LinkedList<string>* deleter = nullptr;
-
-	while (classList != nullptr) {
-		auto module = initializer._CreateInstance(classList->element);	
-		if (module != nullptr) {
-			Module& ref = module->_GetInstance();
-			_AddModule(ref, classList->element);
-		}	
-		deleter = classList;
-		classList = classList->nextNode;
-		delete deleter;
-	}		
+	initializer._CreateInstances(this);	
 }
 
 //	Open module from active modules list using module name
