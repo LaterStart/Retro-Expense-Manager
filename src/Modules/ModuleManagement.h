@@ -7,7 +7,6 @@
 #include "../Controllers/CategoryController.h"
 #include "../Controllers/AccountController.h"
 #include "../Controllers/ExchangeRateController.h"
-#include "../Controllers/ModuleController.h"
 #include "../IO/OComponent.h"
 
 class Console; class ProfileController; class TransactionController; class CategoryController;
