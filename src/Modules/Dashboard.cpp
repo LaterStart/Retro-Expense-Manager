@@ -215,6 +215,7 @@ void Dashboard::_StartModule() {
 	//	Main dashboard user input
 	int selection = 0;
 	bool endMainLoop = false;
+	bool switchModule = false;
 	while (selection <  1 || selection > mainMenu.size) {
 		if (LT->size() > 0)
 			controlMenu._Show();
@@ -525,8 +526,10 @@ void Dashboard::_StartModule() {
 			}
 			select._ClearInput();
 		}
+		else switchModule = true;
 		if (endMainLoop)
 			break;
-	}
-	moduler->_SetNextModule(mainMenu._GetLink(selection), this);		
+	}	
+	if (switchModule)
+		moduler->_SetNextModule(mainMenu._GetLink(selection), this);		
 }
