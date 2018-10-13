@@ -109,9 +109,11 @@ void CreateUserProfile::_StartModule() {
 		}
 	} while (true);	
 
-	// change default currency at top of the currencies list
-	Currency* ccy = exchangeRateController._GetCurrency(profileController._ActiveProfile()->_DefaultCurrency());
-	exchangeRateController._SetDefaultCurrency(ccy);
+	if (form._Status()) {
+		// change default currency at top of the currencies list
+		Currency* ccy = exchangeRateController._GetCurrency(profileController._ActiveProfile()->_DefaultCurrency());
+		exchangeRateController._SetDefaultCurrency(ccy);
+	}
 
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option

@@ -29,3 +29,5 @@ const enum class ModelName {
 	accountType,
 	exchangeRate
 };
+
+extern const bool DEBUG;

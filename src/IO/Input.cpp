@@ -93,14 +93,18 @@ void UserInput::_ReadUserInput() {
 int UserInput::_VerifyInput(char& ch) {
 	// esc key
 	if (ch == 27) {
-		ch = _getch();
+		if (DEBUG) {
+			ch = _getch();
+		}
 		this->control = ControlKey::esc;
 		controlKey = true;
 		return -1;
 	}
 	// backspace
 	else if (ch == 8) {
-		ch = _getch();
+		if (DEBUG) {
+			ch = _getch();
+		}
 		return 7;
 	}
 	// special keys
@@ -161,7 +165,9 @@ int UserInput::_VerifyInput(char& ch) {
 		}
 	}
 	else {		
-		_getch();
+		if (DEBUG) {
+			ch = _getch();
+		}
 		switch (type) {
 		case InputType::select:
 			return _Verify_select(ch);

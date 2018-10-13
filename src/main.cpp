@@ -1,6 +1,7 @@
 #include "Modules/ModuleManagement.h"
 #include "IO/IOComponent.h"
 #include "config.h"
+#pragma comment(lib, "winhttp")
 
 int main() {
 	//	Initialize program
@@ -13,16 +14,15 @@ int main() {
 
 	//	Initialize modules
 	ModuleManagement moduler(myConsole);  // -> main module management instance
-
+	
 	moduler._OpenModule("Login");		
 	
 	//	Game loop
 	while (true) 
-		moduler._OpenNextModule();	
+		moduler._OpenNextModule();
 
 	delete[]::currentDate;
 	return 0;
 }
 
-// 6147 lines - 01.07.2018.
-// 9873 lines - 25.07.2018.
+// 10350 total lines of code (13.10.2018.)
