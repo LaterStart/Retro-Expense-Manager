@@ -388,11 +388,11 @@ namespace utility {
 			::currentDate[1] = timeinfo.tm_mday % 10 + '0';
 			::currentDate[0] = timeinfo.tm_mday / 10 + '0';
 		}
-		if (timeinfo.tm_mon < 10)
+		if (timeinfo.tm_mon < 9)
 			::currentDate[4] = timeinfo.tm_mon + 1 + '0';
 		else {
-			::currentDate[4] = timeinfo.tm_mon + 1 % 10 + '0';
-			::currentDate[3] = timeinfo.tm_mon + 1 / 10 + '0';
+			::currentDate[4] = (timeinfo.tm_mon + 1) % 10 + '0';
+			::currentDate[3] = (timeinfo.tm_mon + 1) / 10 + '0';
 		}
 		int year = timeinfo.tm_year + 1900;
 		short z = 9;
