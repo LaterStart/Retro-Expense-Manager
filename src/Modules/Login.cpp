@@ -149,15 +149,14 @@ void Login::_StartModule() {
 			} while (true);
 		}	
 		// Profile is already loeaded
-		else moduler->_SetNextModule("Dashboard");		
-	}
+		else moduler->_SetNextModule("Dashboard");	
 
-	// If profile is loaded - set default currency at top of the currencies list
-	if (profile != nullptr) {		
-		Currency* ccy = exchangeRateController._GetCurrency(profile->_DefaultCurrency());
-		exchangeRateController._SetDefaultCurrency(ccy);
+		// If profile is loaded - set default currency at top of the currencies list
+		if (utility::_CompareChar(moduler->_NextModule(), "Dashboard")) {
+			Currency* ccy = exchangeRateController._GetCurrency(profile->_DefaultCurrency());
+			exchangeRateController._SetDefaultCurrency(ccy);
+		}
 	}
-
 	//	Set module name (link) as the next one to be opened in main.cpp game loop.
 	//	provide this module pointer as previoous module to enable ESC key in next module (get back to this module) option
 }

@@ -128,7 +128,7 @@ private:
 	void _DeleteBuffers(char* &buffer, char* &dblock, bool containsID = true);
 	void _UpdateHeader(std::fstream* stream, Header& header);
 	void _UpdateLastNode(std::fstream* stream, Header& header, ModelName name, std::streamoff pageNum);	
-	std::fstream* _RestartStream(std::fstream* stream);
+	void _RestartStream(std::fstream* &stream);
 
 protected:		
 	static std::fstream* _OpenStream();
@@ -137,7 +137,7 @@ protected:
 	void _WriteModel(std::fstream* stream, ModelHeader& header, char* buffer);
 	void _LoadHeader(ModelHeader& header);	
 	char* _GetModel(std::fstream* stream, ModelHeader& header, int ID);
-	void _UpdateModel(std::fstream* stream, ModelHeader& header, int ID, char* buffer);
+	void _UpdateModel(std::fstream* &stream, ModelHeader& header, int ID, char* buffer);
 	std::vector<char*>* _GetModels(std::fstream* stream, ModelHeader& header, Query& query);	Controller* ptr;
 
 public:	

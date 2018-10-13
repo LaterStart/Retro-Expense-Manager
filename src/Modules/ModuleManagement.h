@@ -89,6 +89,7 @@ public:
 	void _SetNextModule(const char* name, Module* previousModule = nullptr);
 	void _SetNextModule(Module* nextModule, Module* previousModule = nullptr);
 	Module* _SelectModule(const char* name);
+	const char* _NextModule() const;
 
 	ModuleManagement(Console* myConsole);
 	~ModuleManagement();
@@ -120,6 +121,10 @@ inline void ModuleManagement::_SetNextModule(Module* nextModule, Module* previou
 
 inline Module* ModuleManagement::_CurrentModule() const {
 	return this->currentModule;
+}
+
+inline const char* ModuleManagement::_NextModule() const {
+	return this->nextModule;
 }
 
 //	compile time class used to add each module into register

@@ -452,8 +452,57 @@ void Dashboard::_StartModule() {
 										fields.at(3)->inputField->selection = account2->_ID();
 
 									//	Get form data and pass it to controller
-									utility::LinkedList<Data*>* data = editTransaction._GetData();
-									transactionController._EditTransaction(data, selectedID, profileController._ActiveProfile()->_ID());
+									utility::LinkedList<Data*>* data = editTransaction._GetData();										
+									Transaction transaction = transactionController._EditTransaction(data, selectedID, profileController._ActiveProfile()->_ID());
+
+									//	Update account balance
+									double amount = transaction._Amount() - tr->_Amount();
+									if (transaction._Type() == TransactionType::transfer) {
+										Currency* acc1ccy = exchangeRateController._GetCurrency(account1->_DefaultCurrency());
+										Currency* acc2ccy = exchangeRateController._GetCurrency(account2->_DefaultCurrency());
+										bool converted = false;
+
+										if (!account1->_MultiCurrency() && account1->_DefaultCurrency() != currency->_ID()) {
+											double amountCnv = exchangeRateController._ConvertCurrency(amount, currency->_ID(), acc1ccy->_ID());
+											account1->_UpdateBalance(amountCnv*-1.0);
+											converted = true;
+										}
+										else if (account1->_MultiCurrency())
+											account1->_UpdateBalance(amount*-1.0, currency->_ID());
+										else account1->_UpdateBalance(amount*-1.0);
+										accountController._UpdateAccount(account1);
+
+										if (converted) {
+											if (!account2->_MultiCurrency() && account1->_DefaultCurrency() != account2->_DefaultCurrency()) {
+												amount = exchangeRateController._ConvertCurrency(amount, account1->_DefaultCurrency(), account2->_DefaultCurrency());
+												account2->_UpdateBalance(amount);
+											}
+											else if (account2->_MultiCurrency())
+												account2->_UpdateBalance(amount, currency->_ID());
+											else account2->_UpdateBalance(amount);
+										}
+										else {
+											if (!account2->_MultiCurrency() && currency->_ID() != account2->_DefaultCurrency()) {
+												amount = exchangeRateController._ConvertCurrency(amount, currency->_ID(), account2->_DefaultCurrency());
+												account2->_UpdateBalance(amount);
+											}
+											else if (account2->_MultiCurrency())
+												account2->_UpdateBalance(amount, currency->_ID());
+											else account2->_UpdateBalance(amount);
+										}
+										accountController._UpdateAccount(account2);
+									}
+									else {
+										amount = (transaction._Type() == TransactionType::expense) ? amount * -1.0 : amount;
+										if (!account1->_MultiCurrency()) {
+											Currency* accCurrency = exchangeRateController._GetCurrency(account1->_DefaultCurrency());
+											if (accCurrency->_ID() != currency->_ID())
+												amount = exchangeRateController._ConvertCurrency(amount, currency->_ID(), accCurrency->_ID());
+											account1->_UpdateBalance(amount);
+										}
+										else account1->_UpdateBalance(amount, currency->_ID());
+										accountController._UpdateAccount(account1);
+									}									
 
 									//	Update latest transactions list									
 									transactionController._LoadLatestTransactions();
@@ -530,6 +579,6 @@ void Dashboard::_StartModule() {
 		if (endMainLoop)
 			break;
 	}	
-	if (switchModule)
+	if (switchModule && selection != -1)
 		moduler->_SetNextModule(mainMenu._GetLink(selection), this);		
 }

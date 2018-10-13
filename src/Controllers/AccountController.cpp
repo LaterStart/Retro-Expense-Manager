@@ -37,20 +37,21 @@ AccountController::AccountController() {
 void AccountController::_AddNewAccount(utility::LinkedList<Data*>*data, int profileID) {
 	Account newAccount(data, accountHeader._GiveID(), profileID);
 	fstream* stream = _OpenStream();
+	if (stream != nullptr) {
+		// check if model header exists
+		if (accountHeader._Loaded() == false)
+			_WriteNewModelHeader(stream, accountHeader);
 
-	// check if model header exists
-	if(accountHeader._Loaded() == false)
-		_WriteNewModelHeader(stream, accountHeader);
+		// write model		
+		char* buffer = newAccount._Serialize();
+		_WriteModel(stream, accountHeader, buffer);
 
-	// write model		
-	char* buffer = newAccount._Serialize();
-	_WriteModel(stream, accountHeader, buffer);	
+		// update accounts list vector
+		accounts->push_back(newAccount);
 
-	// update accounts list vector
-	accounts->push_back(newAccount);
-	
-	stream->close();
-	delete stream;
+		stream->close();
+		delete stream;
+	}
 }
 
 //	Add new account type

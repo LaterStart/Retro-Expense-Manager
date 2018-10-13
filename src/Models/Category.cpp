@@ -119,20 +119,18 @@ char* Category::_Serialize() {
 void Category::_Deserialize(char* page) {
 	this->ID = *(int*)page;
 	page += sizeof(int);
-
-	//	deserialize IDs
+	
 	int* ptr[] = { &profileID, &parentID};
 	for (int i = 0; i < sizeof(ptr) / sizeof(ptr[0]); i++) {
 		*ptr[i] = *(int*)page;
 		page += sizeof(int);
-	}
-
+	}	
 	this->type = static_cast<CategoryType>(*(int*)page);
 	page += sizeof(int);
 	
 	this->nameSize = *(int*)page;
 	page += sizeof(int);
-
+	
 	this->name = new char[nameSize];
 	std::memcpy(name, page, nameSize);
 }

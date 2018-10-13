@@ -176,6 +176,7 @@ bool ExchangeRateController::_DownloadExchangeRate() {
 			node = node->nextNode;
 			delete deleter;
 		}
+
 		_ParseJSON(bufferRes);
 		delete[]bufferRes;
 		returnVal = true;
@@ -274,20 +275,32 @@ void ExchangeRateController::_WriteExchangeRate() {
 	fstream* stream = _OpenStream();
 	if (stream != nullptr) {
 		// check if model header exists
-		if (this->header._Loaded() == false)
+		if (this->header._Loaded() == false) {
 			this->_WriteNewModelHeader(stream, header);
 
-		// write exchange rate info (ExchangeRate model) - should have only one
-		char* buffer = excRate->_Serialize();
-		_WriteModel(stream, header, buffer);
-
-		// write currencies (rates) into database
-		for (size_t i = 0; i < currencies->size(); i++) {
-			buffer = currencies->at(i)._Serialize();
-			header._SetIDCount(i+1);
+			// write exchange rate info (ExchangeRate model) - should have only one
+			char* buffer = excRate->_Serialize();
 			_WriteModel(stream, header, buffer);
+
+			// write currencies (rates) into database
+			for (size_t i = 0; i < currencies->size(); i++) {
+				buffer = currencies->at(i)._Serialize();
+				header._SetIDCount(i + 1);
+				_WriteModel(stream, header, buffer);
+			}
+			stream->close();
 		}
-		stream->close();
+		else {
+			// Update existing records
+			char* buffer = excRate->_Serialize();
+			_UpdateModel(stream, header, -1, buffer);
+			stream->clear();
+			for (size_t i = 0; i < currencies->size(); i++) {
+				buffer = currencies->at(i)._Serialize();
+				_UpdateModel(stream, header, currencies->at(i)._ID(), buffer);
+			}
+			stream->close();
+		}
 	}
 	delete stream;
 }

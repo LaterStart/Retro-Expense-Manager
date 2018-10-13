@@ -111,7 +111,7 @@ void Transaction::_BindData(Data* data) {
 	}
 }
 
-//	serialize category model
+//	serialize transaction model
 char* Transaction::_Serialize() {
 	//	Total object size					 
 	int size = descriptionSize + 7*sizeof(int) + sizeof(double) + sizeof(Date);
@@ -152,7 +152,7 @@ char* Transaction::_Serialize() {
 	return firstByte;
 }
 
-//	deserialize category model
+//	deserialize transaction model
 void Transaction::_Deserialize(char* page) {
 	this->ID = *(int*)page;
 	page += sizeof(int);

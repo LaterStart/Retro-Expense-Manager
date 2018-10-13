@@ -21,7 +21,7 @@ public:
 	std::vector<Transaction> _GetTransactions(Query query);
 	Transaction* _DeserializeModel(char* buffer);
 	int _LastTransactionID() const;
-	void _EditTransaction(utility::LinkedList<Data*>*data, int modelID, int profileID);
+	Transaction _EditTransaction(utility::LinkedList<Data*>*data, int modelID, int profileID);
 	void _LoadLatestTransactions();
 };
 

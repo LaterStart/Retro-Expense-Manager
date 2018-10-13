@@ -112,7 +112,7 @@ Transaction* TransactionController::_DeserializeModel(char* buffer) {
 }
 
 //	Update transaction using form data
-void TransactionController::_EditTransaction(utility::LinkedList<Data*>*data, int modelID, int profileID) {
+Transaction TransactionController::_EditTransaction(utility::LinkedList<Data*>*data, int modelID, int profileID) {
 	Transaction edited(data, modelID, profileID);
 
 	fstream* stream = _OpenStream();
@@ -122,4 +122,5 @@ void TransactionController::_EditTransaction(utility::LinkedList<Data*>*data, in
 		stream->close();
 	}
 	delete stream;
+	return edited;
 }
