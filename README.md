@@ -13,7 +13,8 @@ Version history:
 
 --------------------------------------------------------------------------------------------------------
 - Version 2.1 (Final assigment project finished in September 2018.)
-Prototype code complete rewrite, design patterns included, improved forms, database design.
+Prototype code complete rewrite, design patterns included, improved forms, database design. 
+Still has to be finished. More modules need to be added to become completed usable application.
 - Version 2.0 (Final assigment project prototype)
 Binary data records, included user input forms.
 - Version 1.0 (object oriented programming course assigment)
