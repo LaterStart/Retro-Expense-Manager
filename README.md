@@ -1,5 +1,5 @@
 # Retro-Expense-Manager
-Final assignment project
+Final assignment project and my first project
 
 Idea was to build complex CMD application from scratch without help of any external libraries, for educational purposes.
 Retro Expense Manager is "simulated" financial application, that helps user to track his everyday financial transactions.
