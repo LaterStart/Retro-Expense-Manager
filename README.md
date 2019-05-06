@@ -8,13 +8,13 @@ Retro Expense Manager is "simulated" financial application, that helps user to t
 It's built upon MVC design pattern, with custom modified relations. Data records are stored in raw binary format. Used data structure for data file is double linked list. Application has networking feature, downloading data from an exchange rate API. Altought application is CMD app, it has simulated GUI elements, which enable user to use and browse application with his keyboard.
 
 - Current version: 2.1
+(Application is a prototype, meaning it is not practical. More features should be implemented to become one).
 
 Version history:
 
 --------------------------------------------------------------------------------------------------------
-- Version 2.1 (Final assigment project, finished in September 2018.)
+- Version 2.1 (Final assigment project, finished on September 2018.)
 Implemented some of the design patterns, designed simple binary database system and improved user forms.
-Still has to be finished. More modules need to be added to become completed usable application.
 - Version 2.0 (Final assigment project prototype)
 Data records stored in binary raw format with included user input forms.
 - Version 1.0 (object oriented programming course assigment)
